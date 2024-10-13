@@ -2,17 +2,31 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<Description>Logging aspect support for MVVM UI</Description>
+		<SignAssembly>False</SignAssembly>
+		<RootNamespace>OutWit.Common.Logging</RootNamespace>
+		<LangVersion>10.0</LangVersion>
+
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>OutWit.Common.Logging</PackageId>
+		<Version>1.0.0</Version>
 		<Authors>Dmitry Ratner</Authors>
 		<Company>OutWit</Company>
 		<Product>OutWit.Common.Logging</Product>
-		<SignAssembly>False</SignAssembly>
-		<LangVersion>10.0</LangVersion>
+		<Description>Logging aspect support for MVVM</Description>
+		<PackageTags>OutWit;Common;Aspect;MVVM;Logging</PackageTags>
+		<Copyright>Copyright © Dmitry Ratner 2024</Copyright>
+
+		<RepositoryUrl>https://github.com/dmitrat/OutWit/tree/main/Sources/Common/OutWit.Common.Logging</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/dmitrat/OutWit/tree/main/Sources/Common/OutWit.Common.Logging</PackageProjectUrl>
+
+		<PackageIcon>OutWitIcon128.png</PackageIcon>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+
 	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="OutWit.Common.Aspects" Version="1.0.0" />
     <PackageReference Include="Serilog" Version="4.0.2" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
@@ -20,8 +34,12 @@
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
