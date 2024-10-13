@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="OutWit.Common.Settings.Controls.SettingsValueFolderControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OutWit.Common.Settings.Controls"
+             xmlns:i="clr-namespace:OutWit.Common.Controls.Input;assembly=OutWit.Common.Controls"
+             xmlns:b="clr-namespace:OutWit.Common.Controls.Buttons;assembly=OutWit.Common.Controls"
+             mc:Ignorable="d" d:DesignHeight="450" d:DesignWidth="800"
+             x:Name="Local">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="48"/>
+        </Grid.ColumnDefinitions>
+
+        <i:TextInput Grid.Column="0" ImageKind="Folder" Header="{Binding Name, Mode=OneWay}" Value="{Binding UserValue, Mode=TwoWay}"/>
+        <b:FlatButton Grid.Column="2" Kind="DotsHorizontal"
+                      Command="{Binding SelectFolderCmd, ElementName=Local}"
+                      CommandParameter="{Binding}"/>
+
+    </Grid>
+</UserControl>

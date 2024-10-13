@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<Description>Plugin design support</Description>
+		<Authors>Dmitry Ratner</Authors>
+		<Company>OutWit</Company>
+		<Product>OutWit.Common.MEF</Product>
+		<SignAssembly>False</SignAssembly>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OutWit.Common.Services\OutWit.Common.Services.csproj" />
+  </ItemGroup>
+
+</Project>

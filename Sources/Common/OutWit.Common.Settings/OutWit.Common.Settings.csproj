@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<Description>Automatic Settings API</Description>
+		<Authors>Dmitry Ratner</Authors>
+		<Company>OutWit</Company>
+		<Product>OutWit.Common.Settings</Product>
+		<SignAssembly>False</SignAssembly>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
+  </ItemGroup>
+
+</Project>

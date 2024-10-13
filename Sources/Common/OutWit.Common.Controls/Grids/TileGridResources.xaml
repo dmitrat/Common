@@ -1,0 +1,101 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+                    xmlns:g="clr-namespace:OutWit.Common.Controls.Grids"
+                    xmlns:s="clr-namespace:OutWit.Common.Controls.Scroll">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="g:TileGrid">
+        <Style.Resources>
+            <Style TargetType="DataGridCell">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridCell">
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" Margin="5, 5, 5, 5"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="TileBackground" Value="Transparent"/>
+        <Setter Property="TileBorderBrush" Value="Black"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="SelectionMode" Value="Single"/>
+        <Setter Property="AutoGenerateColumns" Value="False"/>
+        <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="Transparent"/>
+        <Setter Property="SelectionUnit" Value="FullRow"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="g:TileGrid">
+                    <s:VerticalScrollViewer>
+                        <Grid IsSharedSizeScope="True">
+                            <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Grid>
+                      
+                    </s:VerticalScrollViewer>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RowStyle">
+            <Setter.Value>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignToolTipBackground}"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="3"/>
+                    <Setter Property="Margin" Value="10,5,10,5"/>
+                    <Setter Property="Padding" Value="5"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="DataGridRow">
+                                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                        Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}" Padding="{TemplateBinding Padding}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+
+                                    <b:Interaction.Triggers>
+                                        <b:EventTrigger EventName="PreviewMouseDown">
+                                            <b:InvokeCommandAction Command="{Binding Path=SelectRowCommand, RelativeSource={RelativeSource AncestorType={x:Type g:TileGrid}}}" 
+                                                                   CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}"/>
+                                        </b:EventTrigger>
+                                    </b:Interaction.Triggers>
+
+                                    <SelectiveScrollingGrid>
+                                        <SelectiveScrollingGrid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                        </SelectiveScrollingGrid.ColumnDefinitions>
+                                        <SelectiveScrollingGrid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                        </SelectiveScrollingGrid.RowDefinitions>
+
+                                        <DataGridCellsPresenter SelectiveScrollingGrid.Row="0"  SelectiveScrollingGrid.Column="0"
+                                                                ItemsPanel="{TemplateBinding ItemsPanel}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                    </SelectiveScrollingGrid>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="true">
+                                        <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

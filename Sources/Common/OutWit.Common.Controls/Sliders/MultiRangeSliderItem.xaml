@@ -1,0 +1,23 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:OutWit.Common.Controls.Sliders">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="local:MultiRangeSliderItem">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:MultiRangeSliderItem">
+                    <Track x:Name="PART_Track">
+                        <Track.Thumb>
+                            <Thumb x:Name="Thumb" Template="{StaticResource MaterialDesignSliderThumb}" Opacity="1"/>
+                        </Track.Thumb>
+                    </Track>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

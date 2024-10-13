@@ -1,0 +1,30 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:b="clr-namespace:OutWit.Common.Controls.Buttons"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:o="clr-namespace:OutWit.Common.Controls.Output">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="b:MenuButton">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="b:MenuButton">
+                    <Menu  Background="Transparent">
+                        <MenuItem Padding="0" IsEnabled="{TemplateBinding IsEnabled}"  Command="{TemplateBinding Command}" CommandParameter="{TemplateBinding CommandParameter}">
+                            <MenuItem.Header>
+                                <Grid>
+                                    <o:IconOutput Width="{TemplateBinding Width}" Text="{TemplateBinding Text}" 
+                                                  Kind="{TemplateBinding Kind}" IconPosition="{TemplateBinding IconPosition}" />
+                                </Grid>
+                            </MenuItem.Header>
+                        </MenuItem>
+                    </Menu>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

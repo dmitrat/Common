@@ -1,0 +1,43 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:pnls="clr-namespace:OutWit.Common.Controls.Panels"
+                    xmlns:local="clr-namespace:OutWit.Common.Controls.Utils"
+                    xmlns:output="clr-namespace:OutWit.Common.Controls.Output">
+
+    <Style TargetType="pnls:ExpanderPanel">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueDarkForegroundBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0 0 0 2"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="pnls:ExpanderPanel">
+
+                    <Expander HorizontalAlignment="Stretch" Background="{TemplateBinding Background}" Foreground="{TemplateBinding Foreground}"
+                              BorderBrush="{TemplateBinding Foreground}" BorderThickness="{TemplateBinding BorderThickness}"
+                              IsExpanded="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                              FocusManager.FocusedElement="{Binding Content, ElementName=Content}">
+
+                        <Expander.Header>
+                            <TextBlock x:Name="Header" Text="{TemplateBinding Header}" FontWeight="{TemplateBinding FontWeight}" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left"
+                                       FontFamily="{DynamicResource NavigationHeaderFontFamily}" FontSize="{DynamicResource NavigationHeaderFontSize}"/>
+                        </Expander.Header>
+
+                        <ContentPresenter x:Name="Content" Margin="24,8,24,16" Focusable="{TemplateBinding Focusable}"/>
+
+                    </Expander>
+
+                    <ControlTemplate.Triggers>
+                        <!--<Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="Header" Property="FontWeight" Value="Bold"/>
+                        </Trigger>-->
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
