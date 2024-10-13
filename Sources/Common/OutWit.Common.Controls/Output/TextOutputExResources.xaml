@@ -1,0 +1,43 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:out="clr-namespace:OutWit.Common.Controls.Output"
+                    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:cnv="clr-namespace:OutWit.Common.Controls.Converters">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="out:TextOutputEx">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="out:TextOutputEx">
+                    <Grid>
+                        <TextBlock x:Name="Text" Text="{TemplateBinding Text}" Style="{TemplateBinding Style}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                   VerticalAlignment="{TemplateBinding VerticalAlignment}" TextAlignment="{TemplateBinding TextAlignment}" Background="{TemplateBinding Background}"
+                                   Foreground="{TemplateBinding Foreground}" FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}" FontStyle="{TemplateBinding FontStyle}"
+                                   FontFamily="{TemplateBinding FontFamily}" FontStretch="{TemplateBinding FontStretch}" TextWrapping="{TemplateBinding TextWrapping}"
+                                   Visibility="Visible"/>
+
+                        <TextBlock x:Name="EmptyText" Text="{TemplateBinding EmptyText}" Style="{TemplateBinding Style}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                   VerticalAlignment="{TemplateBinding VerticalAlignment}" TextAlignment="{TemplateBinding TextAlignment}" Background="{TemplateBinding Background}"
+                                   Foreground="{DynamicResource MaterialDesignToolTipBackground}" FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
+                                   FontFamily="{TemplateBinding FontFamily}" FontStretch="{TemplateBinding FontStretch}" TextWrapping="{TemplateBinding TextWrapping}"
+                                   Visibility="Collapsed" FontStyle="Italic"/>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter TargetName="EmptyText" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="Text" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="EmptyText" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="Text" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

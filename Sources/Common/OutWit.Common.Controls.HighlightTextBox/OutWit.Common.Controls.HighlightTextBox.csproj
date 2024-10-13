@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net8.0-windows</TargetFramework>
+	  <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Properties\syntax.xsd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OutWit.Common.MVVM\OutWit.Common.MVVM.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Properties\syntax.xsd" />
+  </ItemGroup>
+
+</Project>

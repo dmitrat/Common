@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<Description>Common snipets, tools and base classes, no additional dependency need</Description>
+		<Authors>Dmitry Ratner</Authors>
+		<Company>OutWit</Company>
+		<Product>OutWit.Common</Product>
+		<SignAssembly>False</SignAssembly>
+	</PropertyGroup>
+
+</Project>

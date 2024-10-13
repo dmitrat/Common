@@ -1,0 +1,61 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:i="clr-namespace:OutWit.Common.Controls.Input"
+                    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+                    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+                    xmlns:p="clr-namespace:OutWit.Common.Controls.Popup"
+                    xmlns:special="clr-namespace:OutWit.Common.Controls.Special"
+                    xmlns:buttons="clr-namespace:OutWit.Common.Controls.Buttons"
+                    xmlns:output="clr-namespace:OutWit.Common.Controls.Output"
+                    xmlns:converters="clr-namespace:OutWit.Common.Controls.Converters">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="i:DatePopupInput">
+        <Style.Resources>
+            <converters:DateTimeDateConverter x:Key="DateConverter"/>
+        </Style.Resources>
+        <Setter Property="OpenOnLoad" Value="True"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="ImageSize" Value="24"/>
+        <Setter Property="ShowImage" Value="True"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="i:DatePopupInput">
+                    <md:PopupBox x:Name="Popup" Width="{TemplateBinding ActualWidth}" PlacementMode="BottomAndAlignCentres" Background="Transparent" 
+                                 Padding="0" Margin="0" StaysOpen="True"
+                                 IsPopupOpen = "{Binding Path=IsPopupOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+
+                        <md:PopupBox.ToggleContent>
+                            <TextBox x:Name="Input" Grid.Column="0" Grid.ColumnSpan="2"  FontSize="{TemplateBinding FontSize}" md:TextFieldAssist.UnderlineBrush="{DynamicResource PrimaryHueDarkBrush}"
+                                            Text="{Binding Path=Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, Converter={StaticResource DateConverter}}"
+                                            md:HintAssist.Hint="{TemplateBinding Header}" md:HintAssist.FloatingScale="{TemplateBinding HeaderScale}" 
+                                            IsReadOnly="{TemplateBinding IsReadOnly}" IsEnabled="{TemplateBinding IsEnabled}" Width="{TemplateBinding ActualWidth}"
+                                            TextWrapping="{TemplateBinding TextWrapping}" />
+                        </md:PopupBox.ToggleContent>
+
+                        <Calendar SelectedDate="{Binding Path=Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  DisplayDateStart="{TemplateBinding ValueMin}" DisplayDateEnd="{TemplateBinding ValueMax}" SelectionMode="SingleDate">
+                            <b:Interaction.Triggers>
+                                <b:EventTrigger EventName="SelectedDatesChanged">
+                                    <b:InvokeCommandAction Command="{Binding Path=ClosePopupCmd, RelativeSource={RelativeSource AncestorType={x:Type i:DatePopupInput}}}"/>
+                                </b:EventTrigger>
+                            </b:Interaction.Triggers>
+                        </Calendar>
+
+                    </md:PopupBox>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Header" Value="{x:Null}">
+                            <Setter Property="Style" Value="{DynamicResource MaterialDesignTextBoxBase}" TargetName="Input"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

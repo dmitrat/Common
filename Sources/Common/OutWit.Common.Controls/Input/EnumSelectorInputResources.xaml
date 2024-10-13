@@ -1,0 +1,91 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:i="clr-namespace:OutWit.Common.Controls.Input"
+                    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:o="clr-namespace:OutWit.Common.Controls.Output">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="i:EnumSelectorInput">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="ImageSize" Value="24"/>
+        <Setter Property="ShowImage" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="i:EnumSelectorInput">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <md:PackIcon x:Name="Icon"  Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" Kind="{TemplateBinding ImageKind}" 
+                                     Foreground="{DynamicResource MaterialDesignToolTipBackground}"
+                                     Height="{TemplateBinding ImageSize}" Width="{TemplateBinding ImageSize}" IsEnabled="{TemplateBinding IsEnabled}"
+                                     Visibility="{TemplateBinding ShowImage, Converter={StaticResource BooleanToVisibility}}"/>
+
+                        <TextBlock x:Name="Header"  Grid.Column="1" Grid.Row="1" Text="{TemplateBinding Header}"  VerticalAlignment="Top" 
+                                   Foreground="{DynamicResource MaterialDesignToolTipBackground}" FontSize="{TemplateBinding HeaderFontSize}"/>
+
+                        <ListBox Grid.Column="1" Grid.Row="2" Margin="0, 5, 0, 0" ItemsSource="{TemplateBinding EnumNames}" 
+                                 SelectedItem="{Binding Path=SelectedEnumName, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                            <ListBox.Template>
+                                <ControlTemplate TargetType="ListBox">
+                                    <ItemsPresenter/>
+                                </ControlTemplate>
+                            </ListBox.Template>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <ContentPresenter/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ToggleButton Style="{StaticResource EnumToggleStyle}" Margin="0,0,20,0" 
+                                                  IsChecked="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}">
+                                        <o:TextOutput TextKey="{Binding}" 
+                                                      TextConverter="{Binding Path=TextConverter, RelativeSource={RelativeSource AncestorType={x:Type i:EnumComboInput}}}"
+                                                      FontFamily="{Binding Path=FontFamily, RelativeSource={RelativeSource AncestorType={x:Type i:EnumComboInput}}}"
+                                                      FontSize="{Binding Path=FontSize, RelativeSource={RelativeSource AncestorType={x:Type i:EnumComboInput}}}"
+                                                      FontWeight="{Binding Path=FontWeight, RelativeSource={RelativeSource AncestorType={x:Type i:EnumComboInput}}}"/>
+                                    </ToggleButton>
+
+
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel IsItemsHost="True" Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                        </ListBox>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+                        </Trigger>
+
+
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
