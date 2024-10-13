@@ -1,17 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net8.0-windows</TargetFramework>
+	  <TargetFrameworks>net8.0-windows;net7.0-windows;net6.0-windows</TargetFrameworks>
 	  <UseWPF>true</UseWPF>
+	  <SignAssembly>False</SignAssembly>
+	  <RootNamespace>OutWit.Common.Prism</RootNamespace>
+
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	  <PackageId>OutWit.Common.Prism</PackageId>
+	  <Version>1.0.0</Version>
+	  <Authors>Dmitry Ratner</Authors>
+	  <Company>OutWit</Company>
+	  <Product>OutWit.Common.Prism</Product>
+	  <Description>
+		  Prism-based plugin design support for WPF UI
+	  </Description>
+	  <PackageTags>OutWit;Common;Prism;Plugins</PackageTags>
+	  <Copyright>Copyright © Dmitry Ratner 2024</Copyright>
+
+	  <RepositoryUrl>https://github.com/dmitrat/OutWit/tree/main/Sources/Common/OutWit.Common.Prism</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/dmitrat/OutWit/tree/main/Sources/Common/OutWit.Common.Prism</PackageProjectUrl>
+
+	  <PackageIcon>OutWitIcon128.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="OutWit.Common.Services" Version="1.0.0" />
     <PackageReference Include="Prism.Wpf" Version="9.0.537" />
     <PackageReference Include="Unity.Container" Version="5.11.11" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\OutWit.Common.Services\OutWit.Common.Services.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
