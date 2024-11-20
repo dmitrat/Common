@@ -48,3 +48,5 @@ public int Value { get; set; }
 - Reduces repetitive code.
 - Ensures consistency and readability.
 - Simplifies working with DependencyProperty in WPF applications.
+
+For more details, check out [the article](https://ratner.io/2024/11/20/streamlining-net-development-with-practical-aspects/).
