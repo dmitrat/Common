@@ -66,3 +66,5 @@ public class MyViewModel : INotifyPropertyChanged
         public string Text { get; set; }
     }
 ```
+
+For more details, check out [the article](https://ratner.io/2024/11/20/streamlining-net-development-with-practical-aspects/).
