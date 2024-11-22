@@ -1,3 +1,15 @@
+#### Install
+
+```ps1
+Install-Package OutWit.Common.MVVM
+```
+
+or
+
+```bash
+> dotnet add package OutWit.Common.MVVM
+```
+
 ## Simplifying DependencyProperty Management with the `Bindable` Aspect
 
 When working with WPF, dealing with `DependencyProperty` can be tedious and error-prone. Typically, you need to:
