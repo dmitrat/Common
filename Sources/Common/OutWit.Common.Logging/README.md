@@ -1,3 +1,15 @@
+#### Install
+
+```ps1
+Install-Package OutWit.Common.Logging
+```
+
+or
+
+```bash
+> dotnet add package OutWit.Common.Logging
+```
+
 ## Streamlining Logging with the `Log` Aspect
 
 Maintaining logs is critical for debugging and supporting complex applications. Manually adding logging calls everywhere can be tedious and error-prone. The `OutWit.Common.Logging` package simplifies this process with three powerful aspects: `Log`, `NoLog`, and `Measure`. The source code is available [here](https://github.com/dmitrat/OutWit/tree/main/Sources/Common/OutWit.Common.Logging).
