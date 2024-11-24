@@ -7,7 +7,7 @@
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>OutWit.Common.MessagePack</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 		<Authors>Dmitry Ratner</Authors>
 		<Company>OutWit</Company>
 		<Product>OutWit.Common.MessagePack</Product>
@@ -24,7 +24,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" Version="2.5.172" />
+    <PackageReference Include="MessagePack" Version="2.5.192" />
     <PackageReference Include="OutWit.Common.Aspects" Version="1.0.0" />
   </ItemGroup>
 
