@@ -15,6 +15,10 @@
 		<Product>OutWit.Common.MVVM</Product>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="Serilog" Version="4.1.0" />
+	</ItemGroup>
+
 
 	<ItemGroup>
     <ProjectReference Include="..\OutWit.Common.Logging\OutWit.Common.Logging.csproj" />
