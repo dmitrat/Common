@@ -34,7 +34,13 @@ namespace OutWit.Common.Aspects.Utils
             foreach (var dlg in delegates)
                 try
                 {
-                    dlg.Method.Invoke(dlg.Target, new object[] { obj, new PropertyChangedEventArgs(propertyName) });
+                    var parameters = dlg.Method.GetParameters();
+                    if (parameters.Length == 2)
+                        dlg.Method.Invoke(dlg.Target, new object[] { obj, new PropertyChangedEventArgs(propertyName) });
+                    else if (parameters.Length == 3)
+                        dlg.Method.Invoke(dlg.Target, new object[] { dlg.Target, obj, new PropertyChangedEventArgs(propertyName) });
+                    else
+                        throw new ExceptionOf<AspectsExtensions>("Wrong property changed parameters list");
                 }
                 catch (TargetInvocationException targetInvocationException)
                 {
