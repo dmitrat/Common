@@ -285,6 +285,73 @@ namespace OutWit.Common.Values
 
         #endregion
 
+        #region DateTimeOffset
+
+        public static bool Is(this DateTimeOffset? me, DateTimeOffset? value)
+        {
+            if (!me.HasValue && !value.HasValue)
+                return true;
+
+            if (!me.HasValue || !value.HasValue)
+                return false;
+
+            return Is(me.Value, value.Value);
+        }
+
+        public static bool Is(this DateTimeOffset me, DateTimeOffset value)
+        {
+            return me.ToUnixTimeMilliseconds() == value.ToUnixTimeMilliseconds();
+        }
+
+        #endregion
+
+#if NET6_0_OR_GREATER
+
+        #region DateOnly
+
+        public static bool Is(this DateOnly? me, DateOnly? value)
+        {
+            if (!me.HasValue && !value.HasValue)
+                return true;
+
+            if (!me.HasValue || !value.HasValue)
+                return false;
+
+            return Is(me.Value, value.Value);
+        }
+
+        public static bool Is(this DateOnly me, DateOnly value)
+        {
+            return me.ToLongDateString() == value.ToLongDateString();
+        }
+
+        #endregion
+#endif
+
+#if NET6_0_OR_GREATER
+
+        #region TimeOnly
+
+        public static bool Is(this TimeOnly? me, TimeOnly? value)
+        {
+            if (!me.HasValue && !value.HasValue)
+                return true;
+
+            if (!me.HasValue || !value.HasValue)
+                return false;
+
+            return Is(me.Value, value.Value);
+        }
+
+        public static bool Is(this TimeOnly me, TimeOnly value)
+        {
+            return me.ToLongTimeString() == value.ToLongTimeString();
+        }
+
+        #endregion
+
+#endif
+
         #region TimeSpan
 
         public static bool Is(this TimeSpan? me, TimeSpan? value)
