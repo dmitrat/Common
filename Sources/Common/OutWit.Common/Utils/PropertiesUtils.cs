@@ -9,16 +9,6 @@ namespace OutWit.Common.Utils
 {
     public static class PropertiesUtils
     {
-        public static string NameOfProperty<T, TResult>(this Expression<Func<T, TResult>> me)
-        {
-            var member = me.Body as MemberExpression;
-
-            if (member == null || member.Member.MemberType != MemberTypes.Property)
-                throw new ArgumentException($"{me} is not a property");
-
-            return member.Member.Name;
-        }
-
         public static TValue With<TValue>(this TValue me, Action<TValue> setter)
             where TValue : ModelBase
         {

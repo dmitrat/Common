@@ -171,7 +171,7 @@ namespace OutWit.Common.Controls.Sliders
 
         private Binding GetBinding(MultiRangeSliderItem slider, Expression<Func<MultiRangeSliderItem, double>> expression, BindingMode mode = BindingMode.TwoWay)
         {
-            return new Binding { Source = slider, Path = new PropertyPath(PropertiesUtils.NameOfProperty(expression)), Mode = mode };
+            return new Binding { Source = slider, Path = new PropertyPath(expression.NameOfProperty()), Mode = mode };
         }
 
         private MultiRangeSliderItem CreateLastSliderFromItem(MultiRangeSliderItem lastItem)

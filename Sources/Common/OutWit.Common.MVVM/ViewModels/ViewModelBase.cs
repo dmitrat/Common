@@ -1,19 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using OutWit.Common.Abstract;
 using OutWit.Common.Logging.Aspects;
 
 namespace OutWit.Common.MVVM.ViewModels
 {
     [Log]
-    public abstract class ViewModelBase<TApplicationVm> : INotifyPropertyChanged, IDisposable
+    public abstract class ViewModelBase<TApplicationVm> : NotifyPropertyChangedBase, IDisposable
         where TApplicationVm : class
     {
-        #region Events
-
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
-
-        #endregion
-
         #region Constructors
 
         protected ViewModelBase(TApplicationVm applicationVm)

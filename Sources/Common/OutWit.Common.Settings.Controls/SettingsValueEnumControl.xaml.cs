@@ -12,11 +12,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using OutWit.Common.Aspects.Utils;
 using OutWit.Common.Locker;
 using OutWit.Common.MVVM.Aspects;
 using OutWit.Common.MVVM.Utils;
 using OutWit.Common.Settings.Values;
+using OutWit.Common.Utils;
 
 namespace OutWit.Common.Settings.Controls
 {

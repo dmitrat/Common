@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using System.Text;
 using OutWit.Common.Attributes;
 
 namespace OutWit.Common.Abstract
 {
     [DataContract]
-    public abstract class ModelBase : ICloneable
+    public abstract class ModelBase : NotifyPropertyChangedBase, ICloneable
     {
         #region Constants
 

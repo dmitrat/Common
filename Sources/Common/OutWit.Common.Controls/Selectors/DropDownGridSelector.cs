@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using OutWit.Common.Aspects.Utils;
 using OutWit.Common.Controls.DropDown;
 using OutWit.Common.Locker;
 using OutWit.Common.MVVM.Aspects;

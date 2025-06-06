@@ -131,14 +131,15 @@ namespace OutWit.Common.MVVM.Utils
             return me.Property.Name == propertyExpression.NameOfProperty();
         }
 
-        public static void FirePropertyChanged<T, TResult>(this T me, Expression<Func<T, TResult>> propertyExpression) where T : INotifyPropertyChanged
-	    {
-            OutWit.Common.Aspects.Utils.Extensions.FirePropertyChanged(propertyExpression.NameOfProperty(), me);
-	    }
+        public static void FirePropertyChanged<T, TResult>(this T me, Expression<Func<T, TResult>> propertyExpression)
+            where T : INotifyPropertyChanged
+        {
+            PropertyChangedUtils.FirePropertyChanged(propertyExpression.NameOfProperty(), me);
+        }
 
-	    public static void Refresh<T>(this T me) where T : INotifyPropertyChanged
+        public static void Refresh<T>(this T me) where T : INotifyPropertyChanged
 	    {
-            OutWit.Common.Aspects.Utils.Extensions.FirePropertyChanged("", me);
+            PropertyChangedUtils.FirePropertyChanged("", me);
 	    }
 
         public static ObservableCollection<StringHolder> ToObservable(this IReadOnlyList<string> values)
