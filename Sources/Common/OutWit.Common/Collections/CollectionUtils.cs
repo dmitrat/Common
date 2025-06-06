@@ -3,40 +3,94 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OutWit.Common.Abstract;
+using OutWit.Common.Values;
 
 namespace OutWit.Common.Collections
 {
     public static class CollectionUtils
     {
-        public static void Enumerate(this IEnumerable me, Action<object, int> action)
+        #region Enumeration
+
+        public static void ForEach<T>(this IEnumerable<T> me, Action<T, int> action)
         {
             int index = 0;
-            foreach (var item in me)
+            foreach (T item in me)
                 action(item, index++);
         }
 
-        public static bool Is<TKey, TValue>(this IDictionary<TKey, TValue> me, IDictionary<TKey, TValue> dictionary)
+        #endregion
+
+        #region Comparison
+
+        public static bool Check(this IDictionary me, IDictionary dictionary)
         {
-            var meArray = me?.ToArray();
-            var array = dictionary?.ToArray();
+            if (me == null && dictionary == null)
+                return true;
 
-            if (meArray == null || array == null)
+            if (me == null || dictionary == null)
                 return false;
 
-            if (meArray.Length != array.Length)
+            if (ReferenceEquals(me, dictionary))
+                return true;
+
+            if (me.Count != dictionary.Count)
                 return false;
 
-            for (int i = 0; i < array.Length; i++)
+            foreach (var key in me.Keys)
             {
-                if (!Check(meArray[i].Key, array[i].Key) || !Check(meArray[i].Value, array[i].Value))
+                if (!dictionary.Contains(key))
+                    return false;
+                
+                if (!me[key].Check(dictionary[key]))
                     return false;
             }
 
             return true;
+        }
+
+        public static bool Is<TKey, TValue>(this IDictionary<TKey, TValue> me, IDictionary<TKey, TValue> dictionary)
+        {
+            if (me == null && dictionary == null)
+                return true;
+
+            if (me == null || dictionary == null)
+                return false;
+
+            if (ReferenceEquals(me, dictionary))
+                return true;
+
+            if (me.Count != dictionary.Count)
+                return false;
+
+            foreach (var pair in me)
+            {
+                if (!dictionary.TryGetValue(pair.Key, out var value) || !pair.Value.Check(value))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static bool Check(this ICollection me, ICollection collection)
+        {
+            if (me == null && collection == null)
+                return true;
+
+            if (me == null || collection == null)
+                return false;
+            
+            if (ReferenceEquals(me, collection))
+                return true;
+
+            if (me.Count != collection.Count)
+                return false;
+
+            return me.Cast<object>().Is(collection.Cast<object>());
         }
 
         public static bool Is<TSource>(this IEnumerable<TSource> me, IEnumerable<TSource> collection)
@@ -47,13 +101,22 @@ namespace OutWit.Common.Collections
             if (me == null || collection == null)
                 return false;
 
-            var meArray = me.ToArray();
-            var array = collection.ToArray();
+            if (ReferenceEquals(me, collection))
+                return true;
 
-            if (meArray.Length != array.Length)
-                return false;
+            using (var enumerator1 = me.GetEnumerator())
+            {
+                using (var enumerator2 = collection.GetEnumerator())
+                {
+                    while (enumerator1.MoveNext())
+                    {
+                        if (!enumerator2.MoveNext() || !enumerator1.Current.Check(enumerator2.Current))
+                            return false;
+                    }
 
-            return !meArray.Where((t, i) => !Check(t, array[i])).Any();
+                    return !enumerator2.MoveNext();
+                }
+            }
         }
 
         public static bool Is<TSource>(this IEnumerable<TSource> me, params TSource[] array)
@@ -61,39 +124,25 @@ namespace OutWit.Common.Collections
             return me.Is(array?.AsEnumerable());
         }
 
+        #endregion
 
-        //public static TValue TryGetValue<TKey, TValue>(this Dictionary<TKey, TValue> me, TKey key,
-        //    TValue defaultValue = default(TValue))
-        //{
-        //    return me.TryGetValue(key, out var val) ? val : defaultValue;
-        //}
+        #region Split
 
-        //public static TValue TryGetValue<TKey, TValue>(this IDictionary<TKey, TValue> me, TKey key,
-        //    TValue defaultValue = default(TValue))
-        //{
-        //    return me.TryGetValue(key, out var val) ? val : defaultValue;
-        //}
-
-        public static TValue TryGetValue<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> me, TKey key,
-            TValue defaultValue = default(TValue))
-        {
-            return me.TryGetValue(key, out var val) ? val : defaultValue;
-        }
-
-        public static bool Check(object first, object second)
-        {
-            if (first is ModelBase && second is ModelBase)
-                return ((ModelBase)first).Is((ModelBase)second);
-
-            return first.Equals(second);
-        }
-
-        public static T[][] Split<T>(this T[] me, int chunksCount)
+        public static IEnumerable<T[]> Split<T>(this T[] me, int chunksCount)
         {
             if (chunksCount <= 0)
                 return null;
 
+            if (me.Length == 0)
+                return Enumerable.Empty<T[]>();
+
             var chunkSize = (int)Math.Ceiling(me.Length / (double)chunksCount);
+
+#if NET6_0_OR_GREATER
+
+            return me.Chunk(chunkSize);
+
+#else
             var chunks = new T[chunksCount][];
 
             for (int i = 0; i < chunksCount; i++)
@@ -108,14 +157,25 @@ namespace OutWit.Common.Collections
             }
 
             return chunks;
+
+#endif
         }
 
-        public static T[][] SplitParallel<T>(this T[] me, int chunksCount, int maxThreads = -1)
+        public static IEnumerable<T[]> SplitParallel<T>(this T[] me, int chunksCount, int maxThreads = -1)
         {
             if (chunksCount <= 0)
                 return null;
 
+            if (me.Length == 0)
+                return Enumerable.Empty<T[]>();
+
             var chunkSize = (int)Math.Ceiling(me.Length / (double)chunksCount);
+
+#if NET6_0_OR_GREATER
+
+            return me.AsParallel().Chunk(chunkSize);
+#else
+
             var chunks = new T[chunksCount][];
 
             var options = new ParallelOptions();
@@ -134,55 +194,21 @@ namespace OutWit.Common.Collections
             });
 
             return chunks;
+#endif
         }
 
-        public static ObservableCollection<T> ToObservable<T>(this IEnumerable<T> me)
+        #endregion
+
+        #region TryGetValue
+        
+        public static TValue TryGetValue<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> me, TKey key, TValue defaultValue = default(TValue))
         {
-            return me == null ? new ObservableCollection<T>() : new ObservableCollection<T>(me);
+            return me.TryGetValue(key, out var val) ? val : defaultValue;
         }
 
-        public static TValue FindClosest<TValue>(this IEnumerable<TValue> me, int value, Func<TValue, int> getter)
-        {
-            var minimumValue = int.MaxValue;
-            TValue minimumItem = default;
+        #endregion
 
-            var maximumValue = int.MinValue;
-            TValue maximumItem = default;
-
-            var closestValue = int.MaxValue;
-            TValue closestItem = default;
-
-            foreach (var item in me)
-            {
-                var itemValue = getter(item);
-
-                if (itemValue < minimumValue)
-                {
-                    minimumValue = itemValue;
-                    minimumItem = item;
-                }
-
-                if (itemValue > maximumValue)
-                {
-                    maximumValue = itemValue;
-                    maximumItem = item;
-                }
-
-                if (Math.Abs(itemValue - value) < closestValue)
-                {
-                    closestValue = Math.Abs(itemValue - value);
-                    closestItem = item;
-                }
-            }
-
-            if (value >= maximumValue)
-                return maximumItem;
-
-            if (value <= minimumValue)
-                return minimumItem;
-
-            return closestItem;
-        }
+        #region Add
 
         public static void AddNotNull<TValue>(this ICollection<TValue> me, TValue value)
         {
@@ -263,5 +289,61 @@ namespace OutWit.Common.Collections
             if (pair.value != null)
                 me.AddOrUpdate((pair.key, pair.value));
         }
+
+        #endregion
+
+        #region Find
+
+        public static TValue FindClosest<TValue>(this IEnumerable<TValue> me, int value, Func<TValue, int> getter)
+        {
+            var minimumValue = int.MaxValue;
+            TValue minimumItem = default;
+
+            var maximumValue = int.MinValue;
+            TValue maximumItem = default;
+
+            var closestValue = int.MaxValue;
+            TValue closestItem = default;
+
+            foreach (var item in me)
+            {
+                var itemValue = getter(item);
+
+                if (itemValue < minimumValue)
+                {
+                    minimumValue = itemValue;
+                    minimumItem = item;
+                }
+
+                if (itemValue > maximumValue)
+                {
+                    maximumValue = itemValue;
+                    maximumItem = item;
+                }
+
+                if (Math.Abs(itemValue - value) < closestValue)
+                {
+                    closestValue = Math.Abs(itemValue - value);
+                    closestItem = item;
+                }
+            }
+
+            if (value >= maximumValue)
+                return maximumItem;
+
+            if (value <= minimumValue)
+                return minimumItem;
+
+            return closestItem;
+        }
+
+        #endregion
+
+        public static ObservableCollection<T> ToObservable<T>(this IEnumerable<T> me)
+        {
+            return me == null ? new ObservableCollection<T>() : new ObservableCollection<T>(me);
+        }
+        
+
     }
 }

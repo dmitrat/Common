@@ -122,7 +122,6 @@ namespace OutWit.Common.Collections
 
         #endregion
 
-
         #region IEnumerable
 
         public IEnumerator<TItem> GetEnumerator()

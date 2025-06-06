@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		<SignAssembly>False</SignAssembly>
 		<RootNamespace>OutWit.Common.Logging</RootNamespace>
 		<LangVersion>10.0</LangVersion>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>OutWit.Common.Logging</PackageId>
-		<Version>1.0.1</Version>
+		<Version>1.0.3</Version>
 		<Authors>Dmitry Ratner</Authors>
 		<Company>OutWit</Company>
 		<Product>OutWit.Common.Logging</Product>
@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
-    <PackageReference Include="OutWit.Common.Aspects" Version="1.0.0" />
+    <PackageReference Include="OutWit.Common.Aspects" Version="1.0.2" />
     <PackageReference Include="Serilog" Version="4.1.0" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />

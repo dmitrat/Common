@@ -57,7 +57,7 @@ namespace OutWit.Common.Collections
             if (!(modelBase is RingBuffer<TItem> buffer))
                 return false;
 
-            return buffer.Index.Is(Index) && buffer.Items.Is(Items);
+            return buffer.Index.Is(Index) && buffer.Items.Is<TItem>(Items);
         }
 
         public override ModelBase Clone()

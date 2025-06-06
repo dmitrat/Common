@@ -1,15 +1,55 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using OutWit.Common.Abstract;
+using OutWit.Common.Collections;
 
 namespace OutWit.Common.Values
 {
     public static class ValueUtils
     {
+        #region Generic
+
+        public static bool Is(this IComparable me, IComparable other)
+        {
+            if (me == null && other == null)
+                return true;
+            
+            if (me == null || other == null)
+                return false;
+
+            return me.CompareTo(other) == 0;
+        }
+
+        public static bool Is<T>(this T me, T other)
+            where T : IComparable<T>
+        {
+            if (me == null && other == null)
+                return true;
+            if (me == null || other == null)
+                return false;
+
+            return me.CompareTo(other) == 0;
+        }
+
+        public static bool Is<T>(this T? me, T? other) 
+            where T : struct, IComparable<T>
+        {
+            if (!me.HasValue && !other.HasValue)
+                return true;
+            if (!me.HasValue || !other.HasValue)
+                return false;
+
+            return me.Value.Is(other.Value);
+        }
+
+
+        #endregion
+
         #region Decimal
 
         public static bool Is(this decimal? me, decimal? value, double tolerance = ModelBase.DEFAULT_TOLERANCE)
@@ -70,324 +110,25 @@ namespace OutWit.Common.Values
 
         #endregion
 
-        #region Byte
-
-        public static bool Is(this byte? me, byte? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this byte me, byte value)
-        {
-            return me == value;
-        }
-
-        #endregion
-
-        #region SByte
-
-        public static bool Is(this sbyte? me, sbyte? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this sbyte me, sbyte value)
-        {
-            return me == value;
-        }
-
-        #endregion
-
         #region Bool
 
-        public static bool Is(this bool? me, bool? value)
+        public static bool ToBoolean(this uint me)
         {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
+            return me == 1;
         }
 
-        public static bool Is(this bool me, bool value)
+        public static byte FromBoolean(this bool me)
         {
-            return me == value;
+            return me ? (byte)1 : (byte)0;
         }
 
         #endregion
-
-        #region Short
-
-        public static bool Is(this short? me, short? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this short me, short value)
-        {
-            return me == value;
-        }
-
-        #endregion
-
-        #region UShort
-
-        public static bool Is(this ushort? me, ushort? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this ushort me, ushort value)
-        {
-            return me == value;
-        }
-
-        #endregion
-
-        #region Int
-
-        public static bool Is(this int? me, int? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this int me, int value)
-        {
-            return me == value;
-        }
-
-        #endregion
-
-        #region UInt
-
-        public static bool Is(this uint? me, uint? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this uint me, uint value)
-        {
-            return me == value;
-        }
-
-        #endregion
-
-        #region Long
-
-        public static bool Is(this long? me, long? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this long me, long value)
-        {
-            return me == value;
-        }
-
-        #endregion
-
-        #region ULong
-
-        public static bool Is(this ulong? me, ulong? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this ulong me, ulong value)
-        {
-            return me == value;
-        }
-
-        #endregion
-
-        #region String
-
-        public static bool Is(this string me, string value)
-        {
-            if (me == null && value == null)
-                return true;
-
-            if (me == null || value == null)
-                return false;
-
-            return me == value;
-        } 
-
-        #endregion
-
-        #region DateTime
-
-        public static bool Is(this DateTime? me, DateTime? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this DateTime me, DateTime value)
-        {
-            return me.ToString("G") == value.ToString("G");
-        }
-
-        #endregion
-
-        #region DateTimeOffset
-
-        public static bool Is(this DateTimeOffset? me, DateTimeOffset? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this DateTimeOffset me, DateTimeOffset value)
-        {
-            return me.ToUnixTimeMilliseconds() == value.ToUnixTimeMilliseconds();
-        }
-
-        #endregion
-
-#if NET6_0_OR_GREATER
-
-        #region DateOnly
-
-        public static bool Is(this DateOnly? me, DateOnly? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this DateOnly me, DateOnly value)
-        {
-            return me.ToLongDateString() == value.ToLongDateString();
-        }
-
-        #endregion
-#endif
-
-#if NET6_0_OR_GREATER
-
-        #region TimeOnly
-
-        public static bool Is(this TimeOnly? me, TimeOnly? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this TimeOnly me, TimeOnly value)
-        {
-            return me.ToLongTimeString() == value.ToLongTimeString();
-        }
-
-        #endregion
-
-#endif
 
         #region TimeSpan
 
-        public static bool Is(this TimeSpan? me, TimeSpan? value)
+        public static TimeSpan Sum(this IEnumerable<TimeSpan> me)
         {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this TimeSpan me, TimeSpan value)
-        {
-            return me.ToString("G") == value.ToString("G");
-        }
-
-        #endregion
-
-        #region Guid
-
-        public static bool Is(this Guid? me, Guid? value)
-        {
-            if (!me.HasValue && !value.HasValue)
-                return true;
-
-            if (!me.HasValue || !value.HasValue)
-                return false;
-
-            return Is(me.Value, value.Value);
-        }
-
-        public static bool Is(this Guid me, Guid value)
-        {
-            return me.CompareTo(value) == 0;
+            return TimeSpan.FromMilliseconds(me.Sum(timeSpan => timeSpan.TotalMilliseconds));
         }
 
         #endregion
@@ -407,9 +148,9 @@ namespace OutWit.Common.Values
 
         #endregion
 
-        #region Version
+        #region Type
 
-        public static bool Is(this Version me, Version value)
+        public static bool Is(this Type me, Type value)
         {
             if (me == null && value == null)
                 return true;
@@ -417,31 +158,12 @@ namespace OutWit.Common.Values
             if (me == null || value == null)
                 return false;
 
-            return me.CompareTo(value) == 0;
-        } 
+            return me.AssemblyQualifiedName == value.AssemblyQualifiedName;
+        }
 
         #endregion
 
-        public static bool ToBoolean(this uint me)
-        {
-            return me == 1;
-        }
-
-        public static byte FromBoolean(this bool me)
-        {
-            return me ? (byte)1 : (byte)0;
-        }
-
-        public static bool Check(this object me, object value)
-        {
-            if (me.GetType() != value.GetType())
-                return false;
-
-            if (me is ModelBase modelBase)
-                return modelBase.Is((ModelBase) value);
-
-            return me.Equals(value);
-        }
+        #region Check
 
         public static bool Check<TValue>(this TValue me, TValue value)
             where TValue : ModelBase
@@ -455,47 +177,78 @@ namespace OutWit.Common.Values
             return me.Is(value);
         }
 
+        public static bool Check(this object me, object second)
+        {
+            if (me is IDictionary firstDictionary && second is IDictionary secondDictionary)
+                return firstDictionary.Check(secondDictionary);
+
+            if (me is ICollection firstCollection && second is ICollection secondCollection)
+                return firstCollection.Check(secondCollection);
+
+            if (me is ModelBase firstModel && second is ModelBase secondModel)
+                return firstModel.Is(secondModel);
+
+            if (me is IComparable firstComparable && second is IComparable secondComparable)
+                return firstComparable.Is(secondComparable);
+
+            if (me is Type fistType && second is Type secondType)
+                return fistType.Is(secondType);
+
+            return Equals(me, second);
+        }
+
+        #endregion
+
+        #region Min
+
         public static T Min<T>(params T[] values)
         {
             return values.Min();
         }
+
+        public static T? Min<T>(T? left, T? right) where T : struct, IComparable<T>
+        {
+            if (left == null && right == null)
+                return null;
+            
+            if (left == null) 
+                return right;
+            
+            if (right == null)
+                return left;
+            
+            return left.Value.CompareTo(right.Value) < 0 
+                ? left 
+                : right;
+        }
+
+        #endregion
+
+        #region Max
+
         public static T Max<T>(params T[] values)
         {
             return values.Max();
         }
 
-        public static TimeSpan Sum(this IEnumerable<TimeSpan> me)
+        public static T? Max<T>(T? left, T? right) where T : struct, IComparable<T>
         {
-            return TimeSpan.FromMilliseconds(me.Sum(timeSpan => timeSpan.TotalMilliseconds));
-        }
-
-        public static DateTime? Max(DateTime? leftDate, DateTime? rightDate)
-        {
-            if (leftDate == null && rightDate == null)
+            if (left == null && right == null)
                 return null;
-
-            if (leftDate == null)
-                return rightDate;
-
-            if (rightDate == null)
-                return leftDate;
-
-            return leftDate > rightDate ? leftDate : rightDate;
+            
+            if (left == null) 
+                return right;
+            
+            if (right == null)
+                return left;
+            
+            return left.Value.CompareTo(right.Value) > 0 
+                ? left
+                : right;
         }
 
-        public static DateTime? Min(DateTime? leftDate, DateTime? rightDate)
-        {
-            if (leftDate == null && rightDate == null)
-                return null;
+        #endregion
 
-            if (leftDate == null)
-                return rightDate;
-
-            if (rightDate == null)
-                return leftDate;
-
-            return leftDate < rightDate ? leftDate : rightDate;
-        }
 
         public static int SizeOf<TValue>()
         {
@@ -505,6 +258,23 @@ namespace OutWit.Common.Values
         public static IReadOnlyList<TValue> AsArray<TValue>(this TValue me)
         {
             return new[] { me };
+
         }
+
+        #region Tools
+
+#if NET6_0_OR_GREATER
+        
+        public static bool EqualWith<T>(this T me, T other, Func<T, T, bool> comparer)
+        {
+            if (me is null && other is null)
+                return true;
+            if (me is null || other is null)
+                return false;
+            
+            return comparer(me, other);
+        }
+#endif
+#endregion
     }
 }

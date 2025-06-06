@@ -10,14 +10,14 @@ namespace OutWit.Common.MessagePack.Utils
     public static class PackUtils
     {
         #region Export
-
-        //public static async Task ExportAsMessagePackAsync<T>(this IEnumerable<T> me, string filePath)
-        //{
-        //    var bytes = me.ToArray().ToPackBytes();
-        //    if (bytes != null)
-        //        await File.WriteAllBytesAsync(filePath, bytes);
-        //}
-
+#if NET6_0_OR_GREATER
+        public static async Task ExportAsMessagePackAsync<T>(this IEnumerable<T> me, string filePath)
+        {
+            var bytes = me.ToArray().ToPackBytes();
+            if (bytes != null)
+                await File.WriteAllBytesAsync(filePath, bytes);
+        }
+#endif
         public static void ExportAsMessagePack<T>(this IEnumerable<T> me, string filePath)
         {
             var bytes = me.ToArray().ToPackBytes();
@@ -28,17 +28,17 @@ namespace OutWit.Common.MessagePack.Utils
         #endregion
 
         #region Load
+#if NET6_0_OR_GREATER
+        public static async Task<IReadOnlyList<T>> LoadAsMessagePackAsync<T>(string filePath)
+        {
+            if (!File.Exists(filePath))
+                return null;
 
-        //public static async Task<IReadOnlyList<T>> LoadAsMessagePackAsync<T>(string filePath)
-        //{
-        //    if (!File.Exists(filePath))
-        //        return null;
+            var bytes = await File.ReadAllBytesAsync(filePath);
 
-        //    var bytes = await File.ReadAllBytesAsync(filePath);
-
-        //    return bytes.FromPackBytes<IReadOnlyList<T>>();
-        //}
-
+            return bytes.FromPackBytes<IReadOnlyList<T>>();
+        }
+#endif
         public static IReadOnlyList<T> LoadAsMessagePack<T>(string filePath)
         {
             if (!File.Exists(filePath))

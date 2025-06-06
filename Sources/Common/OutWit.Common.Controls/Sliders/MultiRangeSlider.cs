@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 using OutWit.Common.Exceptions;
 using OutWit.Common.MVVM.Aspects;
 using OutWit.Common.MVVM.Utils;
-using Extensions = OutWit.Common.Utils.Extensions;
+using OutWit.Common.Utils;
 
 namespace OutWit.Common.Controls.Sliders
 {
@@ -171,7 +171,7 @@ namespace OutWit.Common.Controls.Sliders
 
         private Binding GetBinding(MultiRangeSliderItem slider, Expression<Func<MultiRangeSliderItem, double>> expression, BindingMode mode = BindingMode.TwoWay)
         {
-            return new Binding { Source = slider, Path = new PropertyPath(Extensions.NameOfProperty(expression)), Mode = mode };
+            return new Binding { Source = slider, Path = new PropertyPath(PropertiesUtils.NameOfProperty(expression)), Mode = mode };
         }
 
         private MultiRangeSliderItem CreateLastSliderFromItem(MultiRangeSliderItem lastItem)

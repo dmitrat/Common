@@ -83,7 +83,7 @@ namespace OutWit.Common.Collections
             if (!(modelBase is EvictingQueue<TItem> buffer))
                 return false;
 
-            return buffer.Items.Is(Items);
+            return buffer.Items.Is<TItem>(Items);
         }
 
         public override ModelBase Clone()
