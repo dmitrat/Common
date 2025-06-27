@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OutWit.Common.MessagePack\OutWit.Common.MessagePack.csproj" />
     <ProjectReference Include="..\OutWit.Common.MVVM\OutWit.Common.MVVM.csproj" />
   </ItemGroup>
 
