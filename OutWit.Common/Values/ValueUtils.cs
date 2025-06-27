@@ -180,10 +180,10 @@ namespace OutWit.Common.Values
         public static bool Check(this object me, object second)
         {
             if (me is IDictionary firstDictionary && second is IDictionary secondDictionary)
-                return firstDictionary.Check(secondDictionary);
+                return CollectionUtils.Check(firstDictionary, secondDictionary);
 
             if (me is ICollection firstCollection && second is ICollection secondCollection)
-                return firstCollection.Check(secondCollection);
+                return CollectionUtils.Check(firstCollection, secondCollection);
 
             if (me is ModelBase firstModel && second is ModelBase secondModel)
                 return firstModel.Is(secondModel);

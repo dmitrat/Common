@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
 	  <SignAssembly>False</SignAssembly>
 	  <RootNamespace>OutWit.Common.CommandLine</RootNamespace>
+	  <AssemblyName>OutWit.Common.CommandLine</AssemblyName>
 
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <PackageId>OutWit.Common.CommandLine</PackageId>
@@ -20,6 +21,7 @@
 
 	  <PackageIcon>OutWitIcon128.png</PackageIcon>
 	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
 
   </PropertyGroup>
 
@@ -33,6 +35,10 @@
 
 	<ItemGroup>
 		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>

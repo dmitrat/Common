@@ -4,6 +4,8 @@
 		<TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		<SignAssembly>False</SignAssembly>
 		<RootNamespace>OutWit.Common.Logging</RootNamespace>
+		<AssemblyName>OutWit.Common.Logging</AssemblyName>
+
 		<LangVersion>10.0</LangVersion>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -21,6 +23,7 @@
 
 		<PackageIcon>OutWitIcon128.png</PackageIcon>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 
 	</PropertyGroup>
 
@@ -40,6 +43,10 @@
 
 	<ItemGroup>
 		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>
