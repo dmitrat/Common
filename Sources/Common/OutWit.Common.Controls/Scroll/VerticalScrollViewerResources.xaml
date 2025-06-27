@@ -1,0 +1,50 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:OutWit.Common.Controls.Scroll"
+                    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:b="clr-namespace:OutWit.Common.Controls.Buttons">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="s:VerticalScrollViewer">
+        <Setter Property="HorizontalScrollBarVisibility" Value="Visible"/>
+        <Setter Property="ScrollButtonHeight" Value="48"/>
+        <Setter Property="ScrollButtonMargin" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="s:VerticalScrollViewer">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Name="TopRow"  Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Name="BottomRow"  Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <b:ImageRepeatButton x:Name="Up" Grid.Row="0" Height="{TemplateBinding ScrollButtonHeight}" IconMargin="{TemplateBinding ScrollButtonMargin}"
+                                             Command="{TemplateBinding ScrollUpCmd}" ClickMode="Hover"  Kind="ArrowDropUp" Background="{TemplateBinding Background}" />
+
+                        <ScrollContentPresenter Grid.Row="1" 
+                                                CanContentScroll="{TemplateBinding CanContentScroll}" 
+                                                ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                                Content="{TemplateBinding Content}" 
+                                                Margin="{TemplateBinding Padding}"/>
+
+                        <b:ImageRepeatButton x:Name="Down" Grid.Row="2" Height="{TemplateBinding ScrollButtonHeight}" IconMargin="{TemplateBinding ScrollButtonMargin}"
+                                             Command="{TemplateBinding ScrollDownCmd}" ClickMode="Hover"  Kind="ArrowDropDown"  Background="{TemplateBinding Background}"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HideScroll" Value="True">
+                            <Setter Property="Visibility" Value="Hidden" TargetName="Up"/>
+                            <Setter Property="Visibility" Value="Hidden" TargetName="Down"/>
+                            <Setter Property="Height" Value="0" TargetName="TopRow"/>
+                            <Setter Property="Height" Value="0" TargetName="BottomRow"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

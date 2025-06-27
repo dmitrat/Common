@@ -1,0 +1,56 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:s="clr-namespace:OutWit.Common.Controls.Scroll"
+                    xmlns:list="clr-namespace:OutWit.Common.Controls.List">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="list:VerticalTileList">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="list:VerticalTileList">
+                    <s:VerticalScrollViewer>
+                        <ItemsPresenter/>
+                    </s:VerticalScrollViewer>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <Border Name="Border" BorderBrush="{DynamicResource MaterialDesignToolTipBackground}"
+                                        BorderThickness="3" Margin="10,5,10,5" Padding="5">
+                                    <ContentPresenter/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="true">
+                                        <Setter TargetName="Border" Property="Background" Value="{DynamicResource PrimaryHueLightBrush }"/>
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="{DynamicResource PrimaryHueLightBrush }"/>
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel IsItemsHost="True" Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+</ResourceDictionary>

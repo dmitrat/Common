@@ -1,0 +1,105 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+
+        <!--Bars-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Bars/TitleBarResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Bars/NavigationBarResources.xaml"/>
+
+        <!--Buttons-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Buttons/FlatButtonResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Buttons/NavigationButtonResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Buttons/MenuButtonResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Buttons/ImageButtonResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Buttons/ImageRepeatButtonResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Buttons/ToolBarButtonResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Buttons/ToolBarRepeatButtonResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Buttons/ToolBarToggleButtonResources.xaml"/>
+
+        <!--DropDown-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/DropDown/DropDownButtonResources.xaml"/>
+
+        <!--Grid-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Grids/TableViewGridResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Grids/TileGridResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Grids/TileGridHeaderColumnCellResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Grids/TileGridDateTimeColumnCellResources.xaml"/>
+
+
+        <!--Cards-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Cards/FloatingCardResources.xaml"/>
+
+        <!--Input-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/TextInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/DateInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/DatePopupInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/TimePopupInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/SliderInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/DropDownSelectorInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/RangeSliderInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/BooleanInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/EnumComboInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/EnumSelectorInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/EnumDropDownInputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Input/CustomInputResources.xaml"/>
+
+        <!--Lists-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/List/VerticalTileListResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/List/VirtualizingGridListResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/List/VirtualizingGridScrollViewerResources.xaml"/>
+
+        <!--Menu-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Menu/ContextMenuItemResources.xaml"/>
+        
+        <!--Output-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Output/DateOutputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Output/TimeOutputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Output/DateTimeOutputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Output/IconOutputResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Output/TextOutputExResources.xaml"/>
+
+        <!--Panels-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Panels/ExpanderPanelResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Panels/AutoHidePanelResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Panels/NavigationHeaderResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Panels/ControlsPanelResources.xaml"/>
+
+        <!--Popup-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Popup/PopupButtonResources.xaml"/>
+
+        <!--Prompts-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Prompts/InfoPromptResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Prompts/ProcessingPromptResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Prompts/ProgressPromptResources.xaml"/>
+
+        <!--Scroll-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Scroll/HorizontalScrollViewerResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Scroll/VerticalScrollViewerResources.xaml"/>
+
+        <!--Selectors-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Selectors/DropDownSelectorResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Selectors/DropDownGridSelectorResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Selectors/DropDownComboSelectorResources.xaml"/>
+
+        <!--Sliders-->
+        <!--<ResourceDictionary Source="/StockFore.Common.Controls;component/Sliders/MultiRangeSlider.xaml"/>-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Sliders/MultiRangeSliderItem.xaml"/>
+
+        <!--Special-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Special/DropDownIconBoxResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Special/IconBoxResources.xaml"/>
+        <!--<ResourceDictionary Source="/OutWit.Common.Controls;component/Special/NavigationBarItemResources.xaml"/>-->
+
+        <!--ToolBars-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/ToolBars/ToolBarExResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/ToolBars/ToolBarSeparatorResources.xaml"/>
+
+        <!--Windows-->
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Windows/HeaderWindowResources.xaml"/>
+        <ResourceDictionary Source="/OutWit.Common.Controls;component/Windows/CustomWindowResources.xaml"/>
+        <!--<ResourceDictionary Source="/OutWit.Common.Controls;component/Windows/PopupWindowResources.xaml"/>-->
+
+
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>
