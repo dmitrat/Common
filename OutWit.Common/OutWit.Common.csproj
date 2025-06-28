@@ -2,24 +2,20 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
-		<SignAssembly>False</SignAssembly>
-
-		<GeneratePackageOnBuild  Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
+		
 		<PackageId>OutWit.Common</PackageId>
-		<Version>1.2.0</Version>
-		<Authors>Dmitry Ratner</Authors>
-		<Company>OutWit</Company>
+		<Version>1.2.1</Version>
+		
 		<Product>OutWit.Common</Product>
 
 		<Description>A zero-dependency foundational library for.NET that accelerates robust application development. Key features include an intelligent ModelBase for non-intrusive value comparison (Is()), immutable updates (With()), and a declarative ToString() via attributes.</Description>
 		<PackageTags>OutWit;Common;Snippet;Base;Collections</PackageTags>
-		<Copyright>Copyright © Dmitry Ratner 2025</Copyright>
+		
 		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common</PackageProjectUrl>
 
 		<PackageIcon>OutWitIcon128.png</PackageIcon>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 

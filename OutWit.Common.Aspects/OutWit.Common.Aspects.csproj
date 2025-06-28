@@ -1,13 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<Description>Notify aspect support for MVVM UI</Description>
-		<Authors>Dmitry Ratner</Authors>
-		<Company>OutWit</Company>
+		<TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+
+		<PackageId>OutWit.Common.Aspects</PackageId>
+		<Version>1.2.1</Version>
+
 		<Product>OutWit.Common.Aspects</Product>
-		<SignAssembly>False</SignAssembly>
+		<Description>Notify aspect support for MVVM UI and property changed snippets</Description>
+		<PackageTags>OutWit;Common;Aspect;MVVM</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Aspects</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Aspects</PackageProjectUrl>
+
+		<PackageIcon>OutWitIcon128.png</PackageIcon>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+
 	</PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +26,17 @@
   <ItemGroup>
     <ProjectReference Include="..\OutWit.Common\OutWit.Common.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
