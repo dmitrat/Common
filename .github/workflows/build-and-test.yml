@@ -50,20 +50,20 @@ jobs:
           list-files: json
           
           filters: |
-            common: &common-paths
+            Common: &common-paths
               - 'OutWit.Common/**'
               - 'OutWit.Common.Tests/**'
 
-            aspects: &aspects-paths
+            Common.Aspects: &aspects-paths
               - 'OutWit.Common.Aspects/**'
               - 'OutWit.Common.Aspects.Tests/**'
               - *common-paths
 
-            commandLine: &commandLine-paths
+            Common.CommandLine: &commandLine-paths
               - 'OutWit.Common.CommandLine/**'
               - 'OutWit.Common.CommandLine.Tests/**'
 
-            logging: &logging-paths
+            Common.Logging: &logging-paths
               - 'OutWit.Common.Logging/**'
               - 'OutWit.Common.Logging.Tests/**'
               - *aspects-paths
