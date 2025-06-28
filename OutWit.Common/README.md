@@ -160,3 +160,56 @@ list2 = new Person { Id = 3, Name = "Sam Jones" };
 bool areListsStillEqual = list1.Is(list2);
 Console.WriteLine($"Lists are still equal: {areListsStillEqual}"); // Output: Lists are still equal: False
 ```
+
+### Example 4: Declarative Logging with ToStringAttribute
+
+The `ToStringAttribute` attribute gives you fine-grained control over the output of `ToString()` for easy logging and debugging, without writing any boilerplate code.
+
+```CSharp
+using System;
+using OutWit.Common.Abstract;
+using OutWit.Common.Attributes;
+
+public class Product : ModelBase
+{
+    // Use the 'Name' property to set a custom label in the output.
+    [ToString(Name = "ID")]
+    public int ProductId { get; set; }
+
+    // If 'Name' is omitted, the property's actual name is used.
+    [ToString]
+    public string Sku { get; set; }
+
+    // Use the 'Format' property for standard.NET string formatting.
+    [ToString(Format = "X8")] 
+    public decimal Price { get; set; }
+
+    // This property is NOT decorated, so it will be ignored by ToString().
+    public int StockQuantity { get; set; }
+
+    // Required ModelBase implementations
+    public override bool Is(ModelBase other, double tolerance = DEFAULT_TOLERANCE)
+    {
+        if (other is not Product p) return false;
+        return p.ProductId == ProductId && p.Sku == Sku && Math.Abs(p.Price - Price) < (decimal)tolerance;
+    }
+
+    public override ModelBase Clone() => new Product 
+        { ProductId = this.ProductId, Sku = this.Sku, Price = this.Price, StockQuantity = this.StockQuantity };
+}
+
+// --- Usage ---
+var product = new Product
+{
+    ProductId = 101,
+    Sku = "OWC-LIB-01",
+    Price = 29.99m,
+    StockQuantity = 500
+};
+
+// The ToString() method automatically formats the output based on the attributes.
+Console.WriteLine(product.ToString());
+
+// Expected Output:
+// ID: 101, Sku: OWC-LIB-01, Price: $29.99
+```
