@@ -1,3 +1,13 @@
+# OutWit.Common.Aspects
+
+A lightweight runtime AOP library for automating `INotifyPropertyChanged` notifications in.NET.
+
+## Overview
+
+Implementing `INotifyPropertyChanged` is essential for data binding in modern.NET UI frameworks like WPF, MAUI, and Avalonia, but it often leads to verbose, repetitive, and error-prone boilerplate code in your ViewModels.
+
+`OutWit.Common.Aspects` solves this problem by providing a simple, runtime-based "aspect" that automatically injects property change notifications into your classes. 
+
 #### Install
 
 ```ps1
