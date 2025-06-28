@@ -2,10 +2,41 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+
+	  <PackageId>OutWit.Common.CommandLine</PackageId>
+	  <Version>1.0.1</Version>
+
+	  <Product>OutWit.Common.CommandLine</Product>
+	  <Description>Enables two-way serialization for the CommandLineParser library, allowing an options object to be serialized back into a command-line string.</Description>
+	  <PackageTags>OutWit;Common;CommandLine</PackageTags>
+
+
+	  <RepositoryUrl>https://github.com/dmitrat/WitCom/tree/main/Common/OutWit.Common.CommandLine</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/dmitrat/WitCom/tree/main/Common/OutWit.Common.CommandLine</PackageProjectUrl>
+
+	  <PackageIcon>OutWitIcon128.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommandLineParser" Version="2.9.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
