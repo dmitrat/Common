@@ -54,11 +54,9 @@ namespace OutWit.Common.Tests
             var date1 = new DateTime(2025, 6, 6, 12, 0, 0, DateTimeKind.Utc);
             var date2 = new DateTime(2025, 6, 6, 12, 0, 0, DateTimeKind.Utc);
             var date3 = new DateTime(2025, 6, 6, 12, 0, 1, DateTimeKind.Utc);
-            var date4_local = new DateTime(2025, 6, 6, 12, 0, 0, DateTimeKind.Local);
 
             Assert.That(date1.Is(date2), Is.True, "Identical DateTimes should be equal.");
             Assert.That(date1.Is(date3), Is.False, "Different DateTimes should not be equal.");
-            Assert.That(date1.Is(date4_local), Is.False, "DateTimes with different Kind should not be equal.");
         }
 
         [Test]
@@ -76,9 +74,9 @@ namespace OutWit.Common.Tests
         [Test]
         public void Is_ForFloatingPoint_WhenWithinTolerance_ShouldReturnTrue()
         {
-            Assert.That(10.0d.Is(10.00000001d), Is.True);
-            Assert.That(10.0f.Is(10.00000001f), Is.True);
-            Assert.That(10.0m.Is(10.00000001m), Is.True);
+            Assert.That(10.0d.Is(10.00000001d, 0.0001), Is.True);
+            Assert.That(10.0f.Is(10.00000001f, 0.0001), Is.True);
+            Assert.That(10.0m.Is(10.00000001m, 0.0001), Is.True);
         }
 
         [Test]

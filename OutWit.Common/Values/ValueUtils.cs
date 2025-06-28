@@ -179,6 +179,9 @@ namespace OutWit.Common.Values
 
         public static bool Check(this object me, object second)
         {
+            if(me.GetType() != second.GetType())
+                return false;
+
             if (me is IDictionary firstDictionary && second is IDictionary secondDictionary)
                 return CollectionUtils.Check(firstDictionary, secondDictionary);
 
