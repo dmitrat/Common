@@ -1,0 +1,75 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'What tusk should be triggered?'
+        required: true
+        type: choice
+        default: 'test'
+        options:
+        - test
+        - pack
+        
+      project:
+        description: 'For what Project?'
+        required: true
+        type: choice
+        options:
+        - OutWit.Common
+        - OutWit.Common.Aspects
+
+jobs:
+  # ===================================================================
+  # == TASK1 FULL SOLUTION TEST ==
+  # ===================================================================
+  run-all-tests:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    
+    name: Run All Tests
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Restore dependencies
+        run: dotnet restore OutWit.sln
+      - name: Build solution
+        run: dotnet build OutWit.sln --configuration Release --no-restore
+      - name: Run all tests in solution
+        run: dotnet test OutWit.sln --configuration Release --no-build --verbosity normal
+
+  # ===================================================================
+  # == TASK2: RUN TEST BY REQUEST      ==
+  # ===================================================================
+  run-on-demand-task:
+    if: github.event_name == 'workflow_dispatch'
+
+    name: "Task: ${{ github.event.inputs.task }} for ${{ github.event.inputs.project }}"
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Restore dependencies
+        run: dotnet restore OutWit.sln
+
+      - name: Run specific tests
+        if: github.event.inputs.task == 'test'
+        run: dotnet test ${{ github.event.inputs.project }}.Tests/${{ github.event.inputs.project }}.Tests.csproj --configuration Release
+
+      - name: Pack specific project
+        if: github.event.inputs.task == 'pack'
+        run: dotnet build ${{ github.event.inputs.project }}/${{ github.event.inputs.project }}.csproj --configuration Release
