@@ -1,5 +1,7 @@
 name: CI/CD Pipeline
 
+run-name: "[${{ github.event.inputs.task || github.event_name }}] for ${{ github.event.inputs.project || github.ref_name }} from @${{ github.actor }}"
+
 on:
   push:
     branches: [ "main" ]
@@ -26,14 +28,51 @@ on:
         - OutWit.Common.Aspects
 
 jobs:
+   # ===================================================================
+  # == TASK 1: DISCOVER CHANGES                             ==
   # ===================================================================
-  # == TASK1 FULL SOLUTION TEST ==
+  discover-changes:
+    name: Discover Changed Projects
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.filter.outputs.changes }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use paths-filter action
+        id: filter
+        uses: dorny/paths-filter@v3.0.2
+        with:
+          list-files: json
+          
+          filters: |
+            common: &common-paths
+              - 'OutWit.Common/**'
+              - 'OutWit.Common.Tests/**'
+
+            aspects: &aspects-paths
+              - 'OutWit.Common.Aspects/**'
+              - 'OutWit.Common.Aspects.Tests/**'
+              - *common-paths
+
   # ===================================================================
-  run-all-tests:
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+  # == TASK 2: RUN TESTS     ==
+  # ===================================================================
+  run-tests:
+    name: Test ${{ matrix.project }}
+    needs: discover-changes
     
-    name: Run All Tests
+    if: needs.discover-changes.outputs.projects != '[]'
+    
     runs-on: windows-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.discover-changes.outputs.projects) }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,10 +82,9 @@ jobs:
           dotnet-version: '9.0.x'
       - name: Restore dependencies
         run: dotnet restore OutWit.sln
-      - name: Build solution
-        run: dotnet build OutWit.sln --configuration Release --no-restore
-      - name: Run all tests in solution
-        run: dotnet test OutWit.sln --configuration Release --no-build --verbosity normal
+        
+      - name: Run tests for ${{ matrix.project }}
+        run: dotnet test OutWit.Common.${{ matrix.project }}.Tests/OutWit.Common.${{ matrix.project }}.Tests.csproj --configuration Release --no-restore  
 
   # ===================================================================
   # == TASK2: RUN TEST BY REQUEST      ==
