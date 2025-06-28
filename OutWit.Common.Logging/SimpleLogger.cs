@@ -55,6 +55,9 @@ namespace OutWit.Common.Logging
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            if (!IsEnabled(logLevel))
+                return;
+            
             m_entries.Add(m_formatter.Format(new LogEntry<TState>(logLevel, Name, eventId, state, exception, formatter)));
         }
 

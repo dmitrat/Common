@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AspectInjector.Broker;
+using OutWit.Common.Logging.Utils;
 using OutWit.Common.Utils;
 using Serilog;
 using Serilog.Events;
@@ -31,27 +32,31 @@ namespace OutWit.Common.Logging.Aspects
         public object HandleMethod([Argument(Source.Type)] Type type, [Argument(Source.Name)] string name, [Argument(Source.Arguments)] object[] arguments,
             [Argument(Source.Target)] Func<object[], object> method, [Argument(Source.Metadata)] MethodBase metadata, [Argument(Source.Triggers)] Attribute[] injections)
         {
+            bool isError = false;
             try
             {
                 return method(arguments);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error while executing {type}.{name}{parameters}",type.Name, name, 
-                    FormatArguments(arguments, metadata));
+                Log.Error(ex, "Error while executing {type}.{name}{parameters}",type.Name, name,
+                    FormatUtils.FormatArguments(arguments, metadata));
+                
+                isError = true;
+                
                 throw;
             }
             finally
             {
-                if (injections?.OfType<NoLogAttribute>().FirstOrDefault() == null)
+                if (!isError && injections?.OfType<NoLogAttribute>().FirstOrDefault() == null)
                 {
                     if (IsPropertyChanged(arguments) && Log.IsEnabled(LogEventLevel.Verbose))
-                        Log.Information("Executed method {type}.{name}{parameters}",type.Name, name, 
-                            FormatPropertyChangedArguments(arguments));
+                        Log.Information("Executed method {type}.{name}{parameters}",type.Name, name,
+                            FormatUtils.FormatPropertyChangedArguments(arguments));
 
                     if (!IsPropertyChanged(arguments) && Log.IsEnabled(LogEventLevel.Information))
                         Log.Information("Executed method {type}.{name}{parameters}",type.Name, name, 
-                            FormatArguments(arguments, metadata));
+                            FormatUtils.FormatArguments(arguments, metadata));
                 }
             }
         }
@@ -59,30 +64,6 @@ namespace OutWit.Common.Logging.Aspects
         private static bool IsPropertyChanged(object[] arguments)
         {
             return arguments.Length == 2 && arguments[1] is PropertyChangedEventArgs;
-        }
-
-        private static string FormatPropertyChangedArguments(object[] arguments)
-        {
-            return $"(property: {(arguments[1] as PropertyChangedEventArgs)?.PropertyName ?? "NULL"})";
-        }
-
-        private static string FormatArguments(object[] arguments, MethodBase metadata)
-        {
-            if (arguments == null || arguments.Length == 0)
-                return "()";
-
-            if (arguments.Length == 2 && arguments[1] is PropertyChangedEventArgs)
-                return FormatPropertyChangedArguments(arguments);
-
-            var parameters = metadata.GetParameters();
-
-            var str = "";
-            for (int i = 0; i < arguments.Length; i++)
-            {
-                str += $"{parameters[i].Name}: {arguments[i]}, ";
-            }
-
-            return $"({str.TrimEnd(2)})";
         }
     }
 }

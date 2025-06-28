@@ -1,14 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<Description>Logging aspect support for MVVM UI</Description>
-		<Authors>Dmitry Ratner</Authors>
-		<Company>OutWit</Company>
-		<Product>OutWit.Common.Logging</Product>
-		<SignAssembly>False</SignAssembly>
-		<LangVersion>10.0</LangVersion>
+		<TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+
+		<Version>1.1.1</Version>
+
+		<Description>Logging aspect support for MVVM</Description>
+		<PackageTags>OutWit;Common;Aspect;MVVM;Logging</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Logging</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Logging</PackageProjectUrl>
+
+		<PackageIcon>OutWitIcon128.png</PackageIcon>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
   <ItemGroup>
@@ -18,10 +23,23 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.TestCorrelator" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>

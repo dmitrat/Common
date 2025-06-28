@@ -99,6 +99,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "@Build", "@Build", "{DD8EE1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutWit.Common.CommandLine.Tests", "OutWit.Common.CommandLine.Tests\OutWit.Common.CommandLine.Tests.csproj", "{61A8DFFA-912B-48AB-8E03-C5392486371D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutWit.Common.Logging.Tests", "OutWit.Common.Logging.Tests\OutWit.Common.Logging.Tests.csproj", "{5EDBEFC1-1683-485A-8AA6-AB90E3CDFCFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -221,6 +223,10 @@ Global
 		{61A8DFFA-912B-48AB-8E03-C5392486371D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61A8DFFA-912B-48AB-8E03-C5392486371D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61A8DFFA-912B-48AB-8E03-C5392486371D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EDBEFC1-1683-485A-8AA6-AB90E3CDFCFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EDBEFC1-1683-485A-8AA6-AB90E3CDFCFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EDBEFC1-1683-485A-8AA6-AB90E3CDFCFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EDBEFC1-1683-485A-8AA6-AB90E3CDFCFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -259,6 +265,7 @@ Global
 		{C59A6ACE-CB64-827D-BB4D-520A96860598} = {05CEBCA7-2D42-4126-A88B-74B63ABA9C7F}
 		{3B37CCA2-E4B1-881F-53A8-9ED594E1CAE5} = {C898F348-134B-41D6-82AF-CE83104F2708}
 		{61A8DFFA-912B-48AB-8E03-C5392486371D} = {E14FDDC6-06D3-4D55-9499-31516FA736E9}
+		{5EDBEFC1-1683-485A-8AA6-AB90E3CDFCFB} = {8519EC0E-8781-45D6-931C-3505FC9663F5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B1681F36-89BE-4991-A3AE-4C7498B004AF}

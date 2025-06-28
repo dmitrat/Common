@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using AspectInjector.Broker;
 using Microsoft.Extensions.Logging;
+using OutWit.Common.Logging.Utils;
 using OutWit.Common.Utils;
 using Serilog;
 
@@ -37,7 +38,7 @@ namespace OutWit.Common.Logging.Aspects
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error while executing {type}.{name}{parameters}",type.Name, name, 
+                Log.Error(ex, "Error while executing {type}.{name}{parameters}",type.Name, name, FormatUtils.
                     FormatArguments(arguments, metadata));
                 throw;
             }
@@ -51,46 +52,22 @@ namespace OutWit.Common.Logging.Aspects
                         Log.Warning($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
 
                     case LogLevel.Error:
-                        Log.Warning($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
+                        Log.Error($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
 
                     case LogLevel.Information:
-                        Log.Warning($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
+                        Log.Information($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
 
                     case LogLevel.Critical:
-                        Log.Warning($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
+                        Log.Fatal($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
 
                     case LogLevel.Debug:
-                        Log.Warning($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
+                        Log.Debug($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
 
                     case LogLevel.Trace:
-                        Log.Warning($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
+                        Log.Verbose($"{type.Name}.{name} duration: {(end - start).TotalMilliseconds} ms"); break;
                 }
                 
             }
-        }
-
-        private static string FormatPropertyChangedArguments(object[] arguments)
-        {
-            return $"(property: {(arguments[1] as PropertyChangedEventArgs)?.PropertyName ?? "NULL"})";
-        }
-
-        private static string FormatArguments(object[] arguments, MethodBase metadata)
-        {
-            if (arguments == null || arguments.Length == 0)
-                return "()";
-
-            if (arguments.Length == 2 && arguments[1] is PropertyChangedEventArgs)
-                return FormatPropertyChangedArguments(arguments);
-
-            var parameters = metadata.GetParameters();
-
-            var str = "";
-            for (int i = 0; i < arguments.Length; i++)
-            {
-                str += $"{parameters[i].Name}: {arguments[i]}, ";
-            }
-
-            return $"({str.TrimEnd(2)})";
         }
     }
 }
