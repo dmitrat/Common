@@ -89,10 +89,10 @@ jobs:
         run: dotnet restore OutWit.sln
         
       - name: Run tests for ${{ matrix.project }}
-        run: dotnet test OutWit.Common.${{ matrix.project }}.Tests/OutWit.Common.${{ matrix.project }}.Tests.csproj --configuration Release --no-restore  
+        run: dotnet test OutWit.${{ matrix.project }}.Tests/OutWit.${{ matrix.project }}.Tests.csproj --configuration Release --no-restore  
 
   # ===================================================================
-  # == TASK2: RUN TEST BY REQUEST      ==
+  # == TASK 3: RUN TEST BY REQUEST      ==
   # ===================================================================
   run-on-demand-task:
     if: github.event_name == 'workflow_dispatch'
