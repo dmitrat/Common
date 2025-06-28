@@ -1,13 +1,38 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net8.0</TargetFramework>
+	  <TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 	  <Nullable>enable</Nullable>
-  </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="OutWit.Common" Version="1.1.1" />
-  </ItemGroup>
+	  <Version>1.1.1</Version>
+
+	  <Description>Rest Client Utils. Rest Query Builder</Description>
+	  <PackageTags>OutWit;Common;Rest</PackageTags>
+
+	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Rest</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Rest</PackageProjectUrl>
+
+	  <PackageIcon>OutWitIcon128.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+
+  </PropertyGroup>
+	
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\OutWit.Common\OutWit.Common.csproj" />
+	</ItemGroup>
 
 </Project>

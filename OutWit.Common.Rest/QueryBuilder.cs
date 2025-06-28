@@ -20,7 +20,7 @@ namespace OutWit.Common.Rest
 
         public QueryBuilder()
         {
-            Parameters = new Dictionary<string, string>();
+            Parameters = new List<KeyValuePair<string, string>>();
         }
 
         #endregion
@@ -42,7 +42,7 @@ namespace OutWit.Common.Rest
         public QueryBuilder AddParameter(string name, string? value)
         {
             if (value is not null)
-                Parameters.Add(name, value);
+                Parameters.Add(new KeyValuePair<string, string>(name, value));
             
             return this;
         }
@@ -154,7 +154,7 @@ namespace OutWit.Common.Rest
 
         #region Properties
 
-        private IDictionary<string, string> Parameters { get; }
+        private List<KeyValuePair<string, string>> Parameters { get; }
 
         #endregion
 

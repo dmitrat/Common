@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using OutWit.Common.Rest.Exceptions;
 using OutWit.Common.Rest.Interfaces;
 using OutWit.Common.Rest.Utils;
@@ -16,10 +15,15 @@ namespace OutWit.Common.Rest
     public class RestClientBase : IDisposable
     {
         #region Constructors
-
-        protected RestClientBase()
+        
+        protected RestClientBase(HttpClient httpClient)
         {
-            HttpClient = new HttpClient();
+            HttpClient = httpClient;
+        }
+
+        protected RestClientBase() 
+            : this(new HttpClient())
+        {
         }
 
         #endregion
@@ -45,7 +49,7 @@ namespace OutWit.Common.Rest
         {
             var response = await HttpClient.GetAsync(request).ConfigureAwait(false);
 
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            if (!response.IsSuccessStatusCode)
                 throw new RestClientException(response.StatusCode, await response.Content.ReadAsStringAsync());
 
             return await response.DeserializeAsync<TValue>();
@@ -72,7 +76,7 @@ namespace OutWit.Common.Rest
         {
             var response = await HttpClient.PostAsync(request, content).ConfigureAwait(false);
 
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            if (!response.IsSuccessStatusCode)
                 throw new RestClientException(response.StatusCode, await response.Content.ReadAsStringAsync());
 
             return await response.DeserializeAsync<TValue>();
@@ -93,7 +97,7 @@ namespace OutWit.Common.Rest
         {
             var response = await HttpClient.SendAsync(message).ConfigureAwait(false);
 
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            if (!response.IsSuccessStatusCode)
                 throw new RestClientException(response.StatusCode, await response.Content.ReadAsStringAsync());
 
 #if DEBUG
@@ -104,13 +108,9 @@ namespace OutWit.Common.Rest
             var str = reader.ReadToEnd();
 
             Console.WriteLine(str);
-
-            return JsonConvert.DeserializeObject<TValue>(str);
-#else
-
+#endif
             return await response.DeserializeAsync<TValue>();
 
-#endif
         }
 
         #endregion

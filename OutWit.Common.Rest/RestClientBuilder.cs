@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +18,11 @@ namespace OutWit.Common.Rest
         public static RestClientBase Create()
         {
             return new RestClient();
+        }
+
+        public static RestClientBase Create(HttpClient client)
+        {
+            return new RestClient(client);
         }
 
         public static RestClientBase WithAuthorization(this RestClientBase me, string scheme, string? parameter)

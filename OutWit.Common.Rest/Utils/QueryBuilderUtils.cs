@@ -1,15 +1,15 @@
-﻿using System;
+﻿using OutWit.Common.Exceptions;
+using OutWit.Common.Rest.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using OutWit.Common.Exceptions;
-using OutWit.Common.Rest.Interfaces;
 
 namespace OutWit.Common.Rest.Utils
 {
@@ -21,7 +21,23 @@ namespace OutWit.Common.Rest.Utils
 
         private const string JSON_MEDIA_TYPE = "application/json";
 
+        private static readonly JsonSerializerOptions DEFAULT_SERIALIZER_OPTIONS = new()
+        {
+            // Makes property name matching case-insensitive, similar to Newtonsoft's default
+            PropertyNameCaseInsensitive = true,
+            // Handles enums as strings globally
+            Converters = { new JsonStringEnumConverter() }
+        };
+
+        private static readonly JsonSerializerOptions CONTENT_SERIALIZER_OPTIONS = new()
+        {
+            // Equivalent to Newtonsoft's NullValueHandling.Ignore
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new JsonStringEnumConverter() }
+        };
+
         #endregion
+
 
         #region Serialization
 
@@ -29,22 +45,12 @@ namespace OutWit.Common.Rest.Utils
             where TValue : class
         {
             await using var stream = await me.Content.ReadAsStreamAsync();
-
-            using var reader = new JsonTextReader(new StreamReader(stream));
-
             me.EnsureSuccessStatusCode();
 
-            return reader.Deserialize<TValue>();
-        }
-
-        private static TValue Deserialize<TValue>(this JsonTextReader me)
-        {
-            var serializer = new JsonSerializer { Culture = CultureInfo.InvariantCulture };
-
-            var value = serializer.Deserialize<TValue>(me);
+            var value = await JsonSerializer.DeserializeAsync<TValue>(stream, DEFAULT_SERIALIZER_OPTIONS);
 
             if (value == null)
-                throw new ExceptionOf<JsonSerializer>("Unable to deserialize JSON response message.");
+                throw new ExceptionOf<RestClient>("Unable to deserialize JSON response message.");
 
             return value;
         }
@@ -75,16 +81,12 @@ namespace OutWit.Common.Rest.Utils
         {
             try
             {
-                return new StringContent(JsonConvert.SerializeObject(me, new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore
-                }), Encoding.UTF8, JSON_MEDIA_TYPE);
+                return new StringContent(JsonSerializer.Serialize(me, CONTENT_SERIALIZER_OPTIONS), Encoding.UTF8, JSON_MEDIA_TYPE);
             }
             catch (Exception ex)
             {
                 return null;
             }
-
         }
 
         #endregion
