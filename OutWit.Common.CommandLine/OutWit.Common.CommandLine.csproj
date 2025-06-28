@@ -11,8 +11,8 @@
 	  <PackageTags>OutWit;Common;CommandLine</PackageTags>
 
 
-	  <RepositoryUrl>https://github.com/dmitrat/WitCom/tree/main/Common/OutWit.Common.CommandLine</RepositoryUrl>
-	  <PackageProjectUrl>https://github.com/dmitrat/WitCom/tree/main/Common/OutWit.Common.CommandLine</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.CommandLine</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.CommandLine</PackageProjectUrl>
 
 	  <PackageIcon>OutWitIcon128.png</PackageIcon>
 	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
