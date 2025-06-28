@@ -34,6 +34,7 @@ jobs:
   # == TASK 1: DISCOVER CHANGES                             ==
   # ===================================================================
   discover-changes:
+    if: github.event_name != 'workflow_dispatch'
     name: Discover Changed Projects
     runs-on: ubuntu-latest
     outputs:
@@ -72,10 +73,10 @@ jobs:
   # == TASK 2: RUN TESTS     ==
   # ===================================================================
   run-tests:
+    if: github.event_name != 'workflow_dispatch' && needs.discover-changes.outputs.projects != '[]'
+
     name: Test ${{ matrix.project }}
     needs: discover-changes
-    
-    if: needs.discover-changes.outputs.projects != '[]'
     
     runs-on: windows-latest
     
