@@ -3,10 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		
-		<PackageId>OutWit.Common</PackageId>
 		<Version>1.2.1</Version>
-		
-		<Product>OutWit.Common</Product>
 
 		<Description>A zero-dependency foundational library for.NET that accelerates robust application development. Key features include an intelligent ModelBase for non-intrusive value comparison (Is()), immutable updates (With()), and a declarative ToString() via attributes.</Description>
 		<PackageTags>OutWit;Common;Snippet;Base;Collections</PackageTags>

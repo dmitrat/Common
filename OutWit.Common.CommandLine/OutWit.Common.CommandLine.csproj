@@ -3,13 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 
-	  <PackageId>OutWit.Common.CommandLine</PackageId>
-	  <Version>1.0.1</Version>
+	  <Version>1.0.2</Version>
 
-	  <Product>OutWit.Common.CommandLine</Product>
 	  <Description>Enables two-way serialization for the CommandLineParser library, allowing an options object to be serialized back into a command-line string.</Description>
 	  <PackageTags>OutWit;Common;CommandLine</PackageTags>
-
 
 	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.CommandLine</RepositoryUrl>
 	  <PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.CommandLine</PackageProjectUrl>
