@@ -27,6 +27,7 @@ on:
         - OutWit.Common
         - OutWit.Common.Aspects
         - OutWit.Common.CommandLine
+        - OutWit.Common.Logging
 
 jobs:
    # ===================================================================
@@ -58,9 +59,14 @@ jobs:
               - 'OutWit.Common.Aspects.Tests/**'
               - *common-paths
 
-            command_line: &common-paths
+            commandLine: &commandLine-paths
               - 'OutWit.Common.CommandLine/**'
               - 'OutWit.Common.CommandLine.Tests/**'
+
+            logging: &logging-paths
+              - 'OutWit.Common.Logging/**'
+              - 'OutWit.Common.Logging.Tests/**'
+              - *aspects-paths
 
   # ===================================================================
   # == TASK 2: RUN TESTS     ==
