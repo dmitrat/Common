@@ -1,8 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
+
+		<Version>1.1.0</Version>
+
+		<Description>A lightweight .NET reflection library featuring utilities for hierarchy traversal and a powerful universal event handler.</Description>
+		<PackageTags>OutWit;Common;Reflection</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/WitRPC/tree/main/Common/OutWit.Common.Reflection</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/dmitrat/WitRPC/tree/main/Common/OutWit.Common.Reflection</PackageProjectUrl>
+
+		<PackageIcon>OutWitIcon128.png</PackageIcon>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>

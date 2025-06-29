@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Reflection;
+using OutWit.Common.Reflection.Comparers;
 
 namespace OutWit.Common.Reflection
 {
@@ -10,7 +11,7 @@ namespace OutWit.Common.Reflection
     {
         public static IEnumerable<EventInfo> GetAllEvents(this Type type)
         {
-            var events = new HashSet<EventInfo>(type.GetEvents());
+            var events = new HashSet<EventInfo>(type.GetEvents(), new EventInfoEqualityComparer());
 
             foreach (var baseInterface in type.GetInterfaces())
                 events.UnionWith(baseInterface.GetAllEvents());
@@ -23,7 +24,7 @@ namespace OutWit.Common.Reflection
 
         public static IEnumerable<MethodInfo> GetAllMethods(this Type type)
         {
-            var events = new HashSet<MethodInfo>(type.GetMethods());
+            var events = new HashSet<MethodInfo>(type.GetMethods(), new MethodInfoEqualityComparer());
 
             foreach (var baseInterface in type.GetInterfaces())
                 events.UnionWith(baseInterface.GetAllMethods());
