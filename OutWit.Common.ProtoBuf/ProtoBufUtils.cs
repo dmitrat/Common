@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using OutWit.Common.ProtoBuf.Messages;
 using OutWit.Common.ProtoBuf.Surrogates;
 using ProtoBuf.Meta;
 
@@ -40,6 +41,18 @@ namespace OutWit.Common.ProtoBuf
             Model
                 .Add(typeof(TObject), false)
                 .SetSurrogate(typeof(TSurrogate));
+        }
+        
+        public static void RegisterSubType<TObject, TSubType>(int fieldNumber = 100)
+        {
+            RegisterSubType<TObject>(typeof(TSubType), fieldNumber);
+        }
+
+        public static void RegisterSubType<TObject>(Type subType, int fieldNumber = 100)
+        {
+            Model
+                .Add(typeof(TObject), true)
+                .AddSubType(fieldNumber, subType);
         }
 
         public static void CompileModel()

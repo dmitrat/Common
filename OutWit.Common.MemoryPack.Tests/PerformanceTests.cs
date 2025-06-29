@@ -4,6 +4,7 @@ using OutWit.Common.Collections;
 namespace OutWit.Common.MemoryPack.Tests
 {
     [TestFixture]
+    [Explicit]
     public class PerformanceTests
     {
         #region Constants
