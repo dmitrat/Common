@@ -29,6 +29,7 @@ on:
         - OutWit.Common.CommandLine
         - OutWit.Common.Logging
         - OutWit.Common.Rest
+        - OutWit.Common.Reflection
 
 jobs:
    # ===================================================================
@@ -74,6 +75,10 @@ jobs:
               - 'OutWit.Common.Rest/**'
               - 'OutWit.Common.Rest.Tests/**'
               - *common-paths
+
+            Common.Reflection: &reflection-paths
+              - 'OutWit.Common.Reflection/**'
+              - 'OutWit.Common.Reflection.Tests/**'
 
   # ===================================================================
   # == TASK 2: RUN TESTS     ==
