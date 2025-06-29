@@ -1,51 +1,108 @@
-#### Install
+# OutWit.Common.ProtoBuf
 
-```ps1
-Install-Package OutWit.Common.MessagePack
-```
+A .NET library that provides a set of utilities and wrapper classes to simplify serialization tasks using [protobuf-net](https://github.com/protobuf-net/protobuf-net). This package offers convenient extension methods, pre-configured surrogates for common types, and serializable collection classes.
 
-or
+## Features
+
+-   **Simplified Serialization**: Extension methods (`ToProtoBytes`, `FromProtoBytes`) to easily serialize objects to byte arrays and deserialize them back.
+-   **Deep Cloning**: A convenient `ProtoClone` extension method that uses serialization to perform a deep copy of an object.
+-   **File I/O**: Helpers to export and load collections directly to/from files (`ExportAsProtoBuf`, `LoadAsProtoBuf`).
+-   **Built-in Surrogates**: Out-of-the-box serialization support for `DateTimeOffset` and `PropertyChangedEventArgs`.
+-   **Easy Configuration**: A simple registration pattern to add your own custom surrogates or subtypes.
+
+## Installation
+
+This library is intended to be used as a NuGet package. You can add it to your project using the .NET CLI:
 
 ```bash
-> dotnet add package OutWit.Common.MessagePack
+dotnet add package OutWit.Common.ProtoBuf
 ```
 
-#### Serialize to message pack bytes
+## Usage
 
-```C#
-MyData data1 = new MyData();
+### Basic Serialization and Deserialization
 
-var bytes = data1.ToPackBytes();
+The library extends any object with `ToProtoBytes()` and `FromProtoBytes<T>()` methods.
 
-var data2 = bytes.FromPackBytes<MyData>();
+```csharp
+// Assuming you have a class marked with ProtoContract
+[ProtoContract]
+public class Person
+{
+    [ProtoMember(1)]
+    public string Name { get; set; }
+
+    [ProtoMember(2)]
+    public int Age { get; set; }
+}
+
+// --- Usage ---
+var originalPerson = new Person { Name = "John Doe", Age = 30 };
+
+// Serialize the object to a byte array
+byte[] data = originalPerson.ToProtoBytes();
+
+// Deserialize the byte array back to an object
+var deserializedPerson = data.FromProtoBytes<Person>();
+
+Console.WriteLine($"Deserialized Person: {deserializedPerson.Name}, Age: {deserializedPerson.Age}");
 ```
 
-or
+### Cloning Objects
 
-```C#
-MyData data1 = new MyData();
+Perform a deep clone on any serializable object.
 
-var bytes = data1.ToPackBytes();
+```csharp
+var originalPerson = new Person { Name = "Jane Doe", Age = 25 };
 
-var data2 = bytes.FromPackBytes(typeof(MyData));
+// Create a deep clone
+var clonedPerson = originalPerson.ProtoClone();
+
+// 'clonedPerson' is a new instance with the same data
+// 'originalPerson != clonedPerson' will be true
 ```
 
-#### Serialize to shared memory-mapped file
+### Registering Custom Surrogates
 
-```C#
-MyData data1 = new MyData();
+If you need to serialize a type that you cannot directly annotate with `[ProtoContract]` (e.g., a type from a third-party library), you can register a surrogate.
 
-data1.ToPackMemoryMappedFile(out string mapName, out int length);
+```csharp
+// The type you want to serialize
+public class ThirdPartyPoint
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+}
 
-var data2 = mapName.FromPackMemoryMappedFile<MyData>(length);
-```
+// A surrogate with a compatible data structure
+[ProtoContract]
+public class PointSurrogate
+{
+    [ProtoMember(1)]
+    public int X { get; set; }
+    [ProtoMember(2)]
+    public int Y { get; set; }
 
-or
+    // Conversion operators
+    public static implicit operator ThirdPartyPoint(PointSurrogate surrogate)
+    {
+        return new ThirdPartyPoint { X = surrogate.X, Y = surrogate.Y };
+    }
 
-```C#
-MyData data1 = new MyData();
+    public static implicit operator PointSurrogate(ThirdPartyPoint original)
+    {
+        return new PointSurrogate { X = original.X, Y = original.Y };
+    }
+}
 
-data1.ToPackMemoryMappedFile(out string mapName, out int length);
+// --- Registration (at application startup) ---
+ProtoBufUtils.Register(options =>
+{
+    options.RegisterSurrogate<ThirdPartyPoint, PointSurrogate>();
+});
 
-var data2 = FromPackMemoryMappedFile(length, typeof(MyData));
+// Now you can serialize/deserialize ThirdPartyPoint objects
+var point = new ThirdPartyPoint { X = 10, Y = 20 };
+byte[] data = point.ToProtoBytes();
+var newPoint = data.FromProtoBytes<ThirdPartyPoint>();
 ```
