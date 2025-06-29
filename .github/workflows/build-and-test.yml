@@ -30,6 +30,8 @@ on:
         - OutWit.Common.Logging
         - OutWit.Common.Rest
         - OutWit.Common.Reflection
+        - OutWit.Common.Proxy
+        - OutWit.Common.Proxy.Generator
 
 jobs:
    # ===================================================================
@@ -79,6 +81,16 @@ jobs:
             Common.Reflection: &reflection-paths
               - 'OutWit.Common.Reflection/**'
               - 'OutWit.Common.Reflection.Tests/**'
+
+            Common.Proxy: &proxy-paths
+              - 'OutWit.Common.Proxy/**'
+              - 'OutWit.Common.Proxy.Tests/**'
+              - *common-paths
+ 
+            Common.Proxy.Generator: &proxyGenerator-paths
+              - 'OutWit.Common.Proxy.Generator/**'
+              - 'OutWit.Common.Proxy.Generator.Tests/**'
+              - *proxy-paths
 
   # ===================================================================
   # == TASK 2: RUN TESTS     ==
