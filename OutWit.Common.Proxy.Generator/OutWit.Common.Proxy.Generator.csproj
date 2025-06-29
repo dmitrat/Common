@@ -2,14 +2,27 @@
 
   <PropertyGroup>
 	  <TargetFramework>netstandard2.0</TargetFramework>
-	  <LangVersion>latest</LangVersion>
 	  <OutputType>Library</OutputType>
 	  <IncludeBuildOutput>false</IncludeBuildOutput>
 	  <Nullable>enable</Nullable>
 	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 	  <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
 	  <IsRoslynComponent>true</IsRoslynComponent>
+	  <IsAnalyzer>true</IsAnalyzer>
 	  <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+	  <Version>1.1.4</Version>
+
+	  <Description>The Roslyn Source Generator for the OutWit proxy library. Add this package to your project to automatically generate proxy implementations for your interfaces at compile-time.</Description>
+	  <PackageTags>OutWit;Common;Proxy;Generator</PackageTags>
+
+	  <RepositoryUrl>https://github.com/dmitrat/WitRPC/tree/main/Common/OutWit.Common.Proxy.Generator</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/dmitrat/WitRPC/tree/main/Common/OutWit.Common.Proxy.Generator</PackageProjectUrl>
+
+	  <PackageIcon>OutWitIcon128.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+
   </PropertyGroup>
 
 	<ItemGroup>
@@ -19,5 +32,21 @@
   <ItemGroup>
     <ProjectReference Include="..\OutWit.Common.Proxy\OutWit.Common.Proxy.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(OutputPath)\$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" Condition="Exists('$(OutputPath)\$(AssemblyName).pdb')" />
+		<None Include="build\OutWit.Common.Proxy.Generator.props" Pack="true" PackagePath="build" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<Target Name="EnsureBuild" BeforeTargets="Pack">
+		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" />
+	</Target>
 
 </Project>
