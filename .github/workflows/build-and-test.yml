@@ -32,6 +32,11 @@ on:
         - OutWit.Common.Reflection
         - OutWit.Common.Proxy
         - OutWit.Common.Proxy.Generator
+        - OutWit.Common.Json
+        - OutWit.Common.MemoryPack
+        - OutWit.Common.MessagePack
+        - OutWit.Common.ProtoBuf
+
 
 jobs:
    # ===================================================================
@@ -91,6 +96,26 @@ jobs:
               - 'OutWit.Common.Proxy.Generator/**'
               - 'OutWit.Common.Proxy.Generator.Tests/**'
               - *proxy-paths
+
+            Common.Json: &json-paths
+              - 'OutWit.Common.Json/**'
+              - 'OutWit.Common.Json.Tests/**'
+              - *aspects-paths
+            
+            Common.MemoryPack: &memoryPack-paths
+              - 'OutWit.Common.MemoryPack/**'
+              - 'OutWit.Common.MemoryPack.Tests/**'
+              - *aspects-paths
+ 
+            Common.MessagePack: &messagePack-paths
+              - 'OutWit.Common.MessagePack/**'
+              - 'OutWit.Common.MessagePack.Tests/**'
+              - *aspects-paths
+ 
+            Common.ProtoBuf: &protoBuf-paths
+              - 'OutWit.Common.ProtoBuf/**'
+              - 'OutWit.Common.ProtoBuf.Tests/**'
+              - *aspects-paths
 
   # ===================================================================
   # == TASK 2: RUN TESTS     ==
