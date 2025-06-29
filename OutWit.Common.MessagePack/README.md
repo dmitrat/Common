@@ -1,51 +1,108 @@
-#### Install
+# OutWit.Common.MessagePack
 
-```ps1
-Install-Package OutWit.Common.MessagePack
-```
+A utility library for the [MessagePack-CSharp](https://github.com/neuecc/MessagePack-CSharp) serializer. It simplifies common serialization tasks, provides helpful extension methods, and includes a set of pre-configured, serializable data structures for common use cases.
 
-or
+## Features
+* **Simple Serialization/Deserialization**: Extension methods (`ToMessagePackBytes`, `FromMessagePackBytes`) to serialize and deserialize any object with a single line of code.
+* **Built-in Compression**: Easily enable or disable LZ4 compression via a boolean flag.
+* **Deep Cloning**: A convenient `.MessagePackClone()` extension method to perform a deep copy of any serializable object.
+* **Centralized Configuration**: A simple static class `MessagePackUtils` for registering custom formatters and resolvers globally.
+* **Custom Formatters Included**:
+  * `TypeFormatter`: Serializes `System.Type` objects.
+  * `PropertyChangedEventArgsFormatter`: Serializes `System.ComponentModel.PropertyChangedEventArgs`.
+* **File I/O Helpers**: Methods to easily export and load collections to/from a MessagePack file.
+
+## Installation
+
+Install the package via the .NET CLI:
 
 ```bash
-> dotnet add package OutWit.Common.MessagePack
+
+dotnet add package OutWit.Common.MessagePack
+
 ```
 
-#### Serialize to message pack bytes
+## Quick Start
+The library is configured with sensible defaults and is ready to use immediately after installation.
 
-```C#
-MyData data1 = new MyData();
+### Basic Serialization and Deserialization
 
-var bytes = data1.ToPackBytes();
+The `MessagePackUtils` class provides extension methods for any object.
 
-var data2 = bytes.FromPackBytes<MyData>();
+```csharp
+using OutWit.Common.MessagePack;
+
+public class MyData
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+var myObject = new MyData { Id = 1, Name = "Test" };
+
+// Serialize the object to a byte array (with LZ4 compression by default)
+byte[] msgPackBytes = myObject.ToMessagePackBytes(); 
+
+// Deserialize it back
+MyData deserializedObject = msgPackBytes.FromMessagePackBytes<MyData>();
 ```
 
-or
+### Disabling Compression
 
-```C#
-MyData data1 = new MyData();
+To serialize without compression, pass `false` to the `withCompression` parameter.
 
-var bytes = data1.ToPackBytes();
+```csharp
+// Serialize without compression
+byte[] plainBytes = myObject.ToMessagePackBytes(withCompression: false); 
 
-var data2 = bytes.FromPackBytes(typeof(MyData));
+// Deserialize without compression
+MyData deserializedObject = plainBytes.FromMessagePackBytes<MyData>(withCompression: false);
 ```
 
-#### Serialize to shared memory-mapped file
+### Cloning an Object
 
-```C#
-MyData data1 = new MyData();
+You can create a deep clone of any serializable object using the `MessagePackClone` extension method.
 
-data1.ToPackMemoryMappedFile(out string mapName, out int length);
+```csharp
+var originalObject = new MyData { Id = 10, Name = "Original" };
+var clonedObject = originalObject.MessagePackClone(); 
 
-var data2 = mapName.FromPackMemoryMappedFile<MyData>(length);
+// clonedObject is a new instance with the same values
+// but is not the same reference as originalObject.
 ```
 
-or
+### Registering a Custom Formatter
 
-```C#
-MyData data1 = new MyData();
+The library uses a central resolver. You can easily register your own formatters at application startup.
 
-data1.ToPackMemoryMappedFile(out string mapName, out int length);
+```csharp
+using OutWit.Common.MessagePack;
+using MessagePack;
+using MessagePack.Formatters;
 
-var data2 = FromPackMemoryMappedFile(length, typeof(MyData));
+// 1. Define your custom formatter
+public class MyCustomObjectFormatter : IMessagePackFormatter<MyCustomObject>
+{
+    public void Serialize(ref MessagePackWriter writer, MyCustomObject value, MessagePackSerializerOptions options)
+    {
+        // ... serialization logic
+    }
+
+    public MyCustomObject Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+    {
+        // ... deserialization logic
+    }
+}
+
+// 2. Register it at startup
+public static class Program
+{
+    public static void Main(string[] args)
+    {
+        // Register the formatter for MyCustomObject
+        MessagePackUtils.Register<MyCustomObjectFormatter>();
+
+        // ... rest of your application
+    }
+}
 ```
