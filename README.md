@@ -47,3 +47,7 @@ A collection of helpers and extension methods for MessagePack-CSharp to simplify
 # [OutWit.Common.ProtoBuf](https://github.com/dmitrat/Common/tree/main/OutWit.Common.ProtoBuf)
 
 A collection of tools and helper classes to simplify serialization with protobuf-net. Provides extension methods for serialization, deserialization, and deep cloning, plus built-in support for common types like `DateTimeOffset`.
+
+# [OutWit.Common.MVVM](https://github.com/dmitrat/Common/tree/main/OutWit.Common.MVVM)
+
+A collection of essential helpers and components for WPF and the MVVM pattern. Includes a `ViewModelBase`, `DelegateCommand`, a thread-safe `SafeObservableCollection`, `SortedCollection`, powerful binding utilities, and an AOP `[Bindable]` attribute to easily create DependencyProperties.
