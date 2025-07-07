@@ -11,7 +11,7 @@
 	  <IsAnalyzer>true</IsAnalyzer>
 	  <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
-	  <Version>1.1.4</Version>
+	  <Version>1.1.6</Version>
 
 	  <Description>The Roslyn Source Generator for the OutWit proxy library. Add this package to your project to automatically generate proxy implementations for your interfaces at compile-time.</Description>
 	  <PackageTags>OutWit;Common;Proxy;Generator</PackageTags>
@@ -19,7 +19,7 @@
 	  <RepositoryUrl>https://github.com/dmitrat/WitRPC/tree/main/Common/OutWit.Common.Proxy.Generator</RepositoryUrl>
 	  <PackageProjectUrl>https://github.com/dmitrat/WitRPC/tree/main/Common/OutWit.Common.Proxy.Generator</PackageProjectUrl>
 
-	  <PackageIcon>OutWitIcon128.png</PackageIcon>
+	  <PackageIcon>OutWit-logo.png</PackageIcon>
 	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
 
@@ -41,7 +41,7 @@
 
 	<ItemGroup>
 		<None Include="LICENSE" Pack="true" PackagePath="\" />
-		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+		<None Include="OutWit-logo.png" Pack="true" PackagePath="\" />
 		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 

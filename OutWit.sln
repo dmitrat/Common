@@ -95,6 +95,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "@Build", "@Build", "{DD8EE1
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build-and-test.yml = .github\workflows\build-and-test.yml
 		Directory.Build.props = Directory.Build.props
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OutWit.Common.CommandLine.Tests", "OutWit.Common.CommandLine.Tests\OutWit.Common.CommandLine.Tests.csproj", "{61A8DFFA-912B-48AB-8E03-C5392486371D}"
