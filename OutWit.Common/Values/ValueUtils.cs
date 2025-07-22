@@ -179,7 +179,16 @@ namespace OutWit.Common.Values
 
         public static bool Check(this object me, object second)
         {
-            if(me.GetType() != second.GetType())
+            if(me == null && second == null)
+                return true;
+            
+            if(me == null)
+                return false;
+            
+            if(second == null)
+                return false;
+
+            if (me.GetType() != second.GetType())
                 return false;
 
             if (me is IDictionary firstDictionary && second is IDictionary secondDictionary)
