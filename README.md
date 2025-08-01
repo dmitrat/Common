@@ -51,3 +51,15 @@ A collection of tools and helper classes to simplify serialization with protobuf
 # [OutWit.Common.MVVM](https://github.com/dmitrat/Common/tree/main/OutWit.Common.MVVM)
 
 A collection of essential helpers and components for WPF and the MVVM pattern. Includes a `ViewModelBase`, `DelegateCommand`, a thread-safe `SafeObservableCollection`, `SortedCollection`, powerful binding utilities, and an AOP `[Bindable]` attribute to easily create DependencyProperties.
+
+# [OutWit.Common.NUnit](https://github.com/dmitrat/Common/tree/main/OutWit.Common.NUnit)
+
+An extension library for NUnit that provides fluent assertion helpers `(Assert.That(actual, Was.EqualTo(expected)))` for testing custom objects inheriting from `ModelBase` in the `OutWit.Common` framework. It simplifies semantic equality checks by integrating the `ModelBase.Is()` method directly into the NUnit constraint model for more readable and expressive tests.
+
+# [OutWit.Common.Plugins.Abstractions](https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins.Abstractions)
+
+A lightweight set of abstractions for creating plugins for the `OutWit.Common.Plugins` framework. This package includes the core `IWitPlugin` interface, the `WitPluginBase` convenience class, and attributes (`WitPluginManifest`, `WitPluginDependency`) for defining plugin metadata and dependencies. Your plugin projects should reference this package.
+
+# [OutWit.Common.Plugins](https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins)
+
+A robust and flexible plugin system for .NET. Features dynamic discovery from directories, sophisticated dependency resolution (validates versions and detects circular dependencies), and isolated loading via `AssemblyLoadContext` to enable hot-reloading and unloading of plugins. It integrates seamlessly with `Microsoft.Extensions.DependencyInjection` for a modern, decoupled architecture.
