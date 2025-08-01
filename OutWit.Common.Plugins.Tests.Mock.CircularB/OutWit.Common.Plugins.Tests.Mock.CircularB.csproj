@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OutWit.Common.Plugins.Tests.Mock\OutWit.Common.Plugins.Tests.Mock.csproj" />
+  </ItemGroup>
+
+</Project>
