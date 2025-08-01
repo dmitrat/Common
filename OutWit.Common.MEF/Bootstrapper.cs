@@ -1,21 +1,20 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using OutWit.Common.MEF.Interfaces;
-using OutWit.Common.Services.Interfaces;
 using OutWit.Common.Utils;
 
 namespace OutWit.Common.MEF
 {
-    public class Bootstrapper<TModule>
+    public class Bootstrapper<TModule> : IEnumerable<TModule>
         where TModule : IModule
     {
         #region Fields
 
-        private readonly List<TModule> m_modules = new List<TModule>();
+        private readonly List<TModule> m_modules = new ();
 
         #endregion
 
@@ -27,37 +26,32 @@ namespace OutWit.Common.MEF
 
         #region Constructors
 
-        public Bootstrapper(IServiceContainer container, string modulePath,
-            bool isAbsolute = false,
-            string filter = DEFAULT_MODULE_FILTER,
+        public Bootstrapper(string modulePath, bool isAbsolute = false, string filter = DEFAULT_MODULE_FILTER,
             SearchOption option = SearchOption.TopDirectoryOnly)
         {
-            Container = container;
-
             ModulePath = modulePath;
             IsAbsolute = isAbsolute;
             Filter = filter;
             Option = option;
-
         }
 
         #endregion
 
         #region Functions
 
-        public void Run()
+        public Bootstrapper<TModule> Run()
         {
             var catalog = CreateCatalog();
             var container = new CompositionContainer(catalog);
 
-            foreach (var moduleContainer in container.GetExports<TModule>())
+            foreach (var lazyModule in container.GetExports<TModule>())
             {
-                var module = moduleContainer.Value;
-
-                module.Initialize(Container);
+                var module = lazyModule.Value;
 
                 m_modules.Add(module);
             }
+            
+            return this;
         }
 
         private DirectoriesModuleCatalog CreateCatalog()
@@ -74,10 +68,22 @@ namespace OutWit.Common.MEF
 
         #endregion
 
+        #region IEnumerable
+
+        public IEnumerator<TModule> GetEnumerator()
+        {
+            return m_modules.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
         #region Properties
 
         public IReadOnlyCollection<TModule> Modules => m_modules;
-        private IServiceContainer Container { get; }
 
         private string Filter { get; }
         private SearchOption Option { get; }
@@ -85,5 +91,6 @@ namespace OutWit.Common.MEF
         private bool IsAbsolute { get; }
 
         #endregion
+
     }
 }
