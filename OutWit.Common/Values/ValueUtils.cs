@@ -188,7 +188,7 @@ namespace OutWit.Common.Values
             if(second == null)
                 return false;
 
-            if (me.GetType() != second.GetType())
+            if (!me.GetType().Is(second.GetType()))
                 return false;
 
             if (me is IDictionary firstDictionary && second is IDictionary secondDictionary)
