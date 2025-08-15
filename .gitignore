@@ -8,6 +8,10 @@
 *.userosscache
 *.sln.docstates
 
+#Nuget
+*.nupkg
+*.snupkg
+
 # Mono Auto Generated Files
 mono_crash.*
 

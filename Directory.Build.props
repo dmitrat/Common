@@ -1,5 +1,5 @@
 <Project>
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true' AND '$(IsPackable)' != 'false'">
 
 	<PackageId>$(MSBuildProjectName)</PackageId>
 	<Product>OutWit.Common</Product>
@@ -18,7 +18,24 @@
 
 	<GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
 
+	<PackageIcon>OutWit-logo.png</PackageIcon>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+
+	<PackagesDropDir>$(SolutionDir)@NuGet\</PackagesDropDir>
+
   </PropertyGroup>
+
+	<ItemGroup Condition="'$(IsTestProject)' != 'true'">
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+		<None Include="OutWit-logo.png" Pack="true" PackagePath="\" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<!--<ItemGroup Condition="'$(IsTestProject)' != 'true'">
+		<NuGetFiles Include="$(TargetDir)*$(TargetName)*.nupkg" />
+		<NuGetFiles Include="$(TargetDir)*$(TargetName)*.snupkg" />
+	</ItemGroup>-->
   
   	<ItemGroup>
 	  <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
@@ -26,5 +43,9 @@
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
 	</ItemGroup>
+
+	<!--<Target Name="PostBuild" AfterTargets="Pack" Condition="'$(Configuration)' == 'Release' AND '$(IsTestProject)' != 'true'">
+		<Copy SourceFiles="@(NuGetFiles)" DestinationFolder="$(SolutionDir)@NuGet\" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+	</Target>-->
 	
 </Project>

@@ -61,60 +61,60 @@ jobs:
           
           filters: |
             Common: &common-paths
-              - 'OutWit.Common/**'
-              - 'OutWit.Common.Tests/**'
+              - 'Common/OutWit.Common/**'
+              - 'Common/OutWit.Common.Tests/**'
 
             Common.Aspects: &aspects-paths
-              - 'OutWit.Common.Aspects/**'
-              - 'OutWit.Common.Aspects.Tests/**'
+              - 'Aspects/OutWit.Common.Aspects/**'
+              - 'Aspects/OutWit.Common.Aspects.Tests/**'
               - *common-paths
 
             Common.CommandLine: &commandLine-paths
-              - 'OutWit.Common.CommandLine/**'
-              - 'OutWit.Common.CommandLine.Tests/**'
+              - 'CommandLine/OutWit.Common.CommandLine/**'
+              - 'CommandLine/OutWit.Common.CommandLine.Tests/**'
 
             Common.Logging: &logging-paths
-              - 'OutWit.Common.Logging/**'
-              - 'OutWit.Common.Logging.Tests/**'
+              - 'Logging/OutWit.Common.Logging/**'
+              - 'Logging/OutWit.Common.Logging.Tests/**'
               - *aspects-paths
 
             Common.Rest: &rest-paths
-              - 'OutWit.Common.Rest/**'
-              - 'OutWit.Common.Rest.Tests/**'
+              - 'Rest/OutWit.Common.Rest/**'
+              - 'Rest/OutWit.Common.Rest.Tests/**'
               - *common-paths
 
             Common.Reflection: &reflection-paths
-              - 'OutWit.Common.Reflection/**'
-              - 'OutWit.Common.Reflection.Tests/**'
+              - 'Reflection/OutWit.Common.Reflection/**'
+              - 'Reflection/OutWit.Common.Reflection.Tests/**'
 
             Common.Proxy: &proxy-paths
-              - 'OutWit.Common.Proxy/**'
-              - 'OutWit.Common.Proxy.Tests/**'
+              - 'Proxy/OutWit.Common.Proxy/**'
+              - 'Proxy/OutWit.Common.Proxy.Tests/**'
               - *common-paths
  
             Common.Proxy.Generator: &proxyGenerator-paths
-              - 'OutWit.Common.Proxy.Generator/**'
-              - 'OutWit.Common.Proxy.Generator.Tests/**'
+              - 'Proxy/OutWit.Common.Proxy.Generator/**'
+              - 'Proxy/OutWit.Common.Proxy.Generator.Tests/**'
               - *proxy-paths
 
             Common.Json: &json-paths
-              - 'OutWit.Common.Json/**'
-              - 'OutWit.Common.Json.Tests/**'
+              - 'Serialization/Json/OutWit.Common.Json/**'
+              - 'Serialization/Json/OutWit.Common.Json.Tests/**'
               - *aspects-paths
             
             Common.MemoryPack: &memoryPack-paths
-              - 'OutWit.Common.MemoryPack/**'
-              - 'OutWit.Common.MemoryPack.Tests/**'
+              - 'Serialization/MemoryPack/OutWit.Common.MemoryPack/**'
+              - 'Serialization/MemoryPack/OutWit.Common.MemoryPack.Tests/**'
               - *aspects-paths
  
             Common.MessagePack: &messagePack-paths
-              - 'OutWit.Common.MessagePack/**'
-              - 'OutWit.Common.MessagePack.Tests/**'
+              - 'Serialization/MessagePack/OutWit.Common.MessagePack/**'
+              - 'Serialization/MessagePack/OutWit.Common.MessagePack.Tests/**'
               - *aspects-paths
  
             Common.ProtoBuf: &protoBuf-paths
-              - 'OutWit.Common.ProtoBuf/**'
-              - 'OutWit.Common.ProtoBuf.Tests/**'
+              - 'Serialization/ProtoBuf/OutWit.Common.ProtoBuf/**'
+              - 'Serialization/ProtoBuf/OutWit.Common.ProtoBuf.Tests/**'
               - *aspects-paths
 
   # ===================================================================

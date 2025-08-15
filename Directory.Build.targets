@@ -1,0 +1,20 @@
+<Project>
+
+  <Target Name="CopyPackedNuGet"
+          AfterTargets="Pack"
+          Condition="'$(Configuration)' == 'Release' AND '$(IsTestProject)' != 'true'  AND '$(IsPackable)' != 'false' ">
+
+    <ItemGroup>
+      <NuGetPackageFiles Include="$(PackageOutputPath)\$(PackageId).$(Version).nupkg" />
+      <NuGetPackageFiles Include="$(PackageOutputPath)\$(PackageId).$(Version).snupkg" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(PackagesDropDir)" Condition="!Exists('$(PackagesDropDir)')" />
+
+    <Copy SourceFiles="@(NuGetPackageFiles)"
+          DestinationFolder="$(PackagesDropDir)"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true" />
+  </Target>
+
+</Project>
