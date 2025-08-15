@@ -71,12 +71,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
       - name: Restore
-        run: dotnet restore OutWit.sln
+        run: dotnet restore OutWit.slnx
 
       - name: Resolve test project path
         id: paths
