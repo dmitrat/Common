@@ -1,0 +1,154 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  discover-changes:
+    name: Discover Changed Projects
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v3.0.2
+        with:
+          list-files: json
+          filters: |
+            OutWit.Common:
+              - 'Common/**'
+
+            OutWit.Common.Aspects:
+              - 'Aspects/**'
+              - 'Common/**'
+
+            OutWit.Common.CommandLine:
+              - 'CommandLine/**'
+
+            OutWit.Common.Logging:
+              - 'Logging/**'
+              - 'Aspects/**'
+
+            OutWit.Common.Rest:
+              - 'Rest/**'
+              - 'Common/**'
+
+            OutWit.Common.Reflection:
+              - 'Reflection/**'
+
+            OutWit.Common.Proxy:
+              - 'Proxy/OutWit.Common.Proxy/**'
+              - 'Proxy/OutWit.Common.Proxy.Tests/**'
+              - 'Common/**'
+
+            OutWit.Common.Proxy.Generator:
+              - 'Proxy/OutWit.Common.Proxy.Generator/**'
+              - 'Proxy/OutWit.Common.Proxy.Generator.Tests/**'
+              - 'Proxy/OutWit.Common.Proxy/**'
+
+            OutWit.Common.Json:
+              - 'Serialization/Json/**'
+              - 'Aspects/**'
+
+            OutWit.Common.MemoryPack:
+              - 'Serialization/MemoryPack/**'
+              - 'Aspects/**'
+
+            OutWit.Common.MessagePack:
+              - 'Serialization/MessagePack/**'
+              - 'Aspects/**'
+
+            OutWit.Common.ProtoBuf:
+              - 'Serialization/ProtoBuf/**'
+              - 'Aspects/**'
+
+            OutWit.Common.Controls:
+              - 'Controls/OutWit.Common.Controls/**'
+              - 'Controls/OutWit.Common.Controls.Tests/**'
+
+            OutWit.Common.Controls.HighlightTextBox:
+              - 'Controls/OutWit.Common.Controls.HighlightTextBox/**'
+
+            OutWit.Common.MEF:
+              - 'Modularity/OutWit.Common.MEF/**'
+
+            OutWit.Common.Prism:
+              - 'Modularity/OutWit.Common.Prism/**'
+
+            OutWit.Common.MVVM:
+              - 'MVVM/OutWit.Common.MVVM/**'
+
+            OutWit.Common.NUnit:
+              - 'NUnit/OutWit.Common.NUnit/**'
+
+            OutWit.Common.Plugins:
+              - 'Plugins/OutWit.Common.Plugins/**'
+              - 'Plugins/OutWit.Common.Plugins.Tests/**'
+              - 'Plugins/OutWit.Common.Plugins.Tests.Mock.*/**'
+              - 'Plugins/OutWit.Common.Plugins.Abstractions/**'
+
+            OutWit.Common.Settings:
+              - 'Settings/OutWit.Common.Settings/**'
+              - 'Settings/OutWit.Common.Settings.Tests/**'
+
+            OutWit.Common.Settings.Controls:
+              - 'Settings/OutWit.Common.Settings.Controls/**'
+
+  run-tests:
+    name: Test ${{ matrix.project }}
+    needs: discover-changes
+    if: needs.discover-changes.outputs.projects != '[]'
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.discover-changes.outputs.projects) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore OutWit.sln
+
+      - name: Resolve test project path
+        id: paths
+        shell: pwsh
+        run: |
+          $projName = '${{ matrix.project }}'
+          $test = Get-ChildItem -Recurse -Filter "$projName.Tests.csproj" | Select-Object -Expand FullName -First 1
+          if (!$test) {
+            Write-Host "No test project for $projName — skipping tests."
+            "hasTests=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            "hasTests=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "testCsproj=$test" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
+      - name: Run tests
+        if: steps.paths.outputs.hasTests == 'true'
+        run: dotnet test "${{ steps.paths.outputs.testCsproj }}" --configuration Release --no-restore
