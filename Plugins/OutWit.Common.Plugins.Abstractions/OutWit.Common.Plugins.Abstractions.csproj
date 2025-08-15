@@ -8,12 +8,8 @@
 		<Description>Provides a lightweight set of abstractions for creating plugins for the OutWit.Common.Plugins framework.</Description>
 		<PackageTags>OutWit;Common;Plugins;Abstractions</PackageTags>
 
-		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins.Abstractions</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins.Abstractions</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Plugins/OutWit.Common.Plugins.Abstractions</RepositoryUrl>
 
-		<PackageIcon>OutWit-logo.png</PackageIcon>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
 
 	</PropertyGroup>
 
@@ -25,12 +21,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="LICENSE" Pack="true" PackagePath="\" />
-		<None Include="OutWit-logo.png" Pack="true" PackagePath="\" />
-		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>

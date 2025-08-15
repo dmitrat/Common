@@ -3,17 +3,13 @@
   <PropertyGroup>
 	  <TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-	  <Version>1.0.0</Version>
+	  <Version>1.0.1</Version>
 
 	  <Description>A robust and flexible plugin system for .NET. Features dynamic discovery from directories, sophisticated dependency resolution (validates versions and detects circular dependencies), and isolated loading via AssemblyLoadContext to enable hot-reloading and unloading of plugins.</Description>
 	  <PackageTags>OutWit;Common;Plugins</PackageTags>
 
-	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins</RepositoryUrl>
-	  <PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Plugins/OutWit.Common.Plugins</RepositoryUrl>
 
-	  <PackageIcon>OutWit-logo.png</PackageIcon>
-	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net8.0'">
@@ -28,11 +24,5 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\OutWit.Common.Plugins.Abstractions\OutWit.Common.Plugins.Abstractions.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="LICENSE" Pack="true" PackagePath="\" />
-		<None Include="OutWit-logo.png" Pack="true" PackagePath="\" />
-		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 </Project>
