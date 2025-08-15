@@ -174,29 +174,55 @@ jobs:
         id: tfm
         shell: pwsh
         run: |
-          $lib = "${{ steps.paths.outputs.libCsproj }}"
-          [xml]$xml = Get-Content $lib
-          $fromMulti = ($xml.Project.PropertyGroup.TargetFrameworks | Where-Object { $_ }) | Select-Object -First 1
-          $fromSingle = ($xml.Project.PropertyGroup.TargetFramework | Where-Object { $_ }) | Select-Object -First 1
+            $lib = "${{ steps.paths.outputs.libCsproj }}"
 
-          $tfms = @()
-          if ($fromMulti) { $tfms = $fromMulti.'#text'.Split(';') }
-          elseif ($fromSingle) { $tfms = @($fromSingle.'#text') }
+            function Get-RawTfmsFromXml {
+            param([string]$path)
+              try {
+                [xml]$xml = Get-Content $path -ErrorAction Stop
+                $vals = @()
+                foreach ($pg in @($xml.Project.PropertyGroup)) {
+                  if ($pg.TargetFrameworks -and $pg.TargetFrameworks.InnerText) { $vals += $pg.TargetFrameworks.InnerText }
+                  if ($pg.TargetFramework  -and $pg.TargetFramework.InnerText)  { $vals += $pg.TargetFramework.InnerText }
+                }
+                return ($vals -join ';')
+              } catch { return $null }
+            }
+            
+            $raw = Get-RawTfmsFromXml $lib
+            
+            if (-not $raw -and (Test-Path "Directory.Build.props")) {
+              $raw = Get-RawTfmsFromXml "Directory.Build.props"
+            }
 
-          $known = @('net9.0','net8.0','net7.0','net6.0','netstandard2.1','netstandard2.0')
-          $tfms = $tfms | ForEach-Object { $_.Trim() } | Where-Object { $known -contains $_ } | Select-Object -Unique
+            $tfms = @()
+            if ($raw) { $tfms = $raw -split '[;,\s]+' | Where-Object { $_ } }
+            
+            if (-not $tfms -or $tfms.Count -eq 0) {
+              $list = dotnet list "$lib" target frameworks 2>$null
+              $tfms = ($list | Select-String -Pattern 'netstandard\d+\.\d+|net\d+\.\d+') |
+                ForEach-Object { $_.Matches.Value } | Select-Object -Unique
+            }
+            
+            $tfms = $tfms | ForEach-Object { $_.Trim() } |
+              Where-Object { $_ -match '^net\d+\.\d+$' -or $_ -match '^netstandard\d+\.\d+$' } |
+              Select-Object -Unique
+              
+            $requested = "${{ github.event.inputs.frameworks }}"
+            if ($requested) {
+              $want = $requested -split '[,;\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+              $tfms = $tfms | Where-Object { $want -contains $_ }
+            }
 
-          $requested = "${{ github.event.inputs.frameworks }}"
-          if ($requested) {
-            $want = $requested -split '[,;\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-            $tfms = $tfms | Where-Object { $want -contains $_ }
-          }
+            if (-not $tfms -or $tfms.Count -eq 0) {
+              Write-Error "No target frameworks resolved (check project or the 'frameworks' input)."
+              exit 1
+            }
 
-          if (-not $tfms -or $tfms.Count -eq 0) { Write-Error "No target frameworks resolved (check project or input)."; exit 1 }
+            $joined = [string]::Join(';', $tfms)
+            "tfms=$joined" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+            Write-Host "TFMs to publish: $joined"
 
-          $joined = [string]::Join(';', $tfms)
-          "tfms=$joined" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
-          Write-Host "TFMs to publish: $joined"
 
       - name: dotnet publish into per-TFM subfolders
         shell: pwsh
