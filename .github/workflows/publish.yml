@@ -1,0 +1,119 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project to publish (equals .csproj base name)'
+        required: true
+        type: choice
+        options:
+          - OutWit.Common
+          - OutWit.Common.Aspects
+          - OutWit.Common.CommandLine
+          - OutWit.Common.Logging
+          - OutWit.Common.Rest
+          - OutWit.Common.Reflection
+          - OutWit.Common.Proxy
+          - OutWit.Common.Proxy.Generator
+          - OutWit.Common.Json
+          - OutWit.Common.MemoryPack
+          - OutWit.Common.MessagePack
+          - OutWit.Common.ProtoBuf
+          - OutWit.Common.Controls
+          - OutWit.Common.Controls.HighlightTextBox
+          - OutWit.Common.MEF
+          - OutWit.Common.Prism
+          - OutWit.Common.MVVM
+          - OutWit.Common.NUnit
+          - OutWit.Common.Plugins
+          - OutWit.Common.Settings
+          - OutWit.Common.Settings.Controls
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    environment: release
+    env:
+      PROJECT: ${{ github.event.inputs.project }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDKs (6/7/8/9)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore slnx
+        run: dotnet restore OutWit.slnx
+
+      - name: Resolve library project path
+        id: paths
+        shell: pwsh
+        run: |
+          $projName = '${{ env.PROJECT }}'
+          $lib = Get-ChildItem -Recurse -Filter "$projName.csproj" | Select-Object -Expand FullName -First 1
+          if (!$lib) { Write-Error "Library project $projName.csproj not found"; exit 1 }
+          "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Resolved: $lib"
+
+      - name: Build (all target frameworks)
+        run: dotnet build "${{ steps.paths.outputs.libCsproj }}" --configuration Release -p:ContinuousIntegrationBuild=true
+
+      - name: Pack (no build)
+        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" --configuration Release --no-build
+
+      - name: Collect packages
+        shell: pwsh
+        run: |
+          if (!(Test-Path "NuGet")) { New-Item -ItemType Directory -Force -Path "NuGet" | Out-Null }
+          Get-ChildItem -Recurse -Include *.nupkg,*.snupkg -Path . |
+            Where-Object { $_.FullName -match "\\bin\\Release\\" } |
+            Copy-Item -Destination "NuGet" -Force
+          Get-ChildItem NuGet | Select-Object Name
+
+      - name: Add GitHub Packages source
+        run: >
+          dotnet nuget add source
+          --username ${{ github.actor }}
+          --password ${{ secrets.GITHUB_TOKEN }}
+          --store-password-in-clear-text
+          --name github
+          "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Push to NuGet.org (.nupkg)
+        run: >
+          dotnet nuget push "NuGet\*.nupkg"
+          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Push symbols to NuGet.org (.snupkg)
+        run: >
+          dotnet nuget push "NuGet\*.snupkg"
+          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Push to GitHub Packages
+        run: >
+          dotnet nuget push "NuGet\*.nupkg"
+          --api-key ${{ secrets.GITHUB_TOKEN }}
+          --source github
+          --skip-duplicate

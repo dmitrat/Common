@@ -1,0 +1,178 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project to release (equals .csproj base name)'
+        required: true
+        type: choice
+        options:
+          - OutWit.Common
+          - OutWit.Common.Aspects
+          - OutWit.Common.CommandLine
+          - OutWit.Common.Logging
+          - OutWit.Common.Rest
+          - OutWit.Common.Reflection
+          - OutWit.Common.Proxy
+          - OutWit.Common.Proxy.Generator
+          - OutWit.Common.Json
+          - OutWit.Common.MemoryPack
+          - OutWit.Common.MessagePack
+          - OutWit.Common.ProtoBuf
+          - OutWit.Common.Controls
+          - OutWit.Common.Controls.HighlightTextBox
+          - OutWit.Common.MEF
+          - OutWit.Common.Prism
+          - OutWit.Common.MVVM
+          - OutWit.Common.NUnit
+          - OutWit.Common.Plugins
+          - OutWit.Common.Settings
+          - OutWit.Common.Settings.Controls
+      tag:
+        description: 'Release tag (e.g., v1.2.4)'
+        required: true
+      releaseName:
+        description: 'Release title (defaults to tag)'
+        required: false
+      runtimeId:
+        description: 'RID for dotnet publish (e.g., win-x64, linux-x64). Leave empty for portable.'
+        required: false
+      publishArgs:
+        description: 'Extra publish args (e.g., -p:PublishSingleFile=true)'
+        required: false
+      pushToNuGet:
+        description: 'Push package to nuget.org'
+        type: boolean
+        required: true
+        default: false
+      pushToGitHubPackages:
+        description: 'Push package to GitHub Packages'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    environment: release
+    env:
+      PROJECT: ${{ github.event.inputs.project }}
+      TAG: ${{ github.event.inputs.tag }}
+      RUNTIME_ID: ${{ github.event.inputs.runtimeId }}
+      PUBLISH_ARGS: ${{ github.event.inputs.publishArgs }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDKs (6/7/8/9)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Resolve library project path
+        id: paths
+        shell: pwsh
+        run: |
+          $name = "${{ env.PROJECT }}"
+          $lib = Get-ChildItem -Recurse -Filter "$name.csproj" | Select-Object -Expand FullName -First 1
+          if (-not $lib) { Write-Error "Library project '$name.csproj' not found"; exit 1 }
+          "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Resolved: $lib"
+          
+      - name: Build (all target frameworks)
+        run: dotnet build "${{ steps.paths.outputs.libCsproj }}" -c Release -p:ContinuousIntegrationBuild=true
+
+      - name: Pack (no build)
+        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" -c Release --no-build
+
+      - name: Collect packages
+        shell: pwsh
+        run: |
+          if (!(Test-Path "NuGet")) { New-Item -ItemType Directory -Force -Path "NuGet" | Out-Null }
+          Get-ChildItem -Recurse -Include *.nupkg,*.snupkg -Path . |
+            Where-Object { $_.FullName -match "\\bin\\Release\\" } |
+            Copy-Item -Destination "NuGet" -Force
+          Write-Host "Collected packages:"; Get-ChildItem NuGet | Select-Object Name
+
+      - name: Push to NuGet.org
+        if: github.event.inputs.pushToNuGet == 'true'
+        run: >
+          dotnet nuget push "NuGet\*.nupkg"
+          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Add GitHub Packages source
+        if: github.event.inputs.pushToGitHubPackages == 'true'
+        run: >
+          dotnet nuget add source
+          --username ${{ github.actor }}
+          --password ${{ secrets.GITHUB_TOKEN }}
+          --store-password-in-clear-text
+          --name github
+          "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Push to GitHub Packages
+        if: github.event.inputs.pushToGitHubPackages == 'true'
+        run: >
+          dotnet nuget push "NuGet\*.nupkg"
+          --api-key ${{ secrets.GITHUB_TOKEN }}
+          --source github
+          --skip-duplicate
+
+      - name: Push symbols to NuGet.org (.snupkg)
+        if: github.event.inputs.pushToNuGet == 'true'
+        run: >
+          dotnet nuget push "NuGet\*.snupkg"
+          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate  
+          
+      - name: dotnet publish (optional redist)
+        shell: pwsh
+        run: |
+          $lib = "${{ steps.paths.outputs.libCsproj }}"
+          $out = "out/publish"
+          if (Test-Path $out) { Remove-Item -Recurse -Force $out }
+          if ("${{ env.RUNTIME_ID }}") {
+            dotnet publish $lib -c Release -o $out -r "${{ env.RUNTIME_ID }}" --self-contained false ${{ env.PUBLISH_ARGS }}
+          } else {
+            dotnet publish $lib -c Release -o $out ${{ env.PUBLISH_ARGS }}
+          }
+
+      - name: Zip redist
+        id: zipit
+        shell: pwsh
+        run: |
+          $zip = "redist-${{ env.PROJECT }}-${{ env.TAG }}.zip"
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Compress-Archive -Path (Join-Path "out/publish" '*') -DestinationPath $zip -Force
+          "zip=$zip" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+          Write-Host "Created $zip"
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: ${{ github.event.inputs.releaseName || github.event.inputs.tag }}
+          draft: false
+          prerelease: false
+          files: |
+            NuGet/*.nupkg
+            ${{ steps.zipit.outputs.zip }}
