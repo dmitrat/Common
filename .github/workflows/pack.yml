@@ -40,11 +40,15 @@ jobs:
       PROJECT: ${{ github.event.inputs.project }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup .NET
+      
+      - name: Setup .NET SDKs (6/7/8/9)
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
 
       - name: Cache NuGet
         uses: actions/cache@v4
@@ -54,7 +58,7 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      - name: Restore
+      - name: Restore slnx
         run: dotnet restore OutWit.slnx
 
       - name: Resolve library project path
@@ -65,9 +69,13 @@ jobs:
           $lib = Get-ChildItem -Recurse -Filter "$projName.csproj" | Select-Object -Expand FullName -First 1
           if (!$lib) { Write-Error "Library project $projName.csproj not found"; exit 1 }
           "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Resolved: $lib"
+          
+      - name: Build (all target frameworks)
+        run: dotnet build "${{ steps.paths.outputs.libCsproj }}" --configuration Release -p:ContinuousIntegrationBuild=true
 
-      - name: Pack
-        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" --configuration Release
+      - name: Pack (no build)
+        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" --configuration Release --no-build
 
       - name: Collect packages
         shell: pwsh
