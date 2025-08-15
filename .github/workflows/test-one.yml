@@ -1,0 +1,117 @@
+name: Test One Project
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project name (equals .csproj/.Tests.csproj base name)'
+        required: true
+        type: choice
+        options:
+          - OutWit.Common
+          - OutWit.Common.Aspects
+          - OutWit.Common.CommandLine
+          - OutWit.Common.Logging
+          - OutWit.Common.Rest
+          - OutWit.Common.Reflection
+          - OutWit.Common.Proxy
+          - OutWit.Common.Proxy.Generator
+          - OutWit.Common.Json
+          - OutWit.Common.MemoryPack
+          - OutWit.Common.MessagePack
+          - OutWit.Common.ProtoBuf
+          - OutWit.Common.Controls
+          - OutWit.Common.Controls.HighlightTextBox
+          - OutWit.Common.MEF
+          - OutWit.Common.Prism
+          - OutWit.Common.MVVM
+          - OutWit.Common.NUnit
+          - OutWit.Common.Plugins
+          - OutWit.Common.Settings
+          - OutWit.Common.Settings.Controls
+      configuration:
+        description: 'Build configuration'
+        required: false
+        type: choice
+        default: 'Release'
+        options: [ 'Release', 'Debug' ]
+      filter:
+        description: 'Optional test filter (e.g., Category=Unit or FullyQualifiedName~Namespace.Class)'
+        required: false
+        type: string
+      verbosity:
+        description: 'dotnet test verbosity'
+        required: false
+        type: choice
+        default: 'minimal'
+        options: [ 'quiet', 'minimal', 'normal', 'detailed', 'diagnostic' ]
+
+permissions:
+  contents: read
+
+jobs:
+  test-one:
+    runs-on: windows-latest
+    env:
+      PROJECT: ${{ github.event.inputs.project }}
+      CONFIGURATION: ${{ github.event.inputs.configuration || 'Release' }}
+      FILTER: ${{ github.event.inputs.filter }}
+      VERBOSITY: ${{ github.event.inputs.verbosity || 'minimal' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore OutWit.sln
+
+      - name: Resolve test project path
+        id: paths
+        shell: pwsh
+        run: |
+          $name = "${{ env.PROJECT }}"
+          $test = Get-ChildItem -Recurse -Filter "$name.Tests.csproj" | Select-Object -Expand FullName -First 1
+          if (-not $test) {
+            Write-Error "Test project '$name.Tests.csproj' not found in repo."
+            exit 1
+          }
+          "testCsproj=$test" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          $test = "${{ steps.paths.outputs.testCsproj }}"
+          $cfg = "${{ env.CONFIGURATION }}"
+          $v = "${{ env.VERBOSITY }}"
+          $filter = "${{ env.FILTER }}"
+          $args = @(
+            'test', $test,
+            '--configuration', $cfg,
+            '--no-restore',
+            '--verbosity', $v,
+            '--logger', 'trx;LogFileName=test.trx',
+            '--results-directory', 'TestResults'
+          )
+          if ($filter -and $filter.Trim() -ne '') { $args += @('--filter', $filter) }
+          dotnet @args
+
+      - name: Upload TRX results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ env.PROJECT }}-${{ env.CONFIGURATION }}
+          path: TestResults/**
+          if-no-files-found: ignore
