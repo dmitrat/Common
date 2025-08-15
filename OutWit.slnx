@@ -26,6 +26,7 @@
   </Folder>
   <Folder Name="/Modularity/">
     <Project Path="Modularity/OutWit.Common.MEF/OutWit.Common.MEF.csproj" />
+    <Project Path="Modularity/OutWit.Common.Prism/OutWit.Common.Prism.csproj" />
   </Folder>
   <Folder Name="/MVVM/">
     <Project Path="MVVM/OutWit.Common.MVVM/OutWit.Common.MVVM.csproj" />
