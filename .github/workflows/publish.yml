@@ -1,4 +1,5 @@
-name: Publish
+name: Publish Package
+run-name: "Publish Package: ${{ inputs.project }} (NuGet=${{ inputs.pushToNuGet }}, GH=${{ inputs.pushToGitHubPackages }})"
 
 on:
   workflow_dispatch:
@@ -29,6 +30,16 @@ on:
           - OutWit.Common.Plugins
           - OutWit.Common.Settings
           - OutWit.Common.Settings.Controls
+      pushToNuGet:
+        description: 'Push to nuget.org'
+        type: boolean
+        required: true
+        default: true
+      pushToGitHubPackages:
+        description: 'Push to GitHub Packages'
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: read
@@ -39,6 +50,7 @@ jobs:
     runs-on: windows-latest
     env:
       PROJECT: ${{ github.event.inputs.project }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -55,28 +67,25 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln*', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
-
-      - name: Restore slnx
-        run: dotnet restore OutWit.slnx
 
       - name: Resolve library project path
         id: paths
         shell: pwsh
         run: |
-          $projName = '${{ env.PROJECT }}'
-          $lib = Get-ChildItem -Recurse -Filter "$projName.csproj" | Select-Object -Expand FullName -First 1
-          if (!$lib) { Write-Error "Library project $projName.csproj not found"; exit 1 }
+          $name = "${{ env.PROJECT }}"
+          $lib = Get-ChildItem -Recurse -Filter "$name.csproj" | Select-Object -Expand FullName -First 1
+          if (-not $lib) { Write-Error "Library project '$name.csproj' not found"; exit 1 }
           "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Resolved: $lib"
 
       - name: Build (all target frameworks)
-        run: dotnet build "${{ steps.paths.outputs.libCsproj }}" --configuration Release -p:ContinuousIntegrationBuild=true
+        run: dotnet build "${{ steps.paths.outputs.libCsproj }}" -c Release -p:ContinuousIntegrationBuild=true
 
       - name: Pack (no build)
-        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" --configuration Release --no-build
+        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" -c Release --no-build
 
       - name: Collect packages
         shell: pwsh
@@ -85,9 +94,10 @@ jobs:
           Get-ChildItem -Recurse -Include *.nupkg,*.snupkg -Path . |
             Where-Object { $_.FullName -match "\\bin\\Release\\" } |
             Copy-Item -Destination "NuGet" -Force
-          Get-ChildItem NuGet | Select-Object Name
+          Write-Host "Collected packages:"; Get-ChildItem NuGet | Select-Object Name
 
       - name: Add GitHub Packages source
+        if: github.event.inputs.pushToGitHubPackages == 'true'
         run: >
           dotnet nuget add source
           --username ${{ github.actor }}
@@ -96,23 +106,33 @@ jobs:
           --name github
           "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
-      - name: Push to NuGet.org (.nupkg)
+      - name: Push to nuget.org (.nupkg)
+        if: github.event.inputs.pushToNuGet == 'true'
         run: >
           dotnet nuget push "NuGet\*.nupkg"
           --api-key ${{ secrets.NUGET_API_KEY }}
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
 
-      - name: Push symbols to NuGet.org (.snupkg)
+      - name: Push symbols to nuget.org (.snupkg)
+        if: github.event.inputs.pushToNuGet == 'true'
         run: >
           dotnet nuget push "NuGet\*.snupkg"
           --api-key ${{ secrets.NUGET_API_KEY }}
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
 
-      - name: Push to GitHub Packages
+      - name: Push to GitHub Packages (.nupkg)
+        if: github.event.inputs.pushToGitHubPackages == 'true'
         run: >
           dotnet nuget push "NuGet\*.nupkg"
           --api-key ${{ secrets.GITHUB_TOKEN }}
           --source github
           --skip-duplicate
+          
+      - name: Upload NuGet artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT }}-nuget
+          path: NuGet/*
+          retention-days: 7
