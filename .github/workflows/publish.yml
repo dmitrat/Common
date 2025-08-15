@@ -37,7 +37,6 @@ permissions:
 jobs:
   publish:
     runs-on: windows-latest
-    environment: release
     env:
       PROJECT: ${{ github.event.inputs.project }}
     steps:
