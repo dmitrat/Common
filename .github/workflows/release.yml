@@ -1,68 +1,29 @@
-name: Release Project
+name: Release All
 
 on:
   workflow_dispatch:
     inputs:
-      project:
-        description: 'Project to release (equals .csproj base name)'
-        required: true
-        type: choice
-        options:
-          - OutWit.Common
-          - OutWit.Common.Aspects
-          - OutWit.Common.CommandLine
-          - OutWit.Common.Logging
-          - OutWit.Common.Rest
-          - OutWit.Common.Reflection
-          - OutWit.Common.Proxy
-          - OutWit.Common.Proxy.Generator
-          - OutWit.Common.Json
-          - OutWit.Common.MemoryPack
-          - OutWit.Common.MessagePack
-          - OutWit.Common.ProtoBuf
-          - OutWit.Common.Controls
-          - OutWit.Common.Controls.HighlightTextBox
-          - OutWit.Common.MEF
-          - OutWit.Common.Prism
-          - OutWit.Common.MVVM
-          - OutWit.Common.NUnit
-          - OutWit.Common.Plugins
-          - OutWit.Common.Settings
-          - OutWit.Common.Settings.Controls
       tag:
-        description: 'Optional tag suffix (e.g., v1.2.4 or 1.2.4). Final tag will be <Project>-<suffix>. If empty, resolved from package version.'
-        required: false
+        description: 'Release tag (e.g., v1.2.6)'
+        required: true
       releaseName:
-        description: 'Release title (defaults to "<Project> <version>")'
+        description: 'Release title (defaults to tag)'
         required: false
       frameworks:
-        description: 'Optional TFM filter (comma/space separated). Example: "netstandard2.0, net9.0".'
+        description: 'Optional TFM filter (comma/space separated), e.g. "netstandard2.0, net9.0"'
         required: false
-      pushToNuGet:
-        description: 'Push package to nuget.org'
+      attachNupkg:
+        description: 'Attach .nupkg/.snupkg to the Release (no push to registries)'
         type: boolean
         required: true
-        default: false
-      pushToGitHubPackages:
-        description: 'Push package to GitHub Packages'
-        type: boolean
-        required: true
-        default: false
-      attachSnupkg:
-        description: 'Attach .snupkg to Release'
-        type: boolean
-        required: true
-        default: false
+        default: true
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
-  release:
+  release-all:
     runs-on: windows-latest
-    env:
-      PROJECT: ${{ github.event.inputs.project }}
 
     steps:
       - uses: actions/checkout@v4
@@ -80,27 +41,20 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln*', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      - name: Resolve library project path
-        id: paths
-        shell: pwsh
-        run: |
-          $name = "${{ env.PROJECT }}"
-          $lib = Get-ChildItem -Recurse -Filter "$name.csproj" | Select-Object -Expand FullName -First 1
-          if (-not $lib) { Write-Error "Library project '$name.csproj' not found"; exit 1 }
-          "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          Write-Host "Resolved: $lib"
+      - name: Restore solution
+        run: dotnet restore OutWit.slnx
 
-      - name: Build (all target frameworks)
-        run: dotnet build "${{ steps.paths.outputs.libCsproj }}" -c Release -p:ContinuousIntegrationBuild=true
+      - name: Build solution (all TFM)
+        run: dotnet build OutWit.slnx -c Release -p:ContinuousIntegrationBuild=true --no-restore
 
-      - name: Pack (no build)
-        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" -c Release --no-build
+      - name: Pack solution (no build)
+        run: dotnet pack OutWit.slnx -c Release --no-build
 
-      - name: Collect packages
+      - name: Collect all packages
         shell: pwsh
         run: |
           if (!(Test-Path "NuGet")) { New-Item -ItemType Directory -Force -Path "NuGet" | Out-Null }
@@ -109,127 +63,70 @@ jobs:
             Copy-Item -Destination "NuGet" -Force
           Write-Host "Collected packages:"; Get-ChildItem NuGet | Select-Object Name
 
-      - name: Resolve final tag and version
-        id: tag
-        shell: pwsh
-        run: |
-            $proj   = "${{ env.PROJECT }}"
-            $suffix = "${{ github.event.inputs.tag }}".Trim()
-            $version = $null
-
-            if (-not $suffix) {
-                $pkg = Get-ChildItem "NuGet" -Filter "$proj*.nupkg" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-                if (-not $pkg) { Write-Error "Cannot resolve version: no package found for $proj in NuGet/"; exit 1 }
-                $m = [regex]::Match($pkg.Name, '^(?<id>.+?)\.(?<ver>\d+\.\d+\.\d+(?:[-.][0-9A-Za-z\-\.]+)?)\.nupkg$')
-                if (-not $m.Success) { Write-Error "Cannot parse version from package name '$($pkg.Name)'"; exit 1 }
-                $version = $m.Groups['ver'].Value
-                $finalTag = "$proj-v$version"
-            }
-            else {
-                if ($suffix.StartsWith("$proj-", [System.StringComparison]::OrdinalIgnoreCase)) {
-                $finalTag = $suffix
-                } else {
-                $finalTag = "$proj-$suffix"
-                }
-                $m2 = [regex]::Match($finalTag, '\b(?<ver>\d+\.\d+\.\d+(?:[-.][0-9A-Za-z\-\.]+)?)\b')
-                if ($m2.Success) { $version = $m2.Groups['ver'].Value }
-            }
-            "tag=$finalTag" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
-            if ($version) { "version=$version" | Out-File -Append -FilePath $env:GITHUB_OUTPUT }
-            Write-Host "Final tag: $finalTag"
-            if ($version) { Write-Host "Package version: $version" }
-
-
-      - name: Push to NuGet.org (.nupkg)
-        if: github.event.inputs.pushToNuGet == 'true'
-        run: >
-          dotnet nuget push "NuGet\*.nupkg"
-          --api-key ${{ secrets.NUGET_API_KEY }}
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate
-
-      - name: Push symbols to NuGet.org (.snupkg)
-        if: github.event.inputs.pushToNuGet == 'true'
-        run: >
-          dotnet nuget push "NuGet\*.snupkg"
-          --api-key ${{ secrets.NUGET_API_KEY }}
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate
-
-      - name: Add GitHub Packages source
-        if: github.event.inputs.pushToGitHubPackages == 'true'
-        run: >
-          dotnet nuget add source
-          --username ${{ github.actor }}
-          --password ${{ secrets.GITHUB_TOKEN }}
-          --store-password-in-clear-text
-          --name github
-          "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-
-      - name: Push to GitHub Packages (.nupkg)
-        if: github.event.inputs.pushToGitHubPackages == 'true'
-        run: >
-          dotnet nuget push "NuGet\*.nupkg"
-          --api-key ${{ secrets.GITHUB_TOKEN }}
-          --source github
-          --skip-duplicate
-
-      - name: Gather per-TFM outputs from build
+      - name: Gather per-project & per-TFM build outputs
         id: gather
         shell: pwsh
         run: |
-          $lib = "${{ steps.paths.outputs.libCsproj }}"
-          $projDir = Split-Path $lib -Parent
-          $releaseDir = Join-Path $projDir "bin/Release"
-          $outRoot = "out/publish"
+          $solutionRoot = (Get-Location).Path
+          $outRoot = "out/release"
           if (Test-Path $outRoot) { Remove-Item -Recurse -Force $outRoot }
+          
+          $projects = Get-ChildItem -Recurse -Filter *.csproj |
+            Where-Object { $_.Name -notmatch '\.Tests\.csproj$' } |
+            Sort-Object FullName
 
-          $dirs = @()
-          if (Test-Path $releaseDir) {
-            $dirs = Get-ChildItem -Path $releaseDir -Directory -ErrorAction SilentlyContinue |
+          $tfmFilter = "${{ github.event.inputs.frameworks }}"
+          $wanted = @()
+          if ($tfmFilter) { $wanted = $tfmFilter -split '[,;\s]+' | Where-Object { $_ } }
+
+          $copied = 0
+          foreach ($proj in $projects) {
+            $projDir = Split-Path $proj.FullName -Parent
+            $projName = [System.IO.Path]::GetFileNameWithoutExtension($proj.Name)
+            $releaseDir = Join-Path $projDir "bin/Release"
+            if (-not (Test-Path $releaseDir)) { continue }
+            
+            $tfms = Get-ChildItem -Path $releaseDir -Directory -ErrorAction SilentlyContinue |
               Where-Object { $_.Name -match '^net(standard)?\d+(\.\d+)?$' } |
               Select-Object -ExpandProperty Name
+
+            if ($wanted.Count -gt 0) {
+              $tfms = $tfms | Where-Object { $wanted -contains $_ }
+            }
+
+            foreach ($tfm in $tfms) {
+              $src = Join-Path $releaseDir $tfm
+              if (-not (Test-Path $src)) { continue }
+              $dst = Join-Path $outRoot $projName $tfm
+              New-Item -ItemType Directory -Force -Path $dst | Out-Null
+              Copy-Item -Recurse -Force -Path (Join-Path $src '*') -Destination $dst
+              $copied++
+              Write-Host "Copied $projName / $tfm"
+            }
           }
 
-          $requested = "${{ github.event.inputs.frameworks }}"
-          if ($requested) {
-            $want = $requested -split '[,;\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-            if ($want.Count -gt 0) { $dirs = $dirs | Where-Object { $want -contains $_ } }
-          }
+          if ($copied -eq 0) { Write-Error "No build outputs found in bin/Release for any project/TFM."; exit 1 }
+          "copied=$copied" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
 
-          $dirs = $dirs | Select-Object -Unique
-          if (-not $dirs -or $dirs.Count -eq 0) { Write-Error "No TFM outputs found under $releaseDir. Did the build succeed for any TFM?"; exit 1 }
-
-          foreach ($tfm in $dirs) {
-            $src = Join-Path $releaseDir $tfm
-            $dst = Join-Path $outRoot $tfm
-            New-Item -ItemType Directory -Force -Path $dst | Out-Null
-            Copy-Item -Recurse -Force -Path (Join-Path $src '*') -Destination $dst
-            Write-Host "Copied $tfm -> $dst"
-          }
-
-          "tfms=$([string]::Join(';',$dirs))" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
-          Write-Host "Collected TFMs: $([string]::Join(', ', $dirs))"
-
-      - name: Create single zip with TFM subfolders
+      - name: Create one zip with all projects/TFM
         id: zipit
         shell: pwsh
         run: |
-          $tag = "${{ steps.tag.outputs.tag }}"
-          $zip = "${{ env.PROJECT }}-$tag.zip"
+          $tag = "${{ github.event.inputs.tag }}"
+          $zip = "OutWit.Common-$tag.zip"
           if (Test-Path $zip) { Remove-Item $zip -Force }
-          Compress-Archive -Path (Join-Path "out/publish" '*') -DestinationPath $zip -Force
+          Compress-Archive -Path (Join-Path "out/release" '*') -DestinationPath $zip -Force
           "zip=$zip" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
           Write-Host "Created $zip"
 
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: ${{ github.event.inputs.releaseName || format('{0} {1}', env.PROJECT, steps.tag.outputs.version || steps.tag.outputs.tag) }}
+          tag_name: ${{ github.event.inputs.tag }}
+          name: ${{ github.event.inputs.releaseName || github.event.inputs.tag }}
           draft: false
           prerelease: false
           files: |
-            NuGet/*.nupkg
-            ${{ github.event.inputs.attachSnupkg == 'true' && 'NuGet/*.snupkg' || '' }}
             ${{ steps.zipit.outputs.zip }}
+            ${{ github.event.inputs.attachNupkg == 'true' && 'NuGet/*.nupkg' || '' }}
+            ${{ github.event.inputs.attachNupkg == 'true' && 'NuGet/*.snupkg' || '' }}

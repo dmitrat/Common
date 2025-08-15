@@ -1,5 +1,5 @@
 name: Publish Package
-run-name: "Publish Package: ${{ inputs.project }} (NuGet=${{ inputs.pushToNuGet }}, GH=${{ inputs.pushToGitHubPackages }})"
+run-name: "Publish Package: ${{ inputs.project }}"
 
 on:
   workflow_dispatch:
@@ -39,7 +39,7 @@ on:
         description: 'Push to GitHub Packages'
         type: boolean
         required: true
-        default: false
+        default: true
 
 permissions:
   contents: read
