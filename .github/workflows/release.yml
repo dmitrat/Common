@@ -30,13 +30,16 @@ on:
           - OutWit.Common.Settings
           - OutWit.Common.Settings.Controls
       tag:
-        description: 'Release tag (e.g., v1.2.4)'
-        required: true
+        description: 'Release tag (e.g., v1.2.4). If empty, will be resolved from package version.'
+        required: false
       releaseName:
         description: 'Release title (defaults to tag)'
         required: false
+      frameworks:
+        description: 'TFMs to publish (comma/space separated). Leave empty to auto-detect (e.g., "netstandard2.0, net9.0").'
+        required: false
       runtimeId:
-        description: 'RID for dotnet publish (e.g., win-x64, linux-x64). Leave empty for portable.'
+        description: 'RID (e.g., win-x64, linux-x64). Leave empty for portable.'
         required: false
       publishArgs:
         description: 'Extra publish args (e.g., -p:PublishSingleFile=true)'
@@ -51,6 +54,11 @@ on:
         type: boolean
         required: true
         default: false
+      attachSnupkg:
+        description: 'Attach .snupkg to Release'
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: write
@@ -62,9 +70,9 @@ jobs:
     environment: release
     env:
       PROJECT: ${{ github.event.inputs.project }}
-      TAG: ${{ github.event.inputs.tag }}
       RUNTIME_ID: ${{ github.event.inputs.runtimeId }}
       PUBLISH_ARGS: ${{ github.event.inputs.publishArgs }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -81,7 +89,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
@@ -109,11 +117,37 @@ jobs:
             Where-Object { $_.FullName -match "\\bin\\Release\\" } |
             Copy-Item -Destination "NuGet" -Force
           Write-Host "Collected packages:"; Get-ChildItem NuGet | Select-Object Name
+          
+      - name: Resolve tag (from input or package version)
+        id: tag
+        shell: pwsh
+        run: |
+          $inputTag = "${{ github.event.inputs.tag }}"
+          if ($inputTag) {
+            "tag=$inputTag" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+            Write-Host "Using provided tag: $inputTag"
+            exit 0
+          }
+          $pkg = Get-ChildItem "NuGet" -Filter "$env:PROJECT*.nupkg" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $pkg) { Write-Error "Cannot resolve tag: no package found for $env:PROJECT in NuGet/"; exit 1 }
+          $m = [regex]::Match($pkg.Name, '^(?<id>.+?)\.(?<ver>\d+\.\d+\.\d+(?:[-.][0-9A-Za-z\-\.]+)?)\.nupkg$')
+          if (-not $m.Success) { Write-Error "Cannot parse version from package name '$($pkg.Name)'"; exit 1 }
+          $tag = "v" + $m.Groups['ver'].Value
+          "tag=$tag" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+          Write-Host "Resolved tag: $tag from $($pkg.Name)"
 
-      - name: Push to NuGet.org
+      - name: Push to NuGet.org (.nupkg)
         if: github.event.inputs.pushToNuGet == 'true'
         run: >
           dotnet nuget push "NuGet\*.nupkg"
+          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Push symbols to NuGet.org (.snupkg)
+        if: github.event.inputs.pushToNuGet == 'true'
+        run: >
+          dotnet nuget push "NuGet\*.snupkg"
           --api-key ${{ secrets.NUGET_API_KEY }}
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
@@ -128,39 +162,68 @@ jobs:
           --name github
           "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
-      - name: Push to GitHub Packages
+      - name: Push to GitHub Packages (.nupkg)
         if: github.event.inputs.pushToGitHubPackages == 'true'
         run: >
           dotnet nuget push "NuGet\*.nupkg"
           --api-key ${{ secrets.GITHUB_TOKEN }}
           --source github
           --skip-duplicate
-
-      - name: Push symbols to NuGet.org (.snupkg)
-        if: github.event.inputs.pushToNuGet == 'true'
-        run: >
-          dotnet nuget push "NuGet\*.snupkg"
-          --api-key ${{ secrets.NUGET_API_KEY }}
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate  
           
-      - name: dotnet publish (optional redist)
+      - name: Resolve TFM list for publish
+        id: tfm
         shell: pwsh
         run: |
           $lib = "${{ steps.paths.outputs.libCsproj }}"
-          $out = "out/publish"
-          if (Test-Path $out) { Remove-Item -Recurse -Force $out }
-          if ("${{ env.RUNTIME_ID }}") {
-            dotnet publish $lib -c Release -o $out -r "${{ env.RUNTIME_ID }}" --self-contained false ${{ env.PUBLISH_ARGS }}
-          } else {
-            dotnet publish $lib -c Release -o $out ${{ env.PUBLISH_ARGS }}
+          [xml]$xml = Get-Content $lib
+          $fromMulti = ($xml.Project.PropertyGroup.TargetFrameworks | Where-Object { $_ }) | Select-Object -First 1
+          $fromSingle = ($xml.Project.PropertyGroup.TargetFramework | Where-Object { $_ }) | Select-Object -First 1
+
+          $tfms = @()
+          if ($fromMulti) { $tfms = $fromMulti.'#text'.Split(';') }
+          elseif ($fromSingle) { $tfms = @($fromSingle.'#text') }
+
+          $known = @('net9.0','net8.0','net7.0','net6.0','netstandard2.1','netstandard2.0')
+          $tfms = $tfms | ForEach-Object { $_.Trim() } | Where-Object { $known -contains $_ } | Select-Object -Unique
+
+          $requested = "${{ github.event.inputs.frameworks }}"
+          if ($requested) {
+            $want = $requested -split '[,;\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+            $tfms = $tfms | Where-Object { $want -contains $_ }
           }
 
-      - name: Zip redist
+          if (-not $tfms -or $tfms.Count -eq 0) { Write-Error "No target frameworks resolved (check project or input)."; exit 1 }
+
+          $joined = [string]::Join(';', $tfms)
+          "tfms=$joined" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+          Write-Host "TFMs to publish: $joined"
+
+      - name: dotnet publish into per-TFM subfolders
+        shell: pwsh
+        run: |
+          $lib = "${{ steps.paths.outputs.libCsproj }}"
+          $tfms = "${{ steps.tfm.outputs.tfms }}".Split(';') | Where-Object { $_ }
+          $outRoot = "out/publish"
+          $rid = "${{ env.RUNTIME_ID }}"
+
+          foreach ($tfm in $tfms) {
+            $dst = Join-Path $outRoot $tfm
+            if ($rid) { $dst = Join-Path $dst $rid }
+            if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
+            if ($rid) {
+              dotnet publish $lib -c Release -f $tfm -o $dst -r $rid --self-contained false ${{ env.PUBLISH_ARGS }}
+            } else {
+              dotnet publish $lib -c Release -f $tfm -o $dst ${{ env.PUBLISH_ARGS }}
+            }
+            Write-Host "Published $tfm -> $dst"
+          }
+
+      - name: Create single zip with TFM subfolders
         id: zipit
         shell: pwsh
         run: |
-          $zip = "redist-${{ env.PROJECT }}-${{ env.TAG }}.zip"
+          $tag = "${{ steps.tag.outputs.tag }}"
+          $zip = "redist-${{ env.PROJECT }}-$tag.zip"
           if (Test-Path $zip) { Remove-Item $zip -Force }
           Compress-Archive -Path (Join-Path "out/publish" '*') -DestinationPath $zip -Force
           "zip=$zip" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
@@ -169,10 +232,11 @@ jobs:
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.releaseName || github.event.inputs.tag }}
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ github.event.inputs.releaseName || steps.tag.outputs.tag }}
           draft: false
           prerelease: false
           files: |
             NuGet/*.nupkg
+            ${{ github.event.inputs.attachSnupkg == 'true' && 'NuGet/*.snupkg' || '' }}
             ${{ steps.zipit.outputs.zip }}
