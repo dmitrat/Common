@@ -113,27 +113,32 @@ jobs:
         id: tag
         shell: pwsh
         run: |
-          $proj = "${{ env.PROJECT }}"
-          $suffix = "${{ github.event.inputs.tag }}".Trim()
-          $version = $null
+            $proj   = "${{ env.PROJECT }}"
+            $suffix = "${{ github.event.inputs.tag }}".Trim()
+            $version = $null
 
-          if (-not $suffix) {
-            $pkg = Get-ChildItem "NuGet" -Filter "$proj*.nupkg" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-            if (-not $pkg) { Write-Error "Cannot resolve version: no package found for $proj in NuGet/"; exit 1 }
-            $m = [regex]::Match($pkg.Name, '^(?<id>.+?)\.(?<ver>\d+\.\d+\.\d+(?:[-.][0-9A-Za-z\-\.]+)?)\.nupkg$')
-            if (-not $m.Success) { Write-Error "Cannot parse version from package name '$($pkg.Name)'"; exit 1 }
-            $version = $m.Groups['ver'].Value
-            $suffix = "v$version"
-          } else {
-            # $suffix = $suffix -match '^[vV]\d' ? $suffix : "v$suffix"
-          }
+            if (-not $suffix) {
+                $pkg = Get-ChildItem "NuGet" -Filter "$proj*.nupkg" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+                if (-not $pkg) { Write-Error "Cannot resolve version: no package found for $proj in NuGet/"; exit 1 }
+                $m = [regex]::Match($pkg.Name, '^(?<id>.+?)\.(?<ver>\d+\.\d+\.\d+(?:[-.][0-9A-Za-z\-\.]+)?)\.nupkg$')
+                if (-not $m.Success) { Write-Error "Cannot parse version from package name '$($pkg.Name)'"; exit 1 }
+                $version = $m.Groups['ver'].Value
+                $finalTag = "$proj-v$version"
+            }
+            else {
+                if ($suffix.StartsWith("$proj-", [System.StringComparison]::OrdinalIgnoreCase)) {
+                $finalTag = $suffix
+                } else {
+                $finalTag = "$proj-$suffix"
+                }
+                $m2 = [regex]::Match($finalTag, '\b(?<ver>\d+\.\d+\.\d+(?:[-.][0-9A-Za-z\-\.]+)?)\b')
+                if ($m2.Success) { $version = $m2.Groups['ver'].Value }
+            }
+            "tag=$finalTag" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+            if ($version) { "version=$version" | Out-File -Append -FilePath $env:GITHUB_OUTPUT }
+            Write-Host "Final tag: $finalTag"
+            if ($version) { Write-Host "Package version: $version" }
 
-          if ($suffix -notmatch "^\Q$proj\E-") { $final = "$proj-$suffix" } else { $final = $suffix }
-          "tag=$final"    | Out-File -Append -FilePath $env:GITHUB_OUTPUT
-          if ($version) { "version=$version" | Out-File -Append -FilePath $env:GITHUB_OUTPUT }
-
-          Write-Host "Final tag: $final"
-          if ($version) { Write-Host "Package version: $version" }
 
       - name: Push to NuGet.org (.nupkg)
         if: github.event.inputs.pushToNuGet == 'true'
