@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+
+	  <Version>1.1.3</Version>
+
+	  <Description>Core components for the OutWit static proxy generator. Contains the essential interfaces and attributes needed to define interception logic and use the generated proxies.</Description>
+	  <PackageTags>OutWit;Common;Proxy;Generator;Interceptor</PackageTags>
+
+	  <RepositoryUrl>https://github.com/dmitrat/WitRPC/tree/main/Common/OutWit.Common.Proxy</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/dmitrat/WitRPC/tree/main/Common/OutWit.Common.Proxy</PackageProjectUrl>
+
+	  <PackageIcon>OutWitIcon128.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+</Project>

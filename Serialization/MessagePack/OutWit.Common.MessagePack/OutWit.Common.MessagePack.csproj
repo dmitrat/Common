@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+
+	  <Version>1.1.2</Version>
+
+	  <Description>MessagePack serialization tools/snippets</Description>
+	  <PackageTags>OutWit;Common;MessagePack</PackageTags>
+
+	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.MessagePack</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.MessagePack</PackageProjectUrl>
+
+	  <PackageIcon>OutWitIcon128.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MessagePack" Version="3.1.3" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+</Project>

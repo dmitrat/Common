@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+
+		<Version>1.0.1</Version>
+
+		<Description>Provides a lightweight set of abstractions for creating plugins for the OutWit.Common.Plugins framework.</Description>
+		<PackageTags>OutWit;Common;Plugins;Abstractions</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins.Abstractions</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins.Abstractions</PackageProjectUrl>
+
+		<PackageIcon>OutWit-logo.png</PackageIcon>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" Condition="'$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net8.0'" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" Condition="'$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net6.0'" />
+		
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE" Pack="true" PackagePath="\" />
+		<None Include="OutWit-logo.png" Pack="true" PackagePath="\" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+</Project>
