@@ -1,0 +1,85 @@
+name: Pack
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project to pack (name equals .csproj filename without extension)'
+        required: true
+        type: choice
+        options:
+          - OutWit.Common
+          - OutWit.Common.Aspects
+          - OutWit.Common.CommandLine
+          - OutWit.Common.Logging
+          - OutWit.Common.Rest
+          - OutWit.Common.Reflection
+          - OutWit.Common.Proxy
+          - OutWit.Common.Proxy.Generator
+          - OutWit.Common.Json
+          - OutWit.Common.MemoryPack
+          - OutWit.Common.MessagePack
+          - OutWit.Common.ProtoBuf
+          - OutWit.Common.Controls
+          - OutWit.Common.Controls.HighlightTextBox
+          - OutWit.Common.MEF
+          - OutWit.Common.Prism
+          - OutWit.Common.MVVM
+          - OutWit.Common.NUnit
+          - OutWit.Common.Plugins
+          - OutWit.Common.Settings
+          - OutWit.Common.Settings.Controls
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    runs-on: windows-latest
+    env:
+      PROJECT: ${{ github.event.inputs.project }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore OutWit.slnx
+
+      - name: Resolve library project path
+        id: paths
+        shell: pwsh
+        run: |
+          $projName = '${{ env.PROJECT }}'
+          $lib = Get-ChildItem -Recurse -Filter "$projName.csproj" | Select-Object -Expand FullName -First 1
+          if (!$lib) { Write-Error "Library project $projName.csproj not found"; exit 1 }
+          "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Pack
+        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" --configuration Release
+
+      - name: Collect packages
+        shell: pwsh
+        run: |
+          if (!(Test-Path "NuGet")) { New-Item -ItemType Directory -Force -Path "NuGet" | Out-Null }
+          Get-ChildItem -Recurse -Include *.nupkg,*.snupkg -Path . |
+            Where-Object { $_.FullName -match "\\bin\\Release\\" } |
+            Copy-Item -Destination "NuGet" -Force
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages-${{ env.PROJECT }}
+          path: NuGet/*
+          if-no-files-found: error

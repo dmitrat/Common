@@ -9,6 +9,7 @@
   </Folder>
   <Folder Name="/@Build/Workflows/">
     <File Path=".github/workflows/ci.yml" />
+    <File Path=".github/workflows/pack.yml" />
     <File Path=".github/workflows/test-one.yml" />
   </Folder>
   <Folder Name="/Aspects/">
