@@ -3,22 +3,11 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		
-		<Version>1.2.3</Version>
+		<Version>1.2.4</Version>
 
 		<Description>A zero-dependency foundational library for.NET that accelerates robust application development. Key features include an intelligent ModelBase for non-intrusive value comparison (Is()), immutable updates (With()), and a declarative ToString() via attributes.</Description>
 		<PackageTags>OutWit;Common;Snippet;Base;Collections</PackageTags>
 		
-		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common</PackageProjectUrl>
-
-		<PackageIcon>OutWit-logo.png</PackageIcon>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Common/OutWit.Common</RepositoryUrl>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<None Include="LICENSE" Pack="true" PackagePath="\" />
-		<None Include="OutWit-logo.png" Pack="true" PackagePath="\" />
-		<None Include="README.md" Pack="true" PackagePath="\" />
-	</ItemGroup>
 </Project>

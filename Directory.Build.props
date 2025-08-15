@@ -16,6 +16,8 @@
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	<EmbedUntrackedSources>true</EmbedUntrackedSources>
 
+	<PackageProjectUrl>https://github.com/dmitrat/Common/</PackageProjectUrl>
+
 	<GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
 
 	<PackageIcon>OutWit-logo.png</PackageIcon>
