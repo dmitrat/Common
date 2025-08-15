@@ -30,19 +30,13 @@ on:
           - OutWit.Common.Settings
           - OutWit.Common.Settings.Controls
       tag:
-        description: 'Release tag (e.g., v1.2.4). If empty, will be resolved from package version.'
+        description: 'Release tag (e.g., v1.2.4). If empty, resolved from package version.'
         required: false
       releaseName:
         description: 'Release title (defaults to tag)'
         required: false
       frameworks:
-        description: 'TFMs to publish (comma/space separated). Leave empty to auto-detect (e.g., "netstandard2.0, net9.0").'
-        required: false
-      runtimeId:
-        description: 'RID (e.g., win-x64, linux-x64). Leave empty for portable.'
-        required: false
-      publishArgs:
-        description: 'Extra publish args (e.g., -p:PublishSingleFile=true)'
+        description: 'Optional TFM filter (comma/space separated). Example: "netstandard2.0, net9.0".'
         required: false
       pushToNuGet:
         description: 'Push package to nuget.org'
@@ -70,8 +64,6 @@ jobs:
     environment: release
     env:
       PROJECT: ${{ github.event.inputs.project }}
-      RUNTIME_ID: ${{ github.event.inputs.runtimeId }}
-      PUBLISH_ARGS: ${{ github.event.inputs.publishArgs }}
 
     steps:
       - uses: actions/checkout@v4
@@ -89,7 +81,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
@@ -117,7 +109,7 @@ jobs:
             Where-Object { $_.FullName -match "\\bin\\Release\\" } |
             Copy-Item -Destination "NuGet" -Force
           Write-Host "Collected packages:"; Get-ChildItem NuGet | Select-Object Name
-          
+
       - name: Resolve tag (from input or package version)
         id: tag
         shell: pwsh
@@ -170,79 +162,41 @@ jobs:
           --source github
           --skip-duplicate
           
-      - name: Resolve TFM list for publish
-        id: tfm
-        shell: pwsh
-        run: |
-            $lib = "${{ steps.paths.outputs.libCsproj }}"
-
-            function Get-RawTfmsFromXml {
-            param([string]$path)
-              try {
-                [xml]$xml = Get-Content $path -ErrorAction Stop
-                $vals = @()
-                foreach ($pg in @($xml.Project.PropertyGroup)) {
-                  if ($pg.TargetFrameworks -and $pg.TargetFrameworks.InnerText) { $vals += $pg.TargetFrameworks.InnerText }
-                  if ($pg.TargetFramework  -and $pg.TargetFramework.InnerText)  { $vals += $pg.TargetFramework.InnerText }
-                }
-                return ($vals -join ';')
-              } catch { return $null }
-            }
-            
-            $raw = Get-RawTfmsFromXml $lib
-            
-            if (-not $raw -and (Test-Path "Directory.Build.props")) {
-              $raw = Get-RawTfmsFromXml "Directory.Build.props"
-            }
-
-            $tfms = @()
-            if ($raw) { $tfms = $raw -split '[;,\s]+' | Where-Object { $_ } }
-            
-            if (-not $tfms -or $tfms.Count -eq 0) {
-              $list = dotnet list "$lib" target frameworks 2>$null
-              $tfms = ($list | Select-String -Pattern 'netstandard\d+\.\d+|net\d+\.\d+') |
-                ForEach-Object { $_.Matches.Value } | Select-Object -Unique
-            }
-            
-            $tfms = $tfms | ForEach-Object { $_.Trim() } |
-              Where-Object { $_ -match '^net\d+\.\d+$' -or $_ -match '^netstandard\d+\.\d+$' } |
-              Select-Object -Unique
-              
-            $requested = "${{ github.event.inputs.frameworks }}"
-            if ($requested) {
-              $want = $requested -split '[,;\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-              $tfms = $tfms | Where-Object { $want -contains $_ }
-            }
-
-            if (-not $tfms -or $tfms.Count -eq 0) {
-              Write-Error "No target frameworks resolved (check project or the 'frameworks' input)."
-              exit 1
-            }
-
-            $joined = [string]::Join(';', $tfms)
-            "tfms=$joined" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
-            Write-Host "TFMs to publish: $joined"
-
-
-      - name: dotnet publish into per-TFM subfolders
+      - name: Gather per-TFM outputs from build
+        id: gather
         shell: pwsh
         run: |
           $lib = "${{ steps.paths.outputs.libCsproj }}"
-          $tfms = "${{ steps.tfm.outputs.tfms }}".Split(';') | Where-Object { $_ }
+          $projDir = Split-Path $lib -Parent
+          $releaseDir = Join-Path $projDir "bin/Release"
           $outRoot = "out/publish"
-          $rid = "${{ env.RUNTIME_ID }}"
-
-          foreach ($tfm in $tfms) {
-            $dst = Join-Path $outRoot $tfm
-            if ($rid) { $dst = Join-Path $dst $rid }
-            if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
-            if ($rid) {
-              dotnet publish $lib -c Release -f $tfm -o $dst -r $rid --self-contained false ${{ env.PUBLISH_ARGS }}
-            } else {
-              dotnet publish $lib -c Release -f $tfm -o $dst ${{ env.PUBLISH_ARGS }}
-            }
-            Write-Host "Published $tfm -> $dst"
+          if (Test-Path $outRoot) { Remove-Item -Recurse -Force $outRoot }
+          
+          $dirs = @()
+          if (Test-Path $releaseDir) {
+            $dirs = Get-ChildItem -Path $releaseDir -Directory -ErrorAction SilentlyContinue |
+              Where-Object { $_.Name -match '^net(standard)?\d+(\.\d+)?$' } |
+              Select-Object -ExpandProperty Name
           }
+          $requested = "${{ github.event.inputs.frameworks }}"
+          if ($requested) {
+            $want = $requested -split '[,;\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+            if ($want.Count -gt 0) { $dirs = $dirs | Where-Object { $want -contains $_ } }
+          }
+
+          $dirs = $dirs | Select-Object -Unique
+          if (-not $dirs -or $dirs.Count -eq 0) { Write-Error "No TFM outputs found under $releaseDir. Did the build succeed for any TFM?"; exit 1 }
+
+          foreach ($tfm in $dirs) {
+            $src = Join-Path $releaseDir $tfm
+            $dst = Join-Path $outRoot $tfm
+            New-Item -ItemType Directory -Force -Path $dst | Out-Null
+            Copy-Item -Recurse -Force -Path (Join-Path $src '*') -Destination $dst
+            Write-Host "Copied $tfm -> $dst"
+          }
+
+          "tfms=$([string]::Join(';',$dirs))" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+          Write-Host "Collected TFMs: $([string]::Join(', ', $dirs))"
 
       - name: Create single zip with TFM subfolders
         id: zipit
