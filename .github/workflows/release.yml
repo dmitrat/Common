@@ -1,4 +1,4 @@
-name: Release
+name: Release Project
 
 on:
   workflow_dispatch:
@@ -30,10 +30,10 @@ on:
           - OutWit.Common.Settings
           - OutWit.Common.Settings.Controls
       tag:
-        description: 'Release tag (e.g., v1.2.4). If empty, resolved from package version.'
+        description: 'Optional tag suffix (e.g., v1.2.4 or 1.2.4). Final tag will be <Project>-<suffix>. If empty, resolved from package version.'
         required: false
       releaseName:
-        description: 'Release title (defaults to tag)'
+        description: 'Release title (defaults to "<Project> <version>")'
         required: false
       frameworks:
         description: 'Optional TFM filter (comma/space separated). Example: "netstandard2.0, net9.0".'
@@ -61,7 +61,6 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
-    environment: release
     env:
       PROJECT: ${{ github.event.inputs.project }}
 
@@ -81,7 +80,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
@@ -94,7 +93,7 @@ jobs:
           if (-not $lib) { Write-Error "Library project '$name.csproj' not found"; exit 1 }
           "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Resolved: $lib"
-          
+
       - name: Build (all target frameworks)
         run: dotnet build "${{ steps.paths.outputs.libCsproj }}" -c Release -p:ContinuousIntegrationBuild=true
 
@@ -110,23 +109,31 @@ jobs:
             Copy-Item -Destination "NuGet" -Force
           Write-Host "Collected packages:"; Get-ChildItem NuGet | Select-Object Name
 
-      - name: Resolve tag (from input or package version)
+      - name: Resolve final tag and version
         id: tag
         shell: pwsh
         run: |
-          $inputTag = "${{ github.event.inputs.tag }}"
-          if ($inputTag) {
-            "tag=$inputTag" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
-            Write-Host "Using provided tag: $inputTag"
-            exit 0
+          $proj = "${{ env.PROJECT }}"
+          $suffix = "${{ github.event.inputs.tag }}".Trim()
+          $version = $null
+
+          if (-not $suffix) {
+            $pkg = Get-ChildItem "NuGet" -Filter "$proj*.nupkg" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if (-not $pkg) { Write-Error "Cannot resolve version: no package found for $proj in NuGet/"; exit 1 }
+            $m = [regex]::Match($pkg.Name, '^(?<id>.+?)\.(?<ver>\d+\.\d+\.\d+(?:[-.][0-9A-Za-z\-\.]+)?)\.nupkg$')
+            if (-not $m.Success) { Write-Error "Cannot parse version from package name '$($pkg.Name)'"; exit 1 }
+            $version = $m.Groups['ver'].Value
+            $suffix = "v$version"
+          } else {
+            # $suffix = $suffix -match '^[vV]\d' ? $suffix : "v$suffix"
           }
-          $pkg = Get-ChildItem "NuGet" -Filter "$env:PROJECT*.nupkg" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-          if (-not $pkg) { Write-Error "Cannot resolve tag: no package found for $env:PROJECT in NuGet/"; exit 1 }
-          $m = [regex]::Match($pkg.Name, '^(?<id>.+?)\.(?<ver>\d+\.\d+\.\d+(?:[-.][0-9A-Za-z\-\.]+)?)\.nupkg$')
-          if (-not $m.Success) { Write-Error "Cannot parse version from package name '$($pkg.Name)'"; exit 1 }
-          $tag = "v" + $m.Groups['ver'].Value
-          "tag=$tag" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
-          Write-Host "Resolved tag: $tag from $($pkg.Name)"
+
+          if ($suffix -notmatch "^\Q$proj\E-") { $final = "$proj-$suffix" } else { $final = $suffix }
+          "tag=$final"    | Out-File -Append -FilePath $env:GITHUB_OUTPUT
+          if ($version) { "version=$version" | Out-File -Append -FilePath $env:GITHUB_OUTPUT }
+
+          Write-Host "Final tag: $final"
+          if ($version) { Write-Host "Package version: $version" }
 
       - name: Push to NuGet.org (.nupkg)
         if: github.event.inputs.pushToNuGet == 'true'
@@ -161,7 +168,7 @@ jobs:
           --api-key ${{ secrets.GITHUB_TOKEN }}
           --source github
           --skip-duplicate
-          
+
       - name: Gather per-TFM outputs from build
         id: gather
         shell: pwsh
@@ -171,13 +178,14 @@ jobs:
           $releaseDir = Join-Path $projDir "bin/Release"
           $outRoot = "out/publish"
           if (Test-Path $outRoot) { Remove-Item -Recurse -Force $outRoot }
-          
+
           $dirs = @()
           if (Test-Path $releaseDir) {
             $dirs = Get-ChildItem -Path $releaseDir -Directory -ErrorAction SilentlyContinue |
               Where-Object { $_.Name -match '^net(standard)?\d+(\.\d+)?$' } |
               Select-Object -ExpandProperty Name
           }
+
           $requested = "${{ github.event.inputs.frameworks }}"
           if ($requested) {
             $want = $requested -split '[,;\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
@@ -203,7 +211,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = "${{ steps.tag.outputs.tag }}"
-          $zip = "redist-${{ env.PROJECT }}-$tag.zip"
+          $zip = "${{ env.PROJECT }}-$tag.zip"
           if (Test-Path $zip) { Remove-Item $zip -Force }
           Compress-Archive -Path (Join-Path "out/publish" '*') -DestinationPath $zip -Force
           "zip=$zip" | Out-File -Append -FilePath $env:GITHUB_OUTPUT
@@ -213,7 +221,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          name: ${{ github.event.inputs.releaseName || steps.tag.outputs.tag }}
+          name: ${{ github.event.inputs.releaseName || format('{0} {1}', env.PROJECT, steps.tag.outputs.version || steps.tag.outputs.tag) }}
           draft: false
           prerelease: false
           files: |

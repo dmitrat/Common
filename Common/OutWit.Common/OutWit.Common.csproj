@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		
-		<Version>1.2.4</Version>
+		<Version>1.2.5</Version>
 
 		<Description>A zero-dependency foundational library for.NET that accelerates robust application development. Key features include an intelligent ModelBase for non-intrusive value comparison (Is()), immutable updates (With()), and a declarative ToString() via attributes.</Description>
 		<PackageTags>OutWit;Common;Snippet;Base;Collections</PackageTags>
