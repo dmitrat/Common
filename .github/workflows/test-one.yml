@@ -59,13 +59,16 @@ jobs:
       VERBOSITY: ${{ github.event.inputs.verbosity || 'minimal' }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET SDKs (6/7/8/9)
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
 
       - name: Cache NuGet
         uses: actions/cache@v4
@@ -74,9 +77,6 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
-
-      - name: Restore
-        run: dotnet restore OutWit.slnx
 
       - name: Resolve test project path
         id: paths
@@ -89,8 +89,9 @@ jobs:
             exit 1
           }
           "testCsproj=$test" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Resolved test csproj: $test"
 
-      - name: Run tests
+      - name: Run tests (restore implicitly)
         shell: pwsh
         run: |
           $test = "${{ steps.paths.outputs.testCsproj }}"
@@ -100,7 +101,6 @@ jobs:
           $args = @(
             'test', $test,
             '--configuration', $cfg,
-            '--no-restore',
             '--verbosity', $v,
             '--logger', 'trx;LogFileName=test.trx',
             '--results-directory', 'TestResults'

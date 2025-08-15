@@ -21,7 +21,6 @@ jobs:
       projects: ${{ steps.filter.outputs.changes }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Paths filter
         id: filter
         uses: dorny/paths-filter@v3.0.2
@@ -30,80 +29,60 @@ jobs:
           filters: |
             OutWit.Common:
               - 'Common/**'
-
             OutWit.Common.Aspects:
               - 'Aspects/**'
               - 'Common/**'
-
             OutWit.Common.CommandLine:
               - 'CommandLine/**'
-
             OutWit.Common.Logging:
               - 'Logging/**'
               - 'Aspects/**'
-
             OutWit.Common.Rest:
               - 'Rest/**'
               - 'Common/**'
-
             OutWit.Common.Reflection:
               - 'Reflection/**'
-
             OutWit.Common.Proxy:
               - 'Proxy/OutWit.Common.Proxy/**'
               - 'Proxy/OutWit.Common.Proxy.Tests/**'
               - 'Common/**'
-
             OutWit.Common.Proxy.Generator:
               - 'Proxy/OutWit.Common.Proxy.Generator/**'
               - 'Proxy/OutWit.Common.Proxy.Generator.Tests/**'
               - 'Proxy/OutWit.Common.Proxy/**'
-
             OutWit.Common.Json:
               - 'Serialization/Json/**'
               - 'Aspects/**'
-
             OutWit.Common.MemoryPack:
               - 'Serialization/MemoryPack/**'
               - 'Aspects/**'
-
             OutWit.Common.MessagePack:
               - 'Serialization/MessagePack/**'
               - 'Aspects/**'
-
             OutWit.Common.ProtoBuf:
               - 'Serialization/ProtoBuf/**'
               - 'Aspects/**'
-
             OutWit.Common.Controls:
               - 'Controls/OutWit.Common.Controls/**'
               - 'Controls/OutWit.Common.Controls.Tests/**'
-
             OutWit.Common.Controls.HighlightTextBox:
               - 'Controls/OutWit.Common.Controls.HighlightTextBox/**'
-
             OutWit.Common.MEF:
               - 'Modularity/OutWit.Common.MEF/**'
-
             OutWit.Common.Prism:
               - 'Modularity/OutWit.Common.Prism/**'
-
             OutWit.Common.MVVM:
               - 'MVVM/OutWit.Common.MVVM/**'
-
             OutWit.Common.NUnit:
               - 'NUnit/OutWit.Common.NUnit/**'
-
             OutWit.Common.Plugins:
               - 'Plugins/OutWit.Common.Plugins/**'
               - 'Plugins/OutWit.Common.Plugins.Tests/**'
               - 'Plugins/OutWit.Common.Plugins.Tests.Mock.*/**'
               - 'Plugins/OutWit.Common.Plugins.Abstractions/**'
-
             OutWit.Common.Settings:
               - 'Settings/OutWit.Common.Settings/**'
               - 'Settings/OutWit.Common.Settings.Tests/**'
-
             OutWit.Common.Settings.Controls:
               - 'Settings/OutWit.Common.Settings.Controls/**'
 
@@ -118,11 +97,15 @@ jobs:
         project: ${{ fromJson(needs.discover-changes.outputs.projects) }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup .NET
+      
+      - name: Setup .NET SDKs (6/7/8/9)
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
 
       - name: Cache NuGet
         uses: actions/cache@v4
@@ -131,7 +114,7 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
-
+            
       - name: Restore
         run: dotnet restore OutWit.slnx
 
