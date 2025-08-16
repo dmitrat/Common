@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0-windows;net8.0-windows;net7.0-windows;net6.0-windows;net5.0-windows</TargetFrameworks>
+		<TargetFrameworks>net9.0-windows;net8.0-windows;net7.0-windows;net6.0-windows</TargetFrameworks>
 		<UseWPF>true</UseWPF>
 
-		<Version>1.1.1</Version>
+		<Version>1.1.2</Version>
 
 		<Description>A collection of essential helpers and components for WPF and the MVVM pattern. Includes a ViewModelBase, DelegateCommand, a thread-safe SafeObservableCollection, SortedCollection, powerful binding utilities, and an AOP [Bindable] attribute to easily create DependencyProperties.</Description>
 		<PackageTags>OutWit;Common;MVVM</PackageTags>

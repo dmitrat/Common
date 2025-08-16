@@ -26,17 +26,9 @@
     <Project Path="Common/OutWit.Common.Tests/OutWit.Common.Tests.csproj" />
     <Project Path="Common/OutWit.Common/OutWit.Common.csproj" />
   </Folder>
-  <Folder Name="/Controls/">
-    <Project Path="Controls/OutWit.Common.Controls.HighlightTextBox/OutWit.Common.Controls.HighlightTextBox.csproj" />
-    <Project Path="Controls/OutWit.Common.Controls/OutWit.Common.Controls.csproj" />
-  </Folder>
   <Folder Name="/Logging/">
     <Project Path="Logging/OutWit.Common.Logging.Tests/OutWit.Common.Logging.Tests.csproj" />
     <Project Path="Logging/OutWit.Common.Logging/OutWit.Common.Logging.csproj" />
-  </Folder>
-  <Folder Name="/Modularity/">
-    <Project Path="Modularity/OutWit.Common.MEF/OutWit.Common.MEF.csproj" />
-    <Project Path="Modularity/OutWit.Common.Prism/OutWit.Common.Prism.csproj" />
   </Folder>
   <Folder Name="/MVVM/">
     <Project Path="MVVM/OutWit.Common.MVVM/OutWit.Common.MVVM.csproj" />
@@ -89,7 +81,6 @@
     <Project Path="Serialization/ProtoBuf/OutWit.Common.ProtoBuf/OutWit.Common.ProtoBuf.csproj" />
   </Folder>
   <Folder Name="/Settings/">
-    <Project Path="Settings/OutWit.Common.Settings.Controls/OutWit.Common.Settings.Controls.csproj" />
     <Project Path="Settings/OutWit.Common.Settings.Tests/OutWit.Common.Settings.Tests.csproj" />
     <Project Path="Settings/OutWit.Common.Settings/OutWit.Common.Settings.csproj" />
   </Folder>
