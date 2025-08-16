@@ -20,15 +20,12 @@ on:
           - OutWit.Common.MemoryPack
           - OutWit.Common.MessagePack
           - OutWit.Common.ProtoBuf
-          - OutWit.Common.Controls
-          - OutWit.Common.Controls.HighlightTextBox
-          - OutWit.Common.MEF
-          - OutWit.Common.Prism
           - OutWit.Common.MVVM
           - OutWit.Common.NUnit
           - OutWit.Common.Plugins
           - OutWit.Common.Settings
-          - OutWit.Common.Settings.Controls
+          - OutWit.Common.Plugins
+          - OutWit.Common.Plugins.Abstractions
       configuration:
         description: 'Build configuration'
         required: false
