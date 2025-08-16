@@ -4,32 +4,14 @@
 	  <TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 	  <Nullable>enable</Nullable>
 
-	  <Version>1.1.1</Version>
+	  <Version>1.1.2</Version>
 
 	  <Description>Rest Client Utils. Rest Query Builder</Description>
 	  <PackageTags>OutWit;Common;Rest</PackageTags>
 
-	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Rest</RepositoryUrl>
-	  <PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.Rest</PackageProjectUrl>
-
-	  <PackageIcon>OutWitIcon128.png</PackageIcon>
-	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Rest</RepositoryUrl>
 
   </PropertyGroup>
-	
-
-	<ItemGroup>
-		<None Include="LICENSE" Pack="true" PackagePath="\" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\" />
-	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
