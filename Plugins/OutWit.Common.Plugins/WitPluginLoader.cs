@@ -205,6 +205,10 @@ namespace OutWit.Common.Plugins
                         };
                     }
                 }
+                catch (BadImageFormatException)
+                {
+                    Logger?.LogTrace("Skipping non-.NET (native) assembly: {path}", path);
+                }
                 catch (Exception ex)
                 {
                     Logger?.LogError(ex, $"Failed to inspect metadata of '{path}'.");

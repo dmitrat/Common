@@ -3,7 +3,7 @@
   <PropertyGroup>
 	  <TargetFrameworks>net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-	  <Version>1.0.1</Version>
+	  <Version>1.0.2</Version>
 
 	  <Description>A robust and flexible plugin system for .NET. Features dynamic discovery from directories, sophisticated dependency resolution (validates versions and detects circular dependencies), and isolated loading via AssemblyLoadContext to enable hot-reloading and unloading of plugins.</Description>
 	  <PackageTags>OutWit;Common;Plugins</PackageTags>
