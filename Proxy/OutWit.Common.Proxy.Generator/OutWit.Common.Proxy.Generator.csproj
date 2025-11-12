@@ -11,7 +11,7 @@
 	  <IsAnalyzer>true</IsAnalyzer>
 	  <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
-	  <Version>1.1.8</Version>
+	  <Version>1.2.0</Version>
 
 	  <Description>The Roslyn Source Generator for the OutWit proxy library. Add this package to your project to automatically generate proxy implementations for your interfaces at compile-time.</Description>
 	  <PackageTags>OutWit;Common;Proxy;Generator</PackageTags>
@@ -21,7 +21,7 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
 	</ItemGroup>
 
   <ItemGroup>

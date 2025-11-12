@@ -23,6 +23,8 @@
 	<PackageIcon>OutWit-logo.png</PackageIcon>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
 
 	<PackagesDropDir>$(SolutionDir)@NuGet\</PackagesDropDir>
 
