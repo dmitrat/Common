@@ -9,7 +9,7 @@ namespace OutWit.Common.Proxy.Generator.Generators
 {
     public static class MethodGenerator
     {
-        public static void Generate(this IMethodSymbol me, StringBuilder sourceBuilder, GeneratorExecutionContext context)
+        public static void Generate(this IMethodSymbol me, StringBuilder sourceBuilder)
         {
             if(me.AssociatedSymbol is IPropertySymbol)
                 return;
@@ -28,7 +28,7 @@ namespace OutWit.Common.Proxy.Generator.Generators
                 ? ((INamedTypeSymbol)me.ReturnType).TypeArguments[0]
                 : null;
 
-            bool hasReturnValue = !SymbolEqualityComparer.Default.Equals(me.ReturnType, context.Compilation.GetSpecialType(SpecialType.System_Void)) && !returnsTask;
+            bool hasReturnValue = !me.ReturnsVoid && !returnsTask;
 
             sourceBuilder.AppendLine();
             sourceBuilder.AppendLine($"        public {returnType} {me.Name}({parameters})");
