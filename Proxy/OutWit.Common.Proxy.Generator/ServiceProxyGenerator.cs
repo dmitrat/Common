@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using OutWit.Common.Proxy.Attributes;
 using OutWit.Common.Proxy.Generator.Generators;
 using OutWit.Common.Proxy.Generator.Utils;
 using OutWit.Common.Proxy.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
 
 namespace OutWit.Common.Proxy.Generator
 {
@@ -16,47 +17,80 @@ namespace OutWit.Common.Proxy.Generator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var compilationProvider = context.CompilationProvider;
+            var proxyAttrSymbolProvider =
+                context.CompilationProvider.Select((compilation, _) =>
+                    compilation.GetTypeByMetadataName(
+                        "OutWit.Common.Proxy.Attributes.ProxyTargetAttribute"));
 
-            context.RegisterSourceOutput(compilationProvider, (spc, compilation) =>
-            {
-                var proxyTargetAttribute = compilation.GetTypeByMetadataName(typeof(ProxyTargetAttribute).FullName!);
-                if (proxyTargetAttribute is null)
-                    return;
-
-                var allInterfaces = GetAllInterfaces(compilation.GlobalNamespace);
-
-                foreach (var iface in allInterfaces)
+            var targets = context.CompilationProvider
+                .Combine(proxyAttrSymbolProvider)
+                .Select(static (pair, _) =>
                 {
-                    var attr = iface.GetAttributes().FirstOrDefault(a =>
-                        SymbolEqualityComparer.Default.Equals(a.AttributeClass, proxyTargetAttribute));
+                    var (compilation, proxyAttr) = pair;
 
-                    if (attr is null)
-                        continue;
+                    if (proxyAttr is null)
+                        return ImmutableArray<(INamedTypeSymbol Symbol, string ClassName)>.Empty;
 
-                    var nameArgument = attr.ConstructorArguments.FirstOrDefault().Value as string;
-                    var className = string.IsNullOrWhiteSpace(nameArgument) ? $"{iface.Name}Proxy" : nameArgument;
+                    var results = ImmutableArray.CreateBuilder<(INamedTypeSymbol Symbol, string ClassName)>();
 
-                    GenerateProxy(spc, className!, iface);
+                    void WalkNamespace(INamespaceSymbol ns)
+                    {
+                        foreach (var type in ns.GetTypeMembers())
+                            VisitType(type);
+
+                        foreach (var child in ns.GetNamespaceMembers())
+                            WalkNamespace(child);
+                    }
+
+                    void VisitType(INamedTypeSymbol type)
+                    {
+                        if (type.TypeKind == TypeKind.Interface)
+                        {
+                            var attr = type.GetAttributes()
+                                .FirstOrDefault(a =>
+                                    SymbolEqualityComparer.Default.Equals(a.AttributeClass, proxyAttr) ||
+                                    a.AttributeClass?.Name == nameof(ProxyTargetAttribute));
+
+                            if (attr is not null)
+                            {
+                                string? nameArgument = null;
+
+                                if (attr.ConstructorArguments.Length > 0)
+                                {
+                                    var arg = attr.ConstructorArguments[0];
+                                    if (!arg.IsNull &&
+                                        arg.Value is string s &&
+                                        !string.IsNullOrWhiteSpace(s))
+                                    {
+                                        nameArgument = s;
+                                    }
+                                }
+
+                                var className = string.IsNullOrEmpty(nameArgument)
+                                    ? $"{type.Name}Proxy"
+                                    : nameArgument!;
+
+                                results.Add((type, className));
+                            }
+                        }
+
+                        foreach (var nested in type.GetTypeMembers())
+                            VisitType(nested);
+                    }
+
+                    WalkNamespace(compilation.GlobalNamespace);
+                    return results.ToImmutable();
+                });
+
+            context.RegisterSourceOutput(targets, static (spc, interfaces) =>
+            {
+                foreach (var (symbol, className) in interfaces)
+                {
+                    GenerateProxy(spc, className, symbol);
                 }
             });
         }
 
-        private static IEnumerable<INamedTypeSymbol> GetAllInterfaces(INamespaceSymbol root)
-        {
-            foreach (var namespaceOrType in root.GetMembers())
-            {
-                if (namespaceOrType is INamespaceSymbol @namespace)
-                {
-                    foreach (var nested in GetAllInterfaces(@namespace))
-                        yield return nested;
-                }
-                else if (namespaceOrType is INamedTypeSymbol type && type.TypeKind == TypeKind.Interface)
-                {
-                    yield return type;
-                }
-            }
-        }
 
         private static void GenerateProxy(SourceProductionContext context, string className, INamedTypeSymbol interfaceSymbol)
         {
