@@ -12,6 +12,7 @@ namespace OutWit.Common.Json.Tests.Utils
 
             return Text.Is(data.Text) &&
                    Value.Is(data.Value, tolerance) &&
+                   Color.Is(data.Color) &&
                    Type?.Equals(data.Type) == true;
         }
 
@@ -23,6 +24,8 @@ namespace OutWit.Common.Json.Tests.Utils
         public string? Text { get; set; }
 
         public double Value { get; set; }
+
+        public ColorEnum? Color { get; set; }
         
         public Type? Type { get; set; }
     }

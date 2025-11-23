@@ -8,6 +8,7 @@ using MessagePack.Formatters;
 using MessagePack.Resolvers;
 using Microsoft.Extensions.Logging;
 using OutWit.Common.MessagePack.Formatters;
+using OutWit.Common.MessagePack.Resolvers;
 
 namespace OutWit.Common.MessagePack
 {
@@ -26,6 +27,7 @@ namespace OutWit.Common.MessagePack
 
             Register(StandardResolver.Instance);
             Register(DynamicEnumResolver.Instance);
+            Register(StringEnumResolver.Instance);
         }
 
         #endregion

@@ -13,6 +13,7 @@ namespace OutWit.Common.Json.Tests
             {
                 Text = "Test",
                 Value = 3.14,
+                Color = ColorEnum.Red,
                 Type = typeof(MockData)
             };
 
@@ -24,7 +25,8 @@ namespace OutWit.Common.Json.Tests
             var mockData2 = jsonString.FromJsonString<MockData>();
             Assert.That(mockData2, Is.Not.Null);
             Assert.That(mockData2.Text, Is.EqualTo("Test"));
-            Assert.That(mockData2.Value, Is.EqualTo(3.14));
+            Assert.That(mockData2.Value, Is.EqualTo(3.14)); 
+            Assert.That(mockData2.Color, Is.EqualTo(ColorEnum.Red));
             Assert.That(mockData2.Type, Is.EqualTo(typeof(MockData)));
         }
 
@@ -35,6 +37,7 @@ namespace OutWit.Common.Json.Tests
             {
                 Text = "Test",
                 Value = 3.14,
+                Color = ColorEnum.Red,
                 Type = typeof(MockData)
             };
 
@@ -49,6 +52,7 @@ namespace OutWit.Common.Json.Tests
             Assert.That(mockData2, Is.Not.Null);
             Assert.That(mockData2.Text, Is.EqualTo("Test"));
             Assert.That(mockData2.Value, Is.EqualTo(3.14));
+            Assert.That(mockData2.Color, Is.EqualTo(ColorEnum.Red));
             Assert.That(mockData2.Type, Is.EqualTo(typeof(MockData)));
         }
 
@@ -59,6 +63,7 @@ namespace OutWit.Common.Json.Tests
             {
                 Text = "Test",
                 Value = 3.14,
+                Color = ColorEnum.Red,
                 Type = typeof(MockData)
             };
 
@@ -71,6 +76,7 @@ namespace OutWit.Common.Json.Tests
             Assert.That(mockData2, Is.Not.Null);
             Assert.That(mockData2.Text, Is.EqualTo("Test"));
             Assert.That(mockData2.Value, Is.EqualTo(3.14));
+            Assert.That(mockData2.Color, Is.EqualTo(ColorEnum.Red));
             Assert.That(mockData2.Type, Is.EqualTo(typeof(MockData)));
         }
 
@@ -81,6 +87,7 @@ namespace OutWit.Common.Json.Tests
             {
                 Text = "Test",
                 Value = 3.14,
+                Color = ColorEnum.Red,
                 Type = typeof(MockData)
             };
 
@@ -91,12 +98,14 @@ namespace OutWit.Common.Json.Tests
             Assert.That(mockData2, Is.Not.Null);
             Assert.That(mockData2.Text, Is.EqualTo("Test"));
             Assert.That(mockData2.Value, Is.EqualTo(3.14));
+            Assert.That(mockData2.Color, Is.EqualTo(ColorEnum.Red));
             Assert.That(mockData2.Type, Is.EqualTo(typeof(MockData)));
 
             var mockData3 = ((ReadOnlySpan<byte>)jsonBytes.AsSpan()).FromJsonBytes<MockData>();
             Assert.That(mockData3, Is.Not.Null);
             Assert.That(mockData3.Text, Is.EqualTo("Test"));
             Assert.That(mockData3.Value, Is.EqualTo(3.14));
+            Assert.That(mockData3.Color, Is.EqualTo(ColorEnum.Red));
             Assert.That(mockData3.Type, Is.EqualTo(typeof(MockData)));
         }
 
@@ -108,6 +117,7 @@ namespace OutWit.Common.Json.Tests
             {
                 Text = "Test",
                 Value = 3.14,
+                Color = ColorEnum.Red,
                 Type = typeof(MockData)
             };
 
@@ -120,12 +130,14 @@ namespace OutWit.Common.Json.Tests
             Assert.That(mockData2, Is.Not.Null);
             Assert.That(mockData2.Text, Is.EqualTo("Test"));
             Assert.That(mockData2.Value, Is.EqualTo(3.14));
+            Assert.That(mockData2.Color, Is.EqualTo(ColorEnum.Red));
             Assert.That(mockData2.Type, Is.EqualTo(typeof(MockData)));
 
             var mockData3 = ((ReadOnlySpan<byte>)jsonBytes.AsSpan()).FromJsonBytes(typeof(MockData)) as MockData;
             Assert.That(mockData3, Is.Not.Null);
             Assert.That(mockData3.Text, Is.EqualTo("Test"));
             Assert.That(mockData3.Value, Is.EqualTo(3.14));
+            Assert.That(mockData3.Color, Is.EqualTo(ColorEnum.Red));
             Assert.That(mockData3.Type, Is.EqualTo(typeof(MockData)));
         }
 
@@ -136,6 +148,7 @@ namespace OutWit.Common.Json.Tests
             {
                 Text = "Test",
                 Value = 3.14,
+                Color = ColorEnum.Red,
                 Type = typeof(MockData)
             };
 
@@ -143,6 +156,7 @@ namespace OutWit.Common.Json.Tests
             Assert.That(mockData2, Is.Not.Null);
             Assert.That(mockData2.Text, Is.EqualTo("Test"));
             Assert.That(mockData2.Value, Is.EqualTo(3.14));
+            Assert.That(mockData2.Color, Is.EqualTo(ColorEnum.Red));
             Assert.That(mockData2.Type, Is.EqualTo(typeof(MockData)));
         }
 
@@ -155,16 +169,19 @@ namespace OutWit.Common.Json.Tests
                 {
                     Text = "Test1",
                     Value = 3.141,
+                    Color = ColorEnum.Red,
                     Type = typeof(MockData)
                 },new MockData
                 {
                     Text = "Test2",
                     Value = 3.142,
+                    Color = ColorEnum.Green,
                     Type = typeof(MockData)
                 },new MockData
                 {
                     Text = "Test3",
                     Value = 3.143,
+                    Color = ColorEnum.Blue,
                     Type = typeof(MockData)
                 },
             };
@@ -188,16 +205,19 @@ namespace OutWit.Common.Json.Tests
                 {
                     Text = "Test1",
                     Value = 3.141,
+                    Color = ColorEnum.Red,
                     Type = typeof(MockData)
                 },new MockData
                 {
                     Text = "Test2",
                     Value = 3.142,
+                    Color = ColorEnum.Green,
                     Type = typeof(MockData)
                 },new MockData
                 {
                     Text = "Test3",
                     Value = 3.143,
+                    Color = ColorEnum.Blue,
                     Type = typeof(MockData)
                 },
             };
@@ -221,16 +241,19 @@ namespace OutWit.Common.Json.Tests
                 {
                     Text = "Test1",
                     Value = 3.141,
+                    Color = ColorEnum.Red,
                     Type = typeof(MockData)
                 },new MockData
                 {
                     Text = "Test2",
                     Value = 3.142,
+                    Color = ColorEnum.Green,
                     Type = typeof(MockData)
                 },new MockData
                 {
                     Text = "Test3",
                     Value = 3.143,
+                    Color = ColorEnum.Blue,
                     Type = typeof(MockData)
                 },
             };
@@ -254,16 +277,19 @@ namespace OutWit.Common.Json.Tests
                 {
                     Text = "Test1",
                     Value = 3.141,
+                    Color = ColorEnum.Red,
                     Type = typeof(MockData)
                 },new MockData
                 {
                     Text = "Test2",
                     Value = 3.142,
+                    Color = ColorEnum.Green,
                     Type = typeof(MockData)
                 },new MockData
                 {
                     Text = "Test3",
                     Value = 3.143,
+                    Color = ColorEnum.Blue,
                     Type = typeof(MockData)
                 },
             };

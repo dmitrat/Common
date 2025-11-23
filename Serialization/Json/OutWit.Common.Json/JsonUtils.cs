@@ -23,7 +23,8 @@ namespace OutWit.Common.Json
                 Converters =
                 {
                     new TypeJsonConverter(),
-                    new RSAParametersJsonConverter()
+                    new RSAParametersJsonConverter(),
+                    new StringEnumJsonConverterFactory()
                 },
                 WriteIndented = false,
                 TypeInfoResolver = Context
@@ -34,7 +35,8 @@ namespace OutWit.Common.Json
                 Converters =
                 {
                     new TypeJsonConverter(),
-                    new RSAParametersJsonConverter()
+                    new RSAParametersJsonConverter(),
+                    new StringEnumJsonConverterFactory()
                 },
                 WriteIndented = true,
                 TypeInfoResolver = Context

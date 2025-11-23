@@ -14,7 +14,8 @@ namespace OutWit.Common.MessagePack.Tests.Utils
 
             return Text.Is(data.Text) &&
                    Value.Is(data.Value, tolerance) &&
-                   Type.Is(data.Type);
+                   Type.Is(data.Type)
+                   && Color.Is(data.Color);
         }
 
         public override ModelBase Clone()
@@ -30,5 +31,8 @@ namespace OutWit.Common.MessagePack.Tests.Utils
 
         [Key(2)]
         public Type Type { get; set; }
+
+        [Key(3)]
+        public ColorEnum? Color { get; set; }
     }
 }
