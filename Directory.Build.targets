@@ -6,7 +6,7 @@
 
     <ItemGroup>
       <NuGetPackageFiles Include="$(PackageOutputPath)\$(PackageId).$(Version).nupkg" />
-      <NuGetPackageFiles Include="$(PackageOutputPath)\$(PackageId).$(Version).snupkg" />
+      <NuGetPackageFiles Include="$(PackageOutputPath)\$(PackageId).$(Version).snupkg" Condition="'$(IncludeSymbols)' == 'true'" />
     </ItemGroup>
 
     <MakeDir Directories="$(PackagesDropDir)" Condition="!Exists('$(PackagesDropDir)')" />

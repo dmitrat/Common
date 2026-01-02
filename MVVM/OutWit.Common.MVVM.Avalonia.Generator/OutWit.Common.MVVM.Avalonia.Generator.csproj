@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<OutputType>Library</OutputType>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+		<IsRoslynComponent>true</IsRoslynComponent>
+		<IsAnalyzer>true</IsAnalyzer>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+		<Version>2.0.0</Version>
+
+		<Description>Roslyn Source Generator for Avalonia StyledProperty and DirectProperty. Automatically generates property definitions from properties marked with [StyledProperty] or [DirectProperty] attributes at compile-time.</Description>
+		<PackageTags>OutWit;Common;MVVM;Avalonia;SourceGenerator;StyledProperty;DirectProperty;Roslyn</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Avalonia.Generator</RepositoryUrl>
+
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<NoPackageAnalysis>true</NoPackageAnalysis>
+		<!-- Disable symbols for source generators -->
+		<IncludeSymbols>false</IncludeSymbols>
+		<SymbolPackageFormat></SymbolPackageFormat>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<!-- Reference to Abstractions project - don't include in package as it should come from Avalonia package -->
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.MVVM.Abstractions\OutWit.Common.MVVM.Abstractions.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<!-- Package the generator as an analyzer -->
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(OutputPath)\$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" Condition="'$(Configuration)' == 'Debug' and Exists('$(OutputPath)\$(AssemblyName).pdb')" />
+		<None Include="build\**\*" Pack="true" PackagePath="build" />
+		<None Include="buildTransitive\**\*" Pack="true" PackagePath="buildTransitive" />
+	</ItemGroup>
+
+	<Target Name="EnsureBuild" BeforeTargets="Pack">
+		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" />
+	</Target>
+
+</Project>

@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace OutWit.Common.MVVM.Abstractions
+namespace OutWit.Common.MVVM.Interfaces
 {
     /// <summary>
     /// Base interface for all view models

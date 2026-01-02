@@ -1,29 +1,30 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using Avalonia.Threading;
 using OutWit.Common.MVVM.Interfaces;
 
-namespace OutWit.Common.MVVM.Collections
+namespace OutWit.Common.MVVM.Avalonia.Collections
 {
     /// <summary>
-    /// Thread-safe ObservableCollection that marshals change notifications to the dispatcher thread
+    /// Thread-safe ObservableCollection that marshals collection change notifications to the UI thread.
     /// </summary>
-    /// <typeparam name="T">The type of elements in the collection</typeparam>
     public class SafeObservableCollection<T> : ObservableCollection<T>
     {
         #region Fields
 
-        private readonly IDispatcher? m_dispatcher;
+        private readonly OutWit.Common.MVVM.Interfaces.IDispatcher m_dispatcher;
 
         #endregion
 
         #region Constructors
 
         public SafeObservableCollection()
+            : this(new Abstractions.AvaloniaDispatcher(Dispatcher.UIThread))
         {
         }
 
-        public SafeObservableCollection(IDispatcher dispatcher)
+        public SafeObservableCollection(Interfaces.IDispatcher dispatcher)
         {
             m_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
@@ -34,13 +35,13 @@ namespace OutWit.Common.MVVM.Collections
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (m_dispatcher != null && !m_dispatcher.CheckAccess())
+            if (m_dispatcher.CheckAccess())
             {
-                m_dispatcher.Invoke(() => base.OnCollectionChanged(e));
+                base.OnCollectionChanged(e);
             }
             else
             {
-                base.OnCollectionChanged(e);
+                m_dispatcher.Invoke(() => base.OnCollectionChanged(e));
             }
         }
 

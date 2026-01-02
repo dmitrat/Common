@@ -1,0 +1,6 @@
+<Project>
+	<!-- This file ensures the source generator works transitively when referenced through other packages -->
+	<ItemGroup>
+		<CompilerVisibleProperty Include="OutWit_Common_MVVM_Avalonia_Generator" />
+	</ItemGroup>
+</Project>

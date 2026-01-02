@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace OutWit.Common.MVVM.Abstractions
+namespace OutWit.Common.MVVM.Interfaces
 {
     /// <summary>
     /// Provides platform-agnostic thread marshalling capabilities

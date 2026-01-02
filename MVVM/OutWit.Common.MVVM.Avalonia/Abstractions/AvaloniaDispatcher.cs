@@ -1,11 +1,13 @@
 using System;
 using System.Threading.Tasks;
-using System.Windows.Threading;
-using OutWit.Common.MVVM.Interfaces;
+using Avalonia.Threading;
 
-namespace OutWit.Common.MVVM.WPF.Abstractions
+namespace OutWit.Common.MVVM.Avalonia.Abstractions
 {
-    public class WpfDispatcher : IDispatcher
+    /// <summary>
+    /// Avalonia implementation of IDispatcher for cross-thread UI access.
+    /// </summary>
+    public class AvaloniaDispatcher : OutWit.Common.MVVM.Interfaces.IDispatcher
     {
         #region Fields
 
@@ -15,12 +17,15 @@ namespace OutWit.Common.MVVM.WPF.Abstractions
 
         #region Constructors
 
-        public WpfDispatcher(Dispatcher dispatcher)
+        public AvaloniaDispatcher(Dispatcher dispatcher)
         {
             m_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
 
-        public static WpfDispatcher CurrentDispatcher => new WpfDispatcher(Dispatcher.CurrentDispatcher);
+        /// <summary>
+        /// Gets the dispatcher for the UI thread.
+        /// </summary>
+        public static AvaloniaDispatcher UIThread => new AvaloniaDispatcher(Dispatcher.UIThread);
 
         #endregion
 
@@ -51,7 +56,7 @@ namespace OutWit.Common.MVVM.WPF.Abstractions
                 return Task.CompletedTask;
             }
 
-            return m_dispatcher.InvokeAsync(action).Task;
+            return m_dispatcher.InvokeAsync(action).GetTask();
         }
 
         public TResult Invoke<TResult>(Func<TResult> func)
@@ -71,7 +76,7 @@ namespace OutWit.Common.MVVM.WPF.Abstractions
                 return Task.FromResult(func());
             }
 
-            return m_dispatcher.InvokeAsync(func).Task;
+            return m_dispatcher.InvokeAsync(func).GetTask();
         }
 
         #endregion

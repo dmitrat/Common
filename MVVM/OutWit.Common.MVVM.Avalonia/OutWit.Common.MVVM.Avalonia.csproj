@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+
+		<Version>2.0.0</Version>
+
+		<Description>Avalonia-specific helpers and components for the MVVM pattern. Includes AvaloniaDispatcher, BindingUtils, visual tree traversal utilities, and automatic StyledProperty/DirectProperty generation via source generator and AspectInjector. This is part of the OutWit.Common.MVVM family of libraries.</Description>
+		<PackageTags>OutWit;Common;MVVM;Avalonia;StyledProperty;DirectProperty;SourceGenerator;AspectInjector</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Avalonia</RepositoryUrl>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Logging\OutWit.Common.Logging\OutWit.Common.Logging.csproj" />
+		<ProjectReference Include="..\OutWit.Common.MVVM\OutWit.Common.MVVM.csproj" />
+	</ItemGroup>
+
+	<!-- Include the source generator in the NuGet package -->
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.MVVM.Avalonia.Generator\OutWit.Common.MVVM.Avalonia.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="11.3.0" />
+	</ItemGroup>
+
+</Project>
