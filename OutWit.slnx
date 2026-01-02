@@ -32,12 +32,14 @@
   </Folder>
   <Folder Name="/MVVM/">
     <Project Path="MVVM/OutWit.Common.MVVM.Avalonia.Generator/OutWit.Common.MVVM.Avalonia.Generator.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Avalonia.Sample/OutWit.Common.MVVM.Avalonia.Sample.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Avalonia.Tests/OutWit.Common.MVVM.Avalonia.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Avalonia/OutWit.Common.MVVM.Avalonia.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Blazor.Tests/OutWit.Common.MVVM.Blazor.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Blazor/OutWit.Common.MVVM.Blazor.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Tests/OutWit.Common.MVVM.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.WPF.Generator/OutWit.Common.MVVM.WPF.Generator.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.WPF.Sample/OutWit.Common.MVVM.WPF.Sample.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.WPF.Tests/OutWit.Common.MVVM.WPF.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.WPF/OutWit.Common.MVVM.WPF.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM/OutWit.Common.MVVM.csproj" />

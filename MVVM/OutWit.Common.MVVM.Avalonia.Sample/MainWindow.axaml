@@ -1,0 +1,94 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OutWit.Common.MVVM.Avalonia.Sample"
+        xmlns:controls="clr-namespace:OutWit.Common.MVVM.Avalonia.Sample.Controls"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="OutWit.Common.MVVM.Avalonia.Sample.MainWindow"
+        Title="OutWit.Common.MVVM.Avalonia Sample"
+        Width="800" Height="600">
+    
+    <Window.DataContext>
+        <local:MainViewModel />
+    </Window.DataContext>
+    
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="16">
+            
+            <!-- Header -->
+            <TextBlock Text="OutWit.Common.MVVM.Avalonia Sample Application" 
+                       FontSize="24" FontWeight="Bold" />
+
+            <!-- StyledProperty Demo -->
+            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="12">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="StyledProperty Demo - Custom Control" FontWeight="Bold" FontSize="16" />
+                    <TextBlock Text="This control uses [StyledProperty] attribute for automatic property generation:" FontStyle="Italic" />
+                    
+                    <controls:DemoStyledControl 
+                        Title="{Binding ControlTitle, Mode=TwoWay}"
+                        Counter="{Binding Counter}"
+                        IsHighlighted="{Binding IsHighlighted}"
+                        Margin="0,8,0,0" />
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="Title:" VerticalAlignment="Center" />
+                            <TextBox Text="{Binding ControlTitle}" Width="200" />
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="Counter:" VerticalAlignment="Center" />
+                            <NumericUpDown Value="{Binding Counter}" Width="100" />
+                        </StackPanel>
+                        
+                        <CheckBox Content="Highlighted" IsChecked="{Binding IsHighlighted}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- DirectProperty Demo -->
+            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="12">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="DirectProperty Demo - High Performance" FontWeight="Bold" FontSize="16" />
+                    <TextBlock Text="DirectProperty is optimized for frequently changing values (doesn't participate in styling):" FontStyle="Italic" />
+                    
+                    <controls:DemoDirectControl 
+                        x:Name="DirectCtrl"
+                        Progress="{Binding Progress}"
+                        StatusText="{Binding StatusText}"
+                        Margin="0,8,0,0" />
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <Slider Value="{Binding Progress}" Minimum="0" Maximum="100" Width="300" />
+                        <TextBlock Text="{Binding Progress, StringFormat='Progress: {0:F0}%'}" 
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                    
+                    <TextBox Text="{Binding StatusText}" Watermark="Enter status text..." />
+                </StackPanel>
+            </Border>
+
+            <!-- Commands Demo -->
+            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="12">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Commands Demo - RelayCommand (Cross-Platform)" FontWeight="Bold" FontSize="16" />
+                    <TextBlock Text="RelayCommand from OutWit.Common.MVVM works on all platforms:" FontStyle="Italic" />
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Increment" Command="{Binding IncrementCommand}" />
+                        <Button Content="Decrement" Command="{Binding DecrementCommand}" />
+                        <Button Content="Reset" Command="{Binding ResetCommand}" />
+                    </StackPanel>
+                    
+                    <TextBlock Text="{Binding Counter, StringFormat='Current Value: {0}'}" FontSize="14" />
+                </StackPanel>
+            </Border>
+
+            <!-- Status -->
+            <TextBlock Text="{Binding StatusMessage}" Foreground="Gray" />
+            
+        </StackPanel>
+    </ScrollViewer>
+</Window>
