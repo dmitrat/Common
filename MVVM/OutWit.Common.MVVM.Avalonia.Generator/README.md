@@ -1,17 +1,17 @@
-# OutWit.Common.MVVM.WPF.Generator
+# OutWit.Common.MVVM.Avalonia.Generator
 
-Roslyn Source Generator for automatic WPF `DependencyProperty` generation. This generator reads properties marked with `[StyledProperty]` or `[AttachedProperty]` attributes and generates the necessary `DependencyProperty` fields and implementations at compile time.
+Roslyn Source Generator for automatic Avalonia `StyledProperty`, `DirectProperty`, and `AttachedProperty` generation. This generator reads properties marked with the corresponding attributes and generates the necessary property fields and implementations at compile time.
 
 ## ?? Important: Don't Install Directly
 
-**This package should NOT be installed directly!** It's automatically included when you install `OutWit.Common.MVVM.WPF`.
+**This package should NOT be installed directly!** It's automatically included when you install `OutWit.Common.MVVM.Avalonia`.
 
 ```bash
-# ? Correct - Install the WPF package
-dotnet add package OutWit.Common.MVVM.WPF
+# ? Correct - Install the Avalonia package
+dotnet add package OutWit.Common.MVVM.Avalonia
 
 # ? Wrong - Don't install the generator directly
-dotnet add package OutWit.Common.MVVM.WPF.Generator
+dotnet add package OutWit.Common.MVVM.Avalonia.Generator
 ```
 
 ## What It Does
@@ -19,47 +19,41 @@ dotnet add package OutWit.Common.MVVM.WPF.Generator
 This source generator:
 
 1. **Finds Properties** - Scans your code for properties marked with:
-   - `[StyledProperty]` - generates instance `DependencyProperty`
-   - `[AttachedProperty]` - generates attached `DependencyProperty`
+   - `[StyledProperty]` - generates Avalonia `StyledProperty`
+   - `[DirectProperty]` - generates Avalonia `DirectProperty` with backing field
+   - `[AttachedProperty]` - generates Avalonia `AttachedProperty`
 
 2. **Generates Code** - Creates:
-   - `public static readonly DependencyProperty` fields
-   - Property getter/setter implementations using `GetValue`/`SetValue`
+   - `public static readonly StyledProperty<T>` / `DirectProperty<TOwner, T>` / `AttachedProperty<T>` fields
+   - Backing fields for `DirectProperty`
    - `Get{PropertyName}` and `Set{PropertyName}` methods for attached properties
-   - `PropertyMetadata` or `FrameworkPropertyMetadata` with specified options
 
 3. **Convention-Based Discovery** - Automatically finds callback methods:
-   - `On{PropertyName}Changed` for PropertyChangedCallback
-   - `{PropertyName}Coerce` for CoerceValueCallback
+   - `On{PropertyName}Changed` for property changed handlers
+   - `{PropertyName}Coerce` for coerce callbacks
 
 ## How It Works
 
 ### Input (Your Code)
 
 ```csharp
-using System.Windows.Controls;
-using OutWit.Common.MVVM.Attributes;
+using Avalonia.Controls;
+using OutWit.Common.MVVM.Avalonia.Attributes;
 
 namespace MyApp.Controls
 {
     public partial class CustomButton : Button
     {
-        [StyledProperty(DefaultValue = "Click Me", AffectsMeasure = true)]
+        [StyledProperty(DefaultValue = "Click Me")]
         public string Label { get; set; }
 
-        [StyledProperty]
-        public double IconSize { get; set; }
+        [DirectProperty(DefaultValue = 0)]
+        public int ClickCount { get; set; }
 
         // Convention: On{PropertyName}Changed
-        private static void OnLabelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void OnLabelChanged(AvaloniaPropertyChangedEventArgs<string> e)
         {
-            var button = (CustomButton)d;
-            button.UpdateLabel();
-        }
-
-        private void UpdateLabel()
-        {
-            // Update logic
+            UpdateLabel();
         }
     }
 }
@@ -75,62 +69,36 @@ namespace MyApp.Controls
 {
     partial class CustomButton
     {
-        #region Dependency Properties
+        public static readonly StyledProperty<string> LabelProperty =
+            AvaloniaProperty.Register<CustomButton, string>(nameof(Label), "Click Me");
 
-        public static readonly global::System.Windows.DependencyProperty LabelProperty =
-            global::System.Windows.DependencyProperty.Register(
-                nameof(Label), 
-                typeof(string), 
-                typeof(CustomButton),
-                new global::System.Windows.FrameworkPropertyMetadata(
-                    "Click Me", 
-                    global::System.Windows.FrameworkPropertyMetadataOptions.AffectsMeasure, 
-                    OnLabelChanged));
+        private int m_clickCount = 0;
 
-        public string Label
-        {
-            get => (string)GetValue(LabelProperty);
-            set => SetValue(LabelProperty, value);
-        }
-
-        public static readonly global::System.Windows.DependencyProperty IconSizeProperty =
-            global::System.Windows.DependencyProperty.Register(
-                nameof(IconSize), 
-                typeof(double), 
-                typeof(CustomButton));
-
-        public double IconSize
-        {
-            get => (double)GetValue(IconSizeProperty);
-            set => SetValue(IconSizeProperty, value);
-        }
-
-        #endregion
+        public static readonly DirectProperty<CustomButton, int> ClickCountProperty =
+            AvaloniaProperty.RegisterDirect<CustomButton, int>(
+                nameof(ClickCount), 
+                o => o.m_clickCount, 
+                (o, v) => o.m_clickCount = v,
+                unsetValue: 0);
     }
 }
 ```
 
 ## Features
 
-### ? Automatic Generation
-- No need to manually write `DependencyProperty` boilerplate
-- Properties are generated at compile-time
-- Full IntelliSense support
+### ? Three Property Types
 
-### ? Convention-Based Callbacks
+| Type | Use Case | Style System |
+|------|----------|--------------|
+| `StyledProperty` | Most properties | Yes |
+| `DirectProperty` | Frequently changing values | No |
+| `AttachedProperty` | Properties on other objects | Yes |
+
+### ?? Convention-Based Callbacks
 - Automatically finds `On{PropertyName}Changed` methods
 - Automatically finds `{PropertyName}Coerce` methods
-- No need to explicitly specify callback names unless you want to override
 
-### ? Metadata Options
-- Supports all `FrameworkPropertyMetadataOptions`:
-  - `AffectsMeasure`, `AffectsArrange`, `AffectsRender`
-  - `BindsTwoWayByDefault`, `Inherits`
-- Supports callbacks:
-  - `PropertyChangedCallback` (OnChanged)
-  - `CoerceValueCallback` (Coerce)
-
-### ? Attached Properties
+### ?? Attached Properties
 ```csharp
 public static partial class MyAttachedProperties
 {
@@ -139,123 +107,44 @@ public static partial class MyAttachedProperties
 }
 
 // Generates:
-// - public static readonly DependencyProperty IsHighlightedProperty
-// - public static bool GetIsHighlighted(DependencyObject obj)
-// - public static void SetIsHighlighted(DependencyObject obj, bool value)
+// - public static readonly AttachedProperty<bool> IsHighlightedProperty
+// - public static bool GetIsHighlighted(AvaloniaObject obj)
+// - public static void SetIsHighlighted(AvaloniaObject obj, bool value)
 ```
 
 ## Requirements
 
 - **.NET SDK**: 6.0 or later
-- **Target Framework**: net6.0-windows or later
-- **Language**: C# 9.0+ (for `partial` class support)
-- **Platform**: WPF (Windows only)
-
-## How It's Included
-
-When you install `OutWit.Common.MVVM.WPF`, the generator is automatically added as an analyzer:
-
-```xml
-<ItemGroup>
-  <PackageReference Include="OutWit.Common.MVVM.WPF" Version="2.0.0" />
-  <!-- Generator is included automatically -->
-</ItemGroup>
-```
-
-The generator runs during compilation and generates code that becomes part of your assembly.
+- **Target Framework**: net6.0 or later
+- **Platform**: Cross-platform (Avalonia)
 
 ## Troubleshooting
 
 ### Generated Code Not Appearing
 
-1. **Clean and Rebuild**
-   ```bash
-   dotnet clean
-   dotnet build
-   ```
+1. Clean and rebuild: `dotnet clean && dotnet build`
+2. Ensure class is marked as `partial`
+3. Check using directive: `using OutWit.Common.MVVM.Avalonia.Attributes;`
 
-2. **Check Class is Partial**
-   ```csharp
-   public partial class MyControl : Control  // Must be partial!
-   {
-       [StyledProperty]
-       public string Text { get; set; }
-   }
-   ```
+### View Generated Files
 
-3. **Check Using Directive**
-   ```csharp
-   using OutWit.Common.MVVM.Attributes;  // Required!
-   ```
-
-4. **View Generated Files**
-   
-   Enable `EmitCompilerGeneratedFiles` in your project:
-   ```xml
-   <PropertyGroup>
-       <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-       <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-   </PropertyGroup>
-   ```
-   
-   Generated files will be in `obj/Debug/netX.0-windows/generated/OutWit.Common.MVVM.WPF.Generator/`
-
-### IntelliSense Not Working
-
-1. Close and reopen the file
-2. Restart Visual Studio / VS Code
-3. Delete `bin` and `obj` folders and rebuild
-
-### Compilation Errors
-
-**CS0102: Type already contains a definition for...**
-- Don't declare properties with implementation - only auto-properties
-- Generator will create the full implementation
-
-**CS0229: Ambiguity between...**
-- Property is declared multiple times
-- Check if you have duplicate property declarations
-
-## Technical Details
-
-### Generator Type
-- **Type**: Incremental Source Generator (`IIncrementalGenerator`)
-- **Language**: C# with Roslyn APIs
-- **Framework**: netstandard2.0 (for compatibility)
-- **Package Type**: Analyzer/Source Generator
-
-### Performance
-- Incremental generation - only regenerates when needed
-- Caches symbol information
-- Minimal impact on build time
-
-### Output
-- Generated files are added to the compilation
-- Files are named: `{Namespace}.{ClassName}.{PropertyName}.g.cs`
-- All generated code is marked with `// <auto-generated/>` comment
-
-## Source Code
-
-View the source code on [GitHub](https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.WPF.Generator).
+```xml
+<PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+</PropertyGroup>
+```
 
 ## Related Packages
 
-- **OutWit.Common.MVVM.WPF** - Main WPF package (install this!)
-- **OutWit.Common.MVVM.Abstractions** - Attribute definitions
+- **OutWit.Common.MVVM.Avalonia** - Main Avalonia package (install this!)
 - **OutWit.Common.MVVM** - Cross-platform base classes
-
-## Version History
-
-### 2.0.0
-- Initial release with Roslyn Source Generator
-- Convention-based callback discovery
-- Full `FrameworkPropertyMetadata` support
-- Attached properties support
 
 ## License
 
-MIT License - see repository for details
+Non-Commercial License (NCL) - Free for personal, educational, and research purposes.  
+For commercial use, contact licensing@ratner.io.
 
 ---
 
-**Remember:** This package is a development dependency automatically included with `OutWit.Common.MVVM.WPF`. You don't need to install it separately!
+**Remember:** This package is automatically included with `OutWit.Common.MVVM.Avalonia`. Don't install it separately!

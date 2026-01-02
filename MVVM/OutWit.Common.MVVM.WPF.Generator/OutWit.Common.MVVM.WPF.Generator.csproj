@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
@@ -13,7 +13,7 @@
 
 		<Version>2.0.0</Version>
 
-		<Description>Roslyn Source Generator for WPF DependencyProperty. Automatically generates DependencyProperty definitions from properties marked with [StyledProperty] attribute at compile-time.</Description>
+		<Description>Roslyn Source Generator for WPF DependencyProperty. Automatically generates DependencyProperty definitions from properties marked with [StyledProperty] or [AttachedProperty] attributes at compile-time. This package is automatically included with OutWit.Common.MVVM.WPF.</Description>
 		<PackageTags>OutWit;Common;MVVM;WPF;SourceGenerator;DependencyProperty;Roslyn</PackageTags>
 
 		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.WPF.Generator</RepositoryUrl>
@@ -21,15 +21,11 @@
 		<DevelopmentDependency>true</DevelopmentDependency>
 		<NoPackageAnalysis>true</NoPackageAnalysis>
 		<IncludeSymbols>false</IncludeSymbols>
+		<SymbolPackageFormat></SymbolPackageFormat>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
-	</ItemGroup>
-
-	<!-- Reference to Abstractions project - don't include in package as it should come from WPF package -->
-	<ItemGroup>
-		<ProjectReference Include="..\OutWit.Common.MVVM.Abstractions\OutWit.Common.MVVM.Abstractions.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<!-- Package the generator as an analyzer -->

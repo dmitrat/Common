@@ -10,6 +10,7 @@ Cross-platform MVVM library providing base components for building modern .NET a
   - `DelegateCommand<T>`: Generic typed command
 - **Collections**:
   - `SortedCollection<TKey, TValue>`: Sorted collection with change notifications
+  - `ObservableSortedCollection<TKey, TValue>`: Sorted collection observing item property changes
   - `SafeObservableCollection<T>`: Thread-safe observable collection
 - **Table Models**: Data models for table views (`TableView`, `TableViewPage`, `TableViewRow`, etc.)
 - **Abstractions**: `IDispatcher` for cross-platform thread marshalling
@@ -25,8 +26,11 @@ For platform-specific features:
 # WPF
 dotnet add package OutWit.Common.MVVM.WPF
 
-# Avalonia (coming soon)
+# Avalonia
 dotnet add package OutWit.Common.MVVM.Avalonia
+
+# Blazor
+dotnet add package OutWit.Common.MVVM.Blazor
 ```
 
 ## Quick Start
@@ -68,15 +72,9 @@ public class MyViewModel : ViewModelBase<IApplicationViewModel>
             canExecute: _ => CanSave());
     }
 
-    private void Save()
-    {
-        // Save logic
-    }
-
-    private bool CanSave()
-    {
-        return !string.IsNullOrEmpty(Name);
-    }
+    private void Save() { /* Save logic */ }
+    
+    private bool CanSave() => !string.IsNullOrEmpty(Name);
 
     private void OnNameChanged()
     {
@@ -85,29 +83,27 @@ public class MyViewModel : ViewModelBase<IApplicationViewModel>
 }
 ```
 
+### DelegateCommand<T>
+
+```csharp
+public DelegateCommand<string> SearchCommand { get; }
+
+SearchCommand = new DelegateCommand<string>(
+    execute: searchText => PerformSearch(searchText),
+    canExecute: searchText => !string.IsNullOrEmpty(searchText));
+```
+
 ### SortedCollection
 
 Thread-safe sorted collection with change notifications:
 
 ```csharp
-public class MyViewModel : ViewModelBase<IApplicationViewModel>
-{
-    public SortedCollection<int, Item> Items { get; }
+var items = new SortedCollection<int, Item>(x => x.Id);
 
-    public MyViewModel(IApplicationViewModel appVm) : base(appVm)
-    {
-        Items = new SortedCollection<int, Item>(x => x.Id);
-        
-        // Subscribe to events
-        Items.ItemsAdded += OnItemsAdded;
-        Items.ItemsRemoved += OnItemsRemoved;
-    }
+items.ItemsAdded += (s, added) => Console.WriteLine($"Added {added.Count} items");
+items.ItemsRemoved += (s, removed) => Console.WriteLine($"Removed {removed.Count} items");
 
-    private void OnItemsAdded(object? sender, IReadOnlyCollection<Item>? items)
-    {
-        // Handle items added
-    }
-}
+items.Add(new Item { Id = 1, Name = "First" });
 ```
 
 ### ObservableSortedCollection
@@ -115,151 +111,62 @@ public class MyViewModel : ViewModelBase<IApplicationViewModel>
 Observes property changes in collection items:
 
 ```csharp
-public class Item : INotifyPropertyChanged
+var items = new ObservableSortedCollection<int, Item>(x => x.Id);
+
+// Listen for item property changes
+items.CollectionContentChanged += (sender, e) => 
 {
-    private string m_name = "";
-    
-    public int Id { get; set; }
-    
-    public string Name
-    {
-        get => m_name;
-        set
-        {
-            m_name = value;
-            OnPropertyChanged();
-        }
-    }
+    var item = sender as Item;
+    Console.WriteLine($"Property {e.PropertyName} changed on item {item?.Id}");
+};
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-    
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-}
-
-public class MyViewModel : ViewModelBase<IApplicationViewModel>
-{
-    public ObservableSortedCollection<int, Item> Items { get; }
-
-    public MyViewModel(IApplicationViewModel appVm) : base(appVm)
-    {
-        Items = new ObservableSortedCollection<int, Item>(x => x.Id);
-        
-        // Listen for item property changes
-        Items.CollectionContentChanged += OnItemPropertyChanged;
-    }
-
-    private void OnItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        // Handle item property change
-        // sender is the item that changed
-        // e.PropertyName is the property that changed
-    }
-}
-```
-
-### DelegateCommand<T>
-
-```csharp
-public class MyViewModel : ViewModelBase<IApplicationViewModel>
-{
-    public DelegateCommand<string> SearchCommand { get; }
-
-    public MyViewModel(IApplicationViewModel appVm) : base(appVm)
-    {
-        SearchCommand = new DelegateCommand<string>(
-            execute: searchText => PerformSearch(searchText),
-            canExecute: searchText => !string.IsNullOrEmpty(searchText));
-    }
-
-    private void PerformSearch(string? searchText)
-    {
-        // Search logic
-    }
-}
+items.Add(new Item { Id = 1, Name = "First" });
+items[1].Name = "Updated"; // Triggers CollectionContentChanged
 ```
 
 ### SafeObservableCollection with IDispatcher
 
 ```csharp
-public class MyViewModel : ViewModelBase<IApplicationViewModel>
+// Thread-safe collection that marshals notifications to UI thread
+var items = new SafeObservableCollection<Item>(dispatcher);
+
+// Safe to call from background thread
+await Task.Run(() => 
 {
-    public SafeObservableCollection<Item> Items { get; }
-
-    public MyViewModel(IApplicationViewModel appVm, IDispatcher dispatcher) 
-        : base(appVm)
+    foreach (var item in loadedItems)
     {
-        Items = new SafeObservableCollection<Item>(dispatcher);
+        items.Add(item); // UI updates happen on correct thread
     }
-
-    public async Task LoadItemsAsync()
-    {
-        var items = await GetItemsFromDatabaseAsync();
-        
-        // Safe to call from background thread
-        // Collection will marshal notifications to UI thread
-        foreach (var item in items)
-        {
-            Items.Add(item);
-        }
-    }
-}
+});
 ```
 
-## Performance Features
+## Platform-Specific Packages
 
-### .NET 9+ Lock Optimization
-
-For .NET 9 and later, the collections use the new `System.Threading.Lock` type for improved performance:
-
-```csharp
-// Automatically uses Lock on .NET 9+, object on earlier versions
-var collection = new SortedCollection<int, Item>(x => x.Id);
-```
-
-### Thread-Safety
-
-All collections are thread-safe with fine-grained locking:
-- `SortedCollection<TKey, TValue>` - Thread-safe reads and writes
-- `ObservableSortedCollection<TKey, TValue>` - Thread-safe with separate subscription lock
-- `SafeObservableCollection<T>` - Thread-safe with dispatcher marshalling
+| Package | Platform | Features |
+|---------|----------|----------|
+| `OutWit.Common.MVVM.WPF` | WPF | DependencyProperty source generator, WPF commands, visual tree utilities |
+| `OutWit.Common.MVVM.Avalonia` | Avalonia | StyledProperty/DirectProperty source generator, Avalonia utilities |
+| `OutWit.Common.MVVM.Blazor` | Blazor | ViewModelBase for ComponentBase, async lifecycle support |
 
 ## Migration from v1.x
 
-If you're upgrading from OutWit.Common.MVVM 1.x, see the [Migration Guide](MIGRATION_GUIDE.md).
+See the [Migration Guide](MIGRATION_GUIDE.md) for detailed instructions.
 
 Key changes:
 - Split into cross-platform base and platform-specific packages
 - New source generator-based property system
-- `BindableAttribute` is now obsolete (WPF-specific, use `StyledPropertyAttribute`)
-- **`SortedCollectionEx` renamed to `ObservableSortedCollection`** (old name still works but is obsolete)
+- `BindableAttribute` is obsolete (use `StyledPropertyAttribute`)
+- `SortedCollectionEx` renamed to `ObservableSortedCollection`
 
-## Breaking Changes
+## Related Packages
 
-### Collection Naming (v2.0)
+- `OutWit.Common.MVVM.WPF` - WPF-specific implementation
+- `OutWit.Common.MVVM.Avalonia` - Avalonia-specific implementation
+- `OutWit.Common.MVVM.Blazor` - Blazor-specific implementation
 
-`SortedCollectionEx<TKey, TValue>` has been renamed to `ObservableSortedCollection<TKey, TValue>` for better clarity.
+## License
 
-**Migration:**
-```csharp
-// Old (still works with warning)
-var collection = new SortedCollectionEx<int, Item>(x => x.Id);
+Non-Commercial License (NCL) - Free for personal, educational, and research purposes.  
+For commercial use, contact licensing@ratner.io.
 
-// New (recommended)
-var collection = new ObservableSortedCollection<int, Item>(x => x.Id);
-```
-
-The old name is kept as a type alias for backward compatibility but will show an obsolete warning.
-
-### Generic Constraints (v2.0)
-
-Collections now have `notnull` constraints for better null safety:
-
-```csharp
-// Before
-SortedCollection<int?, string?> collection;
-
-// After - requires non-nullable types
-SortedCollection<int, string> collection;
+See [LICENSE](LICENSE) for full details.

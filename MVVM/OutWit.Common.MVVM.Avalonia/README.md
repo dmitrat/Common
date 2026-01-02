@@ -1,36 +1,36 @@
-# OutWit.Common.MVVM.WPF
+# OutWit.Common.MVVM.Avalonia
 
-WPF-specific MVVM components and utilities, including source generator for automatic DependencyProperty generation.
+Avalonia-specific MVVM components and utilities, including source generator for automatic StyledProperty, DirectProperty, and AttachedProperty generation.
 
 ## Features
 
-- **Source Generator for DependencyProperty**: Automatically generate DependencyProperty from attributes
-- **WPF Commands**: `Command` and `DelegateCommand` with `CommandManager` integration
-- **Binding Utilities**: Helper methods for DependencyProperty registration
-- **Visual Tree Traversal**: Extension methods for navigating WPF visual tree
-- **BindingProxy**: Freezable binding proxy for DataContext access
-- **Legacy Support**: Obsolete `BindableAttribute` for backward compatibility
+- **Source Generator for Properties**: Automatically generate StyledProperty, DirectProperty, and AttachedProperty from attributes
+- **AvaloniaDispatcher**: `IDispatcher` implementation for UI thread invocation
+- **Binding Utilities**: Helper methods for property registration
+- **Visual Tree Traversal**: Extension methods for navigating Avalonia visual tree
+- **BindingProxy**: Binding proxy for DataContext access
+- **DataTemplate Utilities**: Helper methods for DataTemplate creation
 
 ## Installation
 
 ```bash
-dotnet add package OutWit.Common.MVVM.WPF
+dotnet add package OutWit.Common.MVVM.Avalonia
 ```
 
 This automatically includes:
 - `OutWit.Common.MVVM` (base cross-platform package)
-- `OutWit.Common.MVVM.Abstractions` (attributes)
-- `OutWit.Common.MVVM.WPF.Generator` (source generator)
+- `OutWit.Common.MVVM.Avalonia.Generator` (source generator)
+- `OutWit.Common.Logging`
 
 ## Quick Start
 
-### Source Generator for DependencyProperty
+### Source Generator for StyledProperty
 
-The simplest way to create DependencyProperties:
+The simplest way to create StyledProperties:
 
 ```csharp
-using System.Windows.Controls;
-using OutWit.Common.MVVM.Attributes;
+using Avalonia.Controls;
+using OutWit.Common.MVVM.Avalonia.Attributes;
 
 namespace MyApp.Controls
 {
@@ -39,8 +39,8 @@ namespace MyApp.Controls
         [StyledProperty(DefaultValue = "Click Me")]
         public string Label { get; set; }
 
-        [StyledProperty(AffectsMeasure = true)]
-        public double IconSize { get; set; }
+        [StyledProperty(BindsTwoWayByDefault = true)]
+        public bool IsPressed { get; set; }
     }
 }
 ```
@@ -50,33 +50,64 @@ namespace MyApp.Controls
 The generator automatically creates:
 ```csharp
 // Generated code (you don't write this):
-public static readonly DependencyProperty LabelProperty = ...;
-public static readonly DependencyProperty IconSizeProperty = ...;
+public static readonly StyledProperty<string> LabelProperty = 
+    AvaloniaProperty.Register<CustomButton, string>(nameof(Label), "Click Me");
+public static readonly StyledProperty<bool> IsPressedProperty = 
+    AvaloniaProperty.Register<CustomButton, bool>(nameof(IsPressed), defaultBindingMode: BindingMode.TwoWay);
 ```
 
-### Advanced Property Generation
+### DirectProperty for Performance
+
+Use DirectProperty for frequently changing values (better performance, no style system participation):
 
 ```csharp
-public partial class AdvancedControl : Control
+public partial class CounterControl : Control
 {
-    // Full explicit configuration
-    [StyledProperty(
-        DefaultValue = 100.0,
-        AffectsMeasure = true,
-        AffectsArrange = true,
-        BindsTwoWayByDefault = true,
-        OnChanged = nameof(OnWidthChanged))]
-    public double CustomWidth { get; set; }
+    [DirectProperty(DefaultValue = 0)]
+    public int Counter { get; set; }
 
-    private static void OnWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        var control = (AdvancedControl)d;
-        // Handle change
-    }
+    [DirectProperty(BindsTwoWayByDefault = true)]
+    public string Text { get; set; }
 }
 ```
 
-### Convention-Based Callbacks (NEW!)
+Generated code:
+```csharp
+// Backing field is generated automatically
+private int m_counter = 0;
+public static readonly DirectProperty<CounterControl, int> CounterProperty = 
+    AvaloniaProperty.RegisterDirect<CounterControl, int>(
+        nameof(Counter), 
+        o => o.m_counter, 
+        (o, v) => o.m_counter = v,
+        unsetValue: 0);
+```
+
+### Attached Properties
+
+```csharp
+using OutWit.Common.MVVM.Avalonia.Attributes;
+
+public static partial class MyAttachedProperties
+{
+    [AttachedProperty(DefaultValue = false)]
+    public static bool IsHighlighted { get; set; }
+
+    [AttachedProperty(DefaultValue = 1.0, Inherits = true)]
+    public static double Opacity { get; set; }
+}
+
+// Usage in AXAML:
+// <Button local:MyAttachedProperties.IsHighlighted="True" />
+```
+
+Generated code includes Get/Set methods:
+```csharp
+public static bool GetIsHighlighted(AvaloniaObject obj) => obj.GetValue(IsHighlightedProperty);
+public static void SetIsHighlighted(AvaloniaObject obj, bool value) => obj.SetValue(IsHighlightedProperty, value);
+```
+
+### Convention-Based Callbacks
 
 The generator automatically discovers callback methods by naming convention:
 
@@ -88,80 +119,15 @@ public partial class SmartControl : Control
     public string Title { get; set; }
 
     // Convention: On{PropertyName}Changed
-    private static void OnTitleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private void OnTitleChanged(AvaloniaPropertyChangedEventArgs<string> e)
     {
-        var control = (SmartControl)d;
         // Handle title change
     }
 
-    // No need to specify Coerce - automatically discovered!
-    [StyledProperty(DefaultValue = 100.0)]
-    public double Width { get; set; }
-
     // Convention: {PropertyName}Coerce
-    private static object WidthCoerce(DependencyObject d, object value)
+    private string TitleCoerce(AvaloniaObject sender, string value)
     {
-        return Math.Max(0, (double)value); // Ensure non-negative
-    }
-}
-```
-
-**Benefits:**
-- ? Less boilerplate code
-- ? Cleaner attributes
-- ? Compile-time safety
-- ? Override with explicit parameter when needed
-
-### Attached Properties
-
-```csharp
-public static partial class MyAttachedProperties
-{
-    [AttachedProperty(DefaultValue = false)]
-    public static bool IsHighlighted { get; set; }
-}
-
-// Usage in XAML:
-// <Button local:MyAttachedProperties.IsHighlighted="True" />
-```
-
-### WPF Commands
-
-```csharp
-using OutWit.Common.MVVM.WPF.Commands;
-
-public class MyViewModel
-{
-    public DelegateCommand SaveCommand { get; }
-
-    public MyViewModel()
-    {
-        SaveCommand = new DelegateCommand(
-            execute: _ => Save(),
-            canExecute: _ => CanSave());
-    }
-
-    private void Save() { }
-    private bool CanSave() => true;
-}
-```
-
-### Binding Utilities
-
-Manual DependencyProperty registration (for when you can't use source generator):
-
-```csharp
-using OutWit.Common.MVVM.WPF.Utils;
-
-public class MyControl : Control
-{
-    public static readonly DependencyProperty TextProperty = 
-        BindingUtils.Register<MyControl, string>(nameof(Text), "Default");
-
-    public string Text
-    {
-        get => (string)GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
+        return value?.Trim() ?? "";
     }
 }
 ```
@@ -169,13 +135,10 @@ public class MyControl : Control
 ### Visual Tree Traversal
 
 ```csharp
-using OutWit.Common.MVVM.WPF.Utils;
+using OutWit.Common.MVVM.Avalonia.Utils;
 
 // Find first child of specific type
 var button = myPanel.FindFirstChildOf<Button>();
-
-// Find with predicate
-var redButton = myPanel.FindFirstChildOf<Button>(b => b.Background == Brushes.Red);
 
 // Find all children
 var allButtons = myPanel.FindAllChildrenOf<Button>();
@@ -186,25 +149,45 @@ var window = myButton.FindFirstParentOf<Window>();
 
 ### BindingProxy for DataContext Access
 
-```xaml
-<Window.Resources>
+```xml
+<UserControl.Resources>
     <local:BindingProxy x:Key="Proxy" Data="{Binding}" />
-</Window.Resources>
+</UserControl.Resources>
 
-<DataGrid>
+<DataGrid Items="{Binding Items}">
     <DataGrid.Columns>
         <DataGridTemplateColumn>
-            <DataGridTemplateColumn.CellTemplate>
-                <DataTemplate>
-                    <!-- Access parent DataContext from inside DataGrid -->
-                    <Button Command="{Binding Data.DeleteCommand, Source={StaticResource Proxy}}"
-                            CommandParameter="{Binding}" />
-                </DataTemplate>
-            </DataGridTemplateColumn.CellTemplate>
-        </DataGrid.Columns>
-    </DataGrid>
-</Window.Resources>
+            <DataTemplate>
+                <Button Command="{Binding Data.DeleteCommand, Source={StaticResource Proxy}}"
+                        CommandParameter="{Binding}" />
+            </DataTemplate>
+        </DataGridTemplateColumn>
+    </DataGrid.Columns>
+</DataGrid>
 ```
+
+### AvaloniaDispatcher
+
+```csharp
+using OutWit.Common.MVVM.Avalonia.Abstractions;
+
+// Get dispatcher for current thread
+var dispatcher = AvaloniaDispatcher.UIThread;
+
+// Invoke on UI thread
+dispatcher.Invoke(() => UpdateUI());
+
+// Async invoke
+await dispatcher.InvokeAsync(() => UpdateUI());
+```
+
+## Property Types Comparison
+
+| Type | Use Case | Style System | Performance |
+|------|----------|--------------|-------------|
+| `StyledProperty` | Most properties | Yes | Normal |
+| `DirectProperty` | Frequently changing values | No | Better |
+| `AttachedProperty` | Properties on other objects | Yes | Normal |
 
 ## StyledProperty Options
 
@@ -213,40 +196,38 @@ var window = myButton.FindFirstParentOf<Window>();
 | `PropertyName` | `string` | Override property name (default: `{Name}Property`) |
 | `DefaultValue` | `object` | Default value |
 | `BindsTwoWayByDefault` | `bool` | Enable two-way binding by default |
-| `AffectsMeasure` | `bool` | Invalidate measure on change |
-| `AffectsArrange` | `bool` | Invalidate arrange on change |
-| `AffectsRender` | `bool` | Invalidate render on change |
 | `Inherits` | `bool` | Value inherited by child elements |
-| `OnChanged` | `string` | PropertyChangedCallback method name |
-| `Coerce` | `string` | CoerceValueCallback method name |
+| `OnChanged` | `string` | Property changed callback method name |
+| `Coerce` | `string` | Coerce value callback method name |
 
-## Migration from Old BindableAttribute
+## DirectProperty Options
 
-See [Migration Guide](../OutWit.Common.MVVM/MIGRATION_GUIDE.md) for detailed instructions.
+| Option | Type | Description |
+|--------|------|-------------|
+| `PropertyName` | `string` | Override property name |
+| `DefaultValue` | `object` | Default value (also used as unset value) |
+| `BindsTwoWayByDefault` | `bool` | Enable two-way binding by default |
+| `OnChanged` | `string` | Property changed callback method name |
 
-**Quick summary:**
-1. Change `[Bindable]` to `[StyledProperty]`
-2. Remove manual `DependencyProperty` declarations
-3. Mark class as `partial`
-4. Move options to attribute parameters
+## AttachedProperty Options
 
-## Legacy BindableAttribute (Deprecated)
-
-The old `BindableAttribute` using AspectInjector is still available but **deprecated**:
-
-```csharp
-[Obsolete("Use StyledPropertyAttribute instead")]
-public class BindableAttribute : Attribute { }
-```
-
-**Recommendation**: Migrate to `StyledPropertyAttribute` for better IDE support and debugging.
+| Option | Type | Description |
+|--------|------|-------------|
+| `PropertyName` | `string` | Override property name |
+| `DefaultValue` | `object` | Default value |
+| `Inherits` | `bool` | Value inherited by child elements |
+| `OnChanged` | `string` | Property changed callback method name |
+| `Coerce` | `string` | Coerce value callback method name |
 
 ## Related Packages
 
-- `OutWit.Common.MVVM` - Cross-platform base
-- `OutWit.Common.MVVM.Abstractions` - Attribute definitions
-- `OutWit.Common.MVVM.WPF.Generator` - Source generator
+- `OutWit.Common.MVVM` - Cross-platform base classes
+- `OutWit.Common.MVVM.WPF` - WPF-specific implementation
+- `OutWit.Common.MVVM.Blazor` - Blazor-specific implementation
 
 ## License
 
-MIT License - see LICENSE file for details
+Non-Commercial License (NCL) - Free for personal, educational, and research purposes.  
+For commercial use, contact licensing@ratner.io.
+
+See [LICENSE](LICENSE) for full details.

@@ -1,252 +1,256 @@
-# OutWit.Common.MVVM.WPF
+# OutWit.Common.MVVM.Blazor
 
-WPF-specific MVVM components and utilities, including source generator for automatic DependencyProperty generation.
+Blazor-specific MVVM components and utilities for building Blazor applications with the MVVM pattern.
 
 ## Features
 
-- **Source Generator for DependencyProperty**: Automatically generate DependencyProperty from attributes
-- **WPF Commands**: `Command` and `DelegateCommand` with `CommandManager` integration
-- **Binding Utilities**: Helper methods for DependencyProperty registration
-- **Visual Tree Traversal**: Extension methods for navigating WPF visual tree
-- **BindingProxy**: Freezable binding proxy for DataContext access
-- **Legacy Support**: Obsolete `BindableAttribute` for backward compatibility
+- **ViewModelBase**: Base class combining `ComponentBase` with `INotifyPropertyChanged`
+- **ViewModelBaseAsync**: Extended base with async lifecycle support and error handling
+- **BlazorDispatcher**: `IDispatcher` implementation for UI thread invocation
+- **SafeObservableCollection**: Collection with automatic `StateHasChanged` callbacks
+- **Component Extensions**: Helper methods for Blazor components
 
 ## Installation
 
 ```bash
-dotnet add package OutWit.Common.MVVM.WPF
+dotnet add package OutWit.Common.MVVM.Blazor
 ```
 
 This automatically includes:
 - `OutWit.Common.MVVM` (base cross-platform package)
-- `OutWit.Common.MVVM.Abstractions` (attributes)
-- `OutWit.Common.MVVM.WPF.Generator` (source generator)
+- `OutWit.Common.Logging`
 
 ## Quick Start
 
-### Source Generator for DependencyProperty
+### ViewModelBase
 
-The simplest way to create DependencyProperties:
+The simplest way to create a Blazor component with MVVM support:
 
 ```csharp
-using System.Windows.Controls;
-using OutWit.Common.MVVM.Attributes;
+@inherits ViewModelBase
 
-namespace MyApp.Controls
-{
-    public partial class CustomButton : Button
+<h1>Counter: @Count</h1>
+<button @onclick="IncrementCount" disabled="@Busy">
+    @(Busy ? "Loading..." : "Increment")
+</button>
+
+@code {
+    private int _count;
+    
+    public int Count
     {
-        [StyledProperty(DefaultValue = "Click Me")]
-        public string Label { get; set; }
+        get => _count;
+        set => SetProperty(ref _count, value);
+    }
 
-        [StyledProperty(AffectsMeasure = true)]
-        public double IconSize { get; set; }
+    private async Task IncrementCount()
+    {
+        await RunAsync(async () =>
+        {
+            await Task.Delay(500); // Simulate work
+            Count++;
+        });
     }
 }
 ```
 
-**Important**: Mark your class as `partial` to allow source generator to add code.
-
-The generator automatically creates:
-```csharp
-// Generated code (you don't write this):
-public static readonly DependencyProperty LabelProperty = ...;
-public static readonly DependencyProperty IconSizeProperty = ...;
-```
-
-### Advanced Property Generation
+### ViewModelBase Features
 
 ```csharp
-public partial class AdvancedControl : Control
+public class MyViewModel : ViewModelBase
 {
-    // Full explicit configuration
-    [StyledProperty(
-        DefaultValue = 100.0,
-        AffectsMeasure = true,
-        AffectsArrange = true,
-        BindsTwoWayByDefault = true,
-        OnChanged = nameof(OnWidthChanged))]
-    public double CustomWidth { get; set; }
+    private string _name = "";
+    private int _count;
 
-    private static void OnWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    // Property with automatic change notification
+    public string Name
     {
-        var control = (AdvancedControl)d;
-        // Handle change
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    public int Count
+    {
+        get => _count;
+        set => SetProperty(ref _count, value);
+    }
+
+    // Run async operation with automatic Busy state management
+    public async Task LoadDataAsync()
+    {
+        await RunAsync(async () =>
+        {
+            var data = await FetchDataAsync();
+            Name = data.Name;
+        });
+        // Busy is automatically set to true/false
+        // StateHasChanged is called automatically after completion
+    }
+
+    // Safe execution with error handling
+    public void SafeOperation()
+    {
+        // Returns default on exception
+        var result = Check(() => int.Parse("invalid"), defaultValue: 0);
+        
+        // Returns false on exception
+        var success = Check(() => RiskyOperation());
+        
+        // Swallows exception
+        Check(() => MayThrow());
+    }
+
+    // React to property changes
+    protected override void OnPropertyChanged(string? propertyName)
+    {
+        if (propertyName == nameof(Name))
+        {
+            // Handle name change
+        }
     }
 }
 ```
 
-### Convention-Based Callbacks (NEW!)
+### ViewModelBaseAsync
 
-The generator automatically discovers callback methods by naming convention:
+Extended base class with async initialization and error handling:
 
 ```csharp
-public partial class SmartControl : Control
+@inherits ViewModelBaseAsync
+
+@if (HasError)
 {
-    // No need to specify OnChanged - automatically discovered!
-    [StyledProperty(DefaultValue = "Hello")]
-    public string Title { get; set; }
-
-    // Convention: On{PropertyName}Changed
-    private static void OnTitleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        var control = (SmartControl)d;
-        // Handle title change
-    }
-
-    // No need to specify Coerce - automatically discovered!
-    [StyledProperty(DefaultValue = 100.0)]
-    public double Width { get; set; }
-
-    // Convention: {PropertyName}Coerce
-    private static object WidthCoerce(DependencyObject d, object value)
-    {
-        return Math.Max(0, (double)value); // Ensure non-negative
-    }
+    <div class="alert alert-danger">@Error</div>
 }
-```
-
-**Benefits:**
-- ? Less boilerplate code
-- ? Cleaner attributes
-- ? Compile-time safety
-- ? Override with explicit parameter when needed
-
-### Attached Properties
-
-```csharp
-public static partial class MyAttachedProperties
+else if (Busy)
 {
-    [AttachedProperty(DefaultValue = false)]
-    public static bool IsHighlighted { get; set; }
+    <div>Loading...</div>
+}
+else
+{
+    <div>@Data</div>
 }
 
-// Usage in XAML:
-// <Button local:MyAttachedProperties.IsHighlighted="True" />
-```
+@code {
+    public string? Data { get; private set; }
 
-### WPF Commands
-
-```csharp
-using OutWit.Common.MVVM.WPF.Commands;
-
-public class MyViewModel
-{
-    public DelegateCommand SaveCommand { get; }
-
-    public MyViewModel()
+    // Called during OnInitializedAsync - errors are caught automatically
+    protected override async Task InitializeAsync()
     {
-        SaveCommand = new DelegateCommand(
-            execute: _ => Save(),
-            canExecute: _ => CanSave());
+        Data = await LoadDataAsync();
     }
 
-    private void Save() { }
-    private bool CanSave() => true;
-}
-```
-
-### Binding Utilities
-
-Manual DependencyProperty registration (for when you can't use source generator):
-
-```csharp
-using OutWit.Common.MVVM.WPF.Utils;
-
-public class MyControl : Control
-{
-    public static readonly DependencyProperty TextProperty = 
-        BindingUtils.Register<MyControl, string>(nameof(Text), "Default");
-
-    public string Text
+    // Optional: Handle initialization errors
+    protected override void OnInitializationError(Exception ex)
     {
-        get => (string)GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
+        // Log error, show notification, etc.
     }
 }
 ```
 
-### Visual Tree Traversal
+### SafeObservableCollection
+
+Collection that automatically notifies UI when modified:
 
 ```csharp
-using OutWit.Common.MVVM.WPF.Utils;
+@inherits ViewModelBase
 
-// Find first child of specific type
-var button = myPanel.FindFirstChildOf<Button>();
+<ul>
+    @foreach (var item in Items)
+    {
+        <li>@item</li>
+    }
+</ul>
 
-// Find with predicate
-var redButton = myPanel.FindFirstChildOf<Button>(b => b.Background == Brushes.Red);
+@code {
+    // Collection with automatic StateHasChanged callback
+    public SafeObservableCollection<string> Items { get; private set; } = null!;
 
-// Find all children
-var allButtons = myPanel.FindAllChildrenOf<Button>();
+    protected override void OnInitialized()
+    {
+        // Pass StateHasChanged action to automatically refresh UI on changes
+        Items = new SafeObservableCollection<string>(() => StateHasChanged());
+        Items.Add("Item 1");
+        Items.Add("Item 2");
+    }
 
-// Find parent
-var window = myButton.FindFirstParentOf<Window>();
+    private void AddItem(string item)
+    {
+        Items.Add(item); // UI automatically updates
+    }
+}
 ```
 
-### BindingProxy for DataContext Access
+### Component Extensions
 
-```xaml
-<Window.Resources>
-    <local:BindingProxy x:Key="Proxy" Data="{Binding}" />
-</Window.Resources>
+```csharp
+using OutWit.Common.MVVM.Blazor.Utils;
 
-<DataGrid>
-    <DataGrid.Columns>
-        <DataGridTemplateColumn>
-            <DataGridTemplateColumn.CellTemplate>
-                <DataTemplate>
-                    <!-- Access parent DataContext from inside DataGrid -->
-                    <Button Command="{Binding Data.DeleteCommand, Source={StaticResource Proxy}}"
-                            CommandParameter="{Binding}" />
-                </DataTemplate>
-            </DataGridTemplateColumn.CellTemplate>
-        </DataGrid.Columns>
-    </DataGrid>
-</Window.Resources>
+// Force UI update
+component.ForceUpdate();
+
+// Run with busy state
+await component.RunWithBusyAsync(
+    () => _busy,
+    v => _busy = v,
+    async () => await DoWorkAsync()
+);
 ```
 
-## StyledProperty Options
+## ViewModelBase API
 
-| Option | Type | Description |
+| Member | Type | Description |
 |--------|------|-------------|
-| `PropertyName` | `string` | Override property name (default: `{Name}Property`) |
-| `DefaultValue` | `object` | Default value |
-| `BindsTwoWayByDefault` | `bool` | Enable two-way binding by default |
-| `AffectsMeasure` | `bool` | Invalidate measure on change |
-| `AffectsArrange` | `bool` | Invalidate arrange on change |
-| `AffectsRender` | `bool` | Invalidate render on change |
-| `Inherits` | `bool` | Value inherited by child elements |
-| `OnChanged` | `string` | PropertyChangedCallback method name |
-| `Coerce` | `string` | CoerceValueCallback method name |
+| `Busy` | `bool` | Indicates if async operation is running |
+| `PropertyChanged` | `event` | Fired when property value changes |
+| `SetProperty<T>` | `method` | Sets property and raises PropertyChanged |
+| `RaisePropertyChanged` | `method` | Manually raises PropertyChanged |
+| `RunAsync` | `method` | Runs async operation with Busy management |
+| `Check<T>` | `method` | Executes with error handling |
+| `InvokeOnUIAsync` | `method` | Invokes on UI thread |
 
-## Migration from Old BindableAttribute
+## ViewModelBaseAsync API
 
-See [Migration Guide](../OutWit.Common.MVVM/MIGRATION_GUIDE.md) for detailed instructions.
+Includes all ViewModelBase members plus:
 
-**Quick summary:**
-1. Change `[Bindable]` to `[StyledProperty]`
-2. Remove manual `DependencyProperty` declarations
-3. Mark class as `partial`
-4. Move options to attribute parameters
+| Member | Type | Description |
+|--------|------|-------------|
+| `Error` | `string?` | Error message from initialization |
+| `HasError` | `bool` | Indicates if there's an error |
+| `InitializeAsync` | `method` | Override for async initialization |
+| `OnInitializationError` | `method` | Called when initialization fails |
+| `DisposeAsync` | `method` | Async dispose support |
 
-## Legacy BindableAttribute (Deprecated)
+## Design Considerations
 
-The old `BindableAttribute` using AspectInjector is still available but **deprecated**:
+### Why No Source Generator?
 
-```csharp
-[Obsolete("Use StyledPropertyAttribute instead")]
-public class BindableAttribute : Attribute { }
-```
+Unlike WPF and Avalonia, Blazor doesn't have a `DependencyProperty` or `StyledProperty` equivalent. Blazor uses:
 
-**Recommendation**: Migrate to `StyledPropertyAttribute` for better IDE support and debugging.
+- `[Parameter]` attribute for component parameters (built-in)
+- `[CascadingParameter]` for cascading values (built-in)
+- Standard C# properties with `INotifyPropertyChanged`
+
+The existing Blazor infrastructure handles these patterns well, so a source generator isn't necessary.
+
+### Differences from WPF/Avalonia
+
+| Feature | WPF/Avalonia | Blazor |
+|---------|--------------|--------|
+| Property System | DependencyProperty/StyledProperty | Standard C# + INotifyPropertyChanged |
+| UI Thread | Dispatcher | SynchronizationContext + InvokeAsync |
+| Visual Tree | Yes | Render Tree (different model) |
+| Data Binding | XAML Binding | Razor @bind |
 
 ## Related Packages
 
-- `OutWit.Common.MVVM` - Cross-platform base
-- `OutWit.Common.MVVM.Abstractions` - Attribute definitions
-- `OutWit.Common.MVVM.WPF.Generator` - Source generator
+- `OutWit.Common.MVVM` - Cross-platform base classes
+- `OutWit.Common.MVVM.WPF` - WPF-specific implementation
+- `OutWit.Common.MVVM.Avalonia` - Avalonia-specific implementation
 
 ## License
 
-MIT License - see LICENSE file for details
+Non-Commercial License (NCL) - Free for personal, educational, and research purposes.  
+For commercial use, contact licensing@ratner.io.
+
+See [LICENSE](LICENSE) for full details.

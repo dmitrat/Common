@@ -38,7 +38,7 @@ This source generator:
 
 ```csharp
 using System.Windows.Controls;
-using OutWit.Common.MVVM.Attributes;
+using OutWit.Common.MVVM.WPF.Attributes;
 
 namespace MyApp.Controls
 {
@@ -56,11 +56,6 @@ namespace MyApp.Controls
             var button = (CustomButton)d;
             button.UpdateLabel();
         }
-
-        private void UpdateLabel()
-        {
-            // Update logic
-        }
     }
 }
 ```
@@ -75,37 +70,21 @@ namespace MyApp.Controls
 {
     partial class CustomButton
     {
-        #region Dependency Properties
-
-        public static readonly global::System.Windows.DependencyProperty LabelProperty =
-            global::System.Windows.DependencyProperty.Register(
+        public static readonly DependencyProperty LabelProperty =
+            DependencyProperty.Register(
                 nameof(Label), 
                 typeof(string), 
                 typeof(CustomButton),
-                new global::System.Windows.FrameworkPropertyMetadata(
+                new FrameworkPropertyMetadata(
                     "Click Me", 
-                    global::System.Windows.FrameworkPropertyMetadataOptions.AffectsMeasure, 
+                    FrameworkPropertyMetadataOptions.AffectsMeasure, 
                     OnLabelChanged));
 
-        public string Label
-        {
-            get => (string)GetValue(LabelProperty);
-            set => SetValue(LabelProperty, value);
-        }
-
-        public static readonly global::System.Windows.DependencyProperty IconSizeProperty =
-            global::System.Windows.DependencyProperty.Register(
+        public static readonly DependencyProperty IconSizeProperty =
+            DependencyProperty.Register(
                 nameof(IconSize), 
                 typeof(double), 
                 typeof(CustomButton));
-
-        public double IconSize
-        {
-            get => (double)GetValue(IconSizeProperty);
-            set => SetValue(IconSizeProperty, value);
-        }
-
-        #endregion
     }
 }
 ```
@@ -113,149 +92,61 @@ namespace MyApp.Controls
 ## Features
 
 ### ? Automatic Generation
-- No need to manually write `DependencyProperty` boilerplate
-- Properties are generated at compile-time
+- No manual `DependencyProperty` boilerplate
+- Compile-time generation
 - Full IntelliSense support
 
-### ? Convention-Based Callbacks
+### ?? Convention-Based Callbacks
 - Automatically finds `On{PropertyName}Changed` methods
 - Automatically finds `{PropertyName}Coerce` methods
-- No need to explicitly specify callback names unless you want to override
 
-### ? Metadata Options
-- Supports all `FrameworkPropertyMetadataOptions`:
-  - `AffectsMeasure`, `AffectsArrange`, `AffectsRender`
-  - `BindsTwoWayByDefault`, `Inherits`
-- Supports callbacks:
-  - `PropertyChangedCallback` (OnChanged)
-  - `CoerceValueCallback` (Coerce)
+### ?? Metadata Options
+- `AffectsMeasure`, `AffectsArrange`, `AffectsRender`
+- `BindsTwoWayByDefault`, `Inherits`
+- `PropertyChangedCallback`, `CoerceValueCallback`
 
-### ? Attached Properties
+### ?? Attached Properties
 ```csharp
 public static partial class MyAttachedProperties
 {
     [AttachedProperty(DefaultValue = false)]
     public static bool IsHighlighted { get; set; }
 }
-
-// Generates:
-// - public static readonly DependencyProperty IsHighlightedProperty
-// - public static bool GetIsHighlighted(DependencyObject obj)
-// - public static void SetIsHighlighted(DependencyObject obj, bool value)
 ```
 
 ## Requirements
 
 - **.NET SDK**: 6.0 or later
 - **Target Framework**: net6.0-windows or later
-- **Language**: C# 9.0+ (for `partial` class support)
 - **Platform**: WPF (Windows only)
-
-## How It's Included
-
-When you install `OutWit.Common.MVVM.WPF`, the generator is automatically added as an analyzer:
-
-```xml
-<ItemGroup>
-  <PackageReference Include="OutWit.Common.MVVM.WPF" Version="2.0.0" />
-  <!-- Generator is included automatically -->
-</ItemGroup>
-```
-
-The generator runs during compilation and generates code that becomes part of your assembly.
 
 ## Troubleshooting
 
 ### Generated Code Not Appearing
 
-1. **Clean and Rebuild**
-   ```bash
-   dotnet clean
-   dotnet build
-   ```
+1. Clean and rebuild: `dotnet clean && dotnet build`
+2. Ensure class is marked as `partial`
+3. Check using directive: `using OutWit.Common.MVVM.WPF.Attributes;`
 
-2. **Check Class is Partial**
-   ```csharp
-   public partial class MyControl : Control  // Must be partial!
-   {
-       [StyledProperty]
-       public string Text { get; set; }
-   }
-   ```
+### View Generated Files
 
-3. **Check Using Directive**
-   ```csharp
-   using OutWit.Common.MVVM.Attributes;  // Required!
-   ```
-
-4. **View Generated Files**
-   
-   Enable `EmitCompilerGeneratedFiles` in your project:
-   ```xml
-   <PropertyGroup>
-       <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-       <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-   </PropertyGroup>
-   ```
-   
-   Generated files will be in `obj/Debug/netX.0-windows/generated/OutWit.Common.MVVM.WPF.Generator/`
-
-### IntelliSense Not Working
-
-1. Close and reopen the file
-2. Restart Visual Studio / VS Code
-3. Delete `bin` and `obj` folders and rebuild
-
-### Compilation Errors
-
-**CS0102: Type already contains a definition for...**
-- Don't declare properties with implementation - only auto-properties
-- Generator will create the full implementation
-
-**CS0229: Ambiguity between...**
-- Property is declared multiple times
-- Check if you have duplicate property declarations
-
-## Technical Details
-
-### Generator Type
-- **Type**: Incremental Source Generator (`IIncrementalGenerator`)
-- **Language**: C# with Roslyn APIs
-- **Framework**: netstandard2.0 (for compatibility)
-- **Package Type**: Analyzer/Source Generator
-
-### Performance
-- Incremental generation - only regenerates when needed
-- Caches symbol information
-- Minimal impact on build time
-
-### Output
-- Generated files are added to the compilation
-- Files are named: `{Namespace}.{ClassName}.{PropertyName}.g.cs`
-- All generated code is marked with `// <auto-generated/>` comment
-
-## Source Code
-
-View the source code on [GitHub](https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.WPF.Generator).
+```xml
+<PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+</PropertyGroup>
+```
 
 ## Related Packages
 
 - **OutWit.Common.MVVM.WPF** - Main WPF package (install this!)
-- **OutWit.Common.MVVM.Abstractions** - Attribute definitions
 - **OutWit.Common.MVVM** - Cross-platform base classes
-
-## Version History
-
-### 2.0.0
-- Initial release with Roslyn Source Generator
-- Convention-based callback discovery
-- Full `FrameworkPropertyMetadata` support
-- Attached properties support
 
 ## License
 
-MIT License - see repository for details
+Non-Commercial License (NCL) - Free for personal, educational, and research purposes.  
+For commercial use, contact licensing@ratner.io.
 
 ---
 
-**Remember:** This package is a development dependency automatically included with `OutWit.Common.MVVM.WPF`. You don't need to install it separately!
+**Remember:** This package is automatically included with `OutWit.Common.MVVM.WPF`. Don't install it separately!

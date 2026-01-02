@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
@@ -14,8 +14,8 @@
 
 		<Version>2.0.0</Version>
 
-		<Description>Roslyn Source Generator for Avalonia StyledProperty and DirectProperty. Automatically generates property definitions from properties marked with [StyledProperty] or [DirectProperty] attributes at compile-time.</Description>
-		<PackageTags>OutWit;Common;MVVM;Avalonia;SourceGenerator;StyledProperty;DirectProperty;Roslyn</PackageTags>
+		<Description>Roslyn Source Generator for Avalonia StyledProperty, DirectProperty, and AttachedProperty. Automatically generates property definitions from properties marked with [StyledProperty], [DirectProperty], or [AttachedProperty] attributes at compile-time. This package is automatically included with OutWit.Common.MVVM.Avalonia.</Description>
+		<PackageTags>OutWit;Common;MVVM;Avalonia;SourceGenerator;StyledProperty;DirectProperty;AttachedProperty;Roslyn</PackageTags>
 
 		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Avalonia.Generator</RepositoryUrl>
 
@@ -29,8 +29,6 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
 	</ItemGroup>
-
-	<!-- Reference to Abstractions project - don't include in package as it should come from Avalonia package -->
 
 	<!-- Package the generator as an analyzer -->
 	<ItemGroup>

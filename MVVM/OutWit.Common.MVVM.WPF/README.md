@@ -19,8 +19,8 @@ dotnet add package OutWit.Common.MVVM.WPF
 
 This automatically includes:
 - `OutWit.Common.MVVM` (base cross-platform package)
-- `OutWit.Common.MVVM.Abstractions` (attributes)
 - `OutWit.Common.MVVM.WPF.Generator` (source generator)
+- `OutWit.Common.Logging`
 
 ## Quick Start
 
@@ -30,7 +30,7 @@ The simplest way to create DependencyProperties:
 
 ```csharp
 using System.Windows.Controls;
-using OutWit.Common.MVVM.Attributes;
+using OutWit.Common.MVVM.WPF.Attributes;
 
 namespace MyApp.Controls
 {
@@ -76,7 +76,7 @@ public partial class AdvancedControl : Control
 }
 ```
 
-### Convention-Based Callbacks (NEW!)
+### Convention-Based Callbacks
 
 The generator automatically discovers callback methods by naming convention:
 
@@ -115,6 +115,8 @@ public partial class SmartControl : Control
 ### Attached Properties
 
 ```csharp
+using OutWit.Common.MVVM.WPF.Attributes;
+
 public static partial class MyAttachedProperties
 {
     [AttachedProperty(DefaultValue = false)]
@@ -220,6 +222,16 @@ var window = myButton.FindFirstParentOf<Window>();
 | `OnChanged` | `string` | PropertyChangedCallback method name |
 | `Coerce` | `string` | CoerceValueCallback method name |
 
+## AttachedProperty Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `PropertyName` | `string` | Override property name |
+| `DefaultValue` | `object` | Default value |
+| `Inherits` | `bool` | Value inherited by child elements |
+| `OnChanged` | `string` | PropertyChangedCallback method name |
+| `Coerce` | `string` | CoerceValueCallback method name |
+
 ## Migration from Old BindableAttribute
 
 See [Migration Guide](../OutWit.Common.MVVM/MIGRATION_GUIDE.md) for detailed instructions.
@@ -243,10 +255,13 @@ public class BindableAttribute : Attribute { }
 
 ## Related Packages
 
-- `OutWit.Common.MVVM` - Cross-platform base
-- `OutWit.Common.MVVM.Abstractions` - Attribute definitions
-- `OutWit.Common.MVVM.WPF.Generator` - Source generator
+- `OutWit.Common.MVVM` - Cross-platform base classes
+- `OutWit.Common.MVVM.Avalonia` - Avalonia-specific implementation
+- `OutWit.Common.MVVM.Blazor` - Blazor-specific implementation
 
 ## License
 
-MIT License - see LICENSE file for details
+Non-Commercial License (NCL) - Free for personal, educational, and research purposes.  
+For commercial use, contact licensing@ratner.io.
+
+See [LICENSE](LICENSE) for full details.
