@@ -90,13 +90,24 @@ jobs:
         run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" -c Release --no-build
 
       - name: Collect packages
+        id: collect
         shell: pwsh
         run: |
           if (!(Test-Path "NuGet")) { New-Item -ItemType Directory -Force -Path "NuGet" | Out-Null }
           Get-ChildItem -Recurse -Include *.nupkg,*.snupkg -Path . |
             Where-Object { $_.FullName -match "\\bin\\Release\\" } |
             Copy-Item -Destination "NuGet" -Force
-          Write-Host "Collected packages:"; Get-ChildItem NuGet | Select-Object Name
+          
+          $hasNupkg = (Get-ChildItem -Path "NuGet" -Filter "*.nupkg" | Measure-Object).Count -gt 0
+          $hasSnupkg = (Get-ChildItem -Path "NuGet" -Filter "*.snupkg" | Measure-Object).Count -gt 0
+          
+          "hasNupkg=$hasNupkg" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "hasSnupkg=$hasSnupkg" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          
+          Write-Host "Collected packages:"
+          Get-ChildItem NuGet | Select-Object Name
+          Write-Host "Has .nupkg: $hasNupkg"
+          Write-Host "Has .snupkg: $hasSnupkg"
 
       - name: Add GitHub Packages source
         if: github.event.inputs.pushToGitHubPackages == 'true'
@@ -109,7 +120,7 @@ jobs:
           "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
       - name: Push to nuget.org (.nupkg)
-        if: github.event.inputs.pushToNuGet == 'true'
+        if: github.event.inputs.pushToNuGet == 'true' && steps.collect.outputs.hasNupkg == 'True'
         run: >
           dotnet nuget push "NuGet\*.nupkg"
           --api-key ${{ secrets.NUGET_API_KEY }}
@@ -117,7 +128,7 @@ jobs:
           --skip-duplicate
 
       - name: Push symbols to nuget.org (.snupkg)
-        if: github.event.inputs.pushToNuGet == 'true'
+        if: github.event.inputs.pushToNuGet == 'true' && steps.collect.outputs.hasSnupkg == 'True'
         run: >
           dotnet nuget push "NuGet\*.snupkg"
           --api-key ${{ secrets.NUGET_API_KEY }}
@@ -125,7 +136,7 @@ jobs:
           --skip-duplicate
 
       - name: Push to GitHub Packages (.nupkg)
-        if: github.event.inputs.pushToGitHubPackages == 'true'
+        if: github.event.inputs.pushToGitHubPackages == 'true' && steps.collect.outputs.hasNupkg == 'True'
         run: >
           dotnet nuget push "NuGet\*.nupkg"
           --api-key ${{ secrets.GITHUB_TOKEN }}
