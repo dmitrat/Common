@@ -22,6 +22,11 @@ on:
           - OutWit.Common.MessagePack
           - OutWit.Common.ProtoBuf
           - OutWit.Common.MVVM
+          - OutWit.Common.MVVM.WPF
+          - OutWit.Common.MVVM.WPF.Generator
+          - OutWit.Common.MVVM.Avalonia
+          - OutWit.Common.MVVM.Avalonia.Generator
+          - OutWit.Common.MVVM.Blazor
           - OutWit.Common.NUnit
           - OutWit.Common.Plugins
           - OutWit.Common.Plugins.Abstractions

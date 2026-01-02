@@ -21,11 +21,13 @@ on:
           - OutWit.Common.MessagePack
           - OutWit.Common.ProtoBuf
           - OutWit.Common.MVVM
+          - OutWit.Common.MVVM.WPF
+          - OutWit.Common.MVVM.Avalonia
+          - OutWit.Common.MVVM.Blazor
           - OutWit.Common.NUnit
           - OutWit.Common.Plugins
-          - OutWit.Common.Settings
-          - OutWit.Common.Plugins
           - OutWit.Common.Plugins.Abstractions
+          - OutWit.Common.Settings
       configuration:
         description: 'Build configuration'
         required: false

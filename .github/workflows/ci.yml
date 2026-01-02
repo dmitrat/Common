@@ -64,6 +64,25 @@ jobs:
               - 'Aspects/**'
             OutWit.Common.MVVM:
               - 'MVVM/OutWit.Common.MVVM/**'
+              - 'MVVM/OutWit.Common.MVVM.Tests/**'
+            OutWit.Common.MVVM.WPF:
+              - 'MVVM/OutWit.Common.MVVM.WPF/**'
+              - 'MVVM/OutWit.Common.MVVM.WPF.Tests/**'
+              - 'MVVM/OutWit.Common.MVVM.WPF.Generator/**'
+              - 'MVVM/OutWit.Common.MVVM/**'
+            OutWit.Common.MVVM.WPF.Generator:
+              - 'MVVM/OutWit.Common.MVVM.WPF.Generator/**'
+            OutWit.Common.MVVM.Avalonia:
+              - 'MVVM/OutWit.Common.MVVM.Avalonia/**'
+              - 'MVVM/OutWit.Common.MVVM.Avalonia.Tests/**'
+              - 'MVVM/OutWit.Common.MVVM.Avalonia.Generator/**'
+              - 'MVVM/OutWit.Common.MVVM/**'
+            OutWit.Common.MVVM.Avalonia.Generator:
+              - 'MVVM/OutWit.Common.MVVM.Avalonia.Generator/**'
+            OutWit.Common.MVVM.Blazor:
+              - 'MVVM/OutWit.Common.MVVM.Blazor/**'
+              - 'MVVM/OutWit.Common.MVVM.Blazor.Tests/**'
+              - 'MVVM/OutWit.Common.MVVM/**'
             OutWit.Common.NUnit:
               - 'NUnit/OutWit.Common.NUnit/**'
             OutWit.Common.Plugins:
