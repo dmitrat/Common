@@ -63,7 +63,7 @@ jobs:
       - name: Restore slnx
         run: dotnet restore OutWit.slnx
 
-      - name: Resolve library project path
+      - name: Resolve project paths
         id: paths
         shell: pwsh
         run: |
@@ -73,6 +73,34 @@ jobs:
           "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Resolved: $lib"
           
+          # Check if this project embeds a generator and needs it built first
+          # Projects that embed generators: OutWit.Common.Proxy, OutWit.Common.MVVM.WPF, OutWit.Common.MVVM.Avalonia
+          $generatorProject = ""
+          switch ($projName) {
+            "OutWit.Common.Proxy" { 
+              $generatorProject = Get-ChildItem -Recurse -Filter "OutWit.Common.Proxy.Generator.csproj" | Select-Object -Expand FullName -First 1
+            }
+            "OutWit.Common.MVVM.WPF" { 
+              $generatorProject = Get-ChildItem -Recurse -Filter "OutWit.Common.MVVM.WPF.Generator.csproj" | Select-Object -Expand FullName -First 1
+            }
+            "OutWit.Common.MVVM.Avalonia" { 
+              $generatorProject = Get-ChildItem -Recurse -Filter "OutWit.Common.MVVM.Avalonia.Generator.csproj" | Select-Object -Expand FullName -First 1
+            }
+          }
+          
+          if ($generatorProject) {
+            "generatorCsproj=$generatorProject" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "hasGenerator=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Write-Host "Associated generator: $generatorProject"
+          } else {
+            "hasGenerator=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Write-Host "No associated generator"
+          }
+
+      - name: Build generator (if needed)
+        if: steps.paths.outputs.hasGenerator == 'true'
+        run: dotnet build "${{ steps.paths.outputs.generatorCsproj }}" --configuration Release
+
       - name: Build (all target frameworks)
         run: dotnet build "${{ steps.paths.outputs.libCsproj }}" --configuration Release -p:ContinuousIntegrationBuild=true
 

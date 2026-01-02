@@ -12,7 +12,7 @@
 		<IsAnalyzer>true</IsAnalyzer>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
-		<Version>2.0.1</Version>
+		<Version>2.0.2</Version>
 
 		<Description>Roslyn Source Generator for Avalonia StyledProperty, DirectProperty, and AttachedProperty. Automatically generates property definitions from properties marked with [StyledProperty], [DirectProperty], or [AttachedProperty] attributes at compile-time. This package is automatically included with OutWit.Common.MVVM.Avalonia.</Description>
 		<PackageTags>OutWit;Common;MVVM;Avalonia;SourceGenerator;StyledProperty;DirectProperty;AttachedProperty;Roslyn</PackageTags>
