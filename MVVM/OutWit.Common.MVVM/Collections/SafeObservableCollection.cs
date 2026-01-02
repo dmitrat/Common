@@ -1,30 +1,49 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Windows.Threading;
+using OutWit.Common.MVVM.Abstractions;
 
 namespace OutWit.Common.MVVM.Collections
 {
+    /// <summary>
+    /// Thread-safe ObservableCollection that marshals change notifications to the dispatcher thread
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the collection</typeparam>
     public class SafeObservableCollection<T> : ObservableCollection<T>
     {
-        public override event NotifyCollectionChangedEventHandler CollectionChanged;
+        #region Fields
+
+        private readonly IDispatcher? m_dispatcher;
+
+        #endregion
+
+        #region Constructors
+
+        public SafeObservableCollection()
+        {
+        }
+
+        public SafeObservableCollection(IDispatcher dispatcher)
+        {
+            m_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        }
+
+        #endregion
+
+        #region ObservableCollection
+
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            var collectionChanged = this.CollectionChanged;
-            if (collectionChanged != null)
-                foreach (NotifyCollectionChangedEventHandler nh in collectionChanged.GetInvocationList())
-                {
-                    var dispatcher = (nh.Target as DispatcherObject)?.Dispatcher;
-
-                    if (dispatcher != null && !dispatcher.CheckAccess())
-                    {
-                        dispatcher.BeginInvoke((Action)(() => nh.Invoke(this,
-                                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset))),
-                            DispatcherPriority.DataBind);
-                        continue;
-                    }
-                    nh.Invoke(this, e);
-                }
+            if (m_dispatcher != null && !m_dispatcher.CheckAccess())
+            {
+                m_dispatcher.Invoke(() => base.OnCollectionChanged(e));
+            }
+            else
+            {
+                base.OnCollectionChanged(e);
+            }
         }
+
+        #endregion
     }
 }

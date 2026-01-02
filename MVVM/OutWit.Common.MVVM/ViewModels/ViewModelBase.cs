@@ -1,12 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using OutWit.Common.Abstract;
-using OutWit.Common.Logging.Aspects;
 
 namespace OutWit.Common.MVVM.ViewModels
 {
-    [Log]
     public abstract class ViewModelBase<TApplicationVm> : NotifyPropertyChangedBase, IDisposable
         where TApplicationVm : class
     {
@@ -21,13 +18,13 @@ namespace OutWit.Common.MVVM.ViewModels
 
         #region Functions
 
-        protected TResult Check<TResult>(Func<TResult> action, TResult onError = default)
+        protected TResult Check<TResult>(Func<TResult> action, TResult onError = default!)
         {
             try
             {
                 return action();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return onError;
             }
@@ -39,7 +36,7 @@ namespace OutWit.Common.MVVM.ViewModels
             {
                 return action();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }
@@ -51,7 +48,7 @@ namespace OutWit.Common.MVVM.ViewModels
             {
                 action();
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
         } 

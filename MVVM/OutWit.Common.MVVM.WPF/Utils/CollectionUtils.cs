@@ -1,13 +1,10 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
-using System.Windows.Markup;
 using OutWit.Common.MVVM.Collections;
 using OutWit.Common.Search;
 
-namespace OutWit.Common.MVVM.Utils
+namespace OutWit.Common.MVVM.WPF.Utils
 {
     public static class CollectionUtils
     {
@@ -45,11 +42,11 @@ namespace OutWit.Common.MVVM.Utils
                 NotifyCollectionChangedAction.Reset);
         }
 
-        public static TValue FindClosestValue<TValue>(this SortedCollection<int, TValue> me, int key)
+        public static TValue? FindClosestValue<TValue>(this SortedCollection<int, TValue> me, int key)
         {
             var index = me.Keys.FindClosestValueIndex(key);
 
-            return index == -1 ? default(TValue) : me.Values[index];
+            return index == -1 ? default : me.Values[index];
         }
 
         public static IList<TValue> FindValuesInRange<TValue>(this SortedCollection<int, TValue> me, int from, int to)

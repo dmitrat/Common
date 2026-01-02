@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Controls;
 using OutWit.Common.Abstract;
 using OutWit.Common.Collections;
 
@@ -51,9 +50,9 @@ namespace OutWit.Common.MVVM.Table
             return Rows.Is(page.Rows);
         }
 
-        public override TableViewPage Clone()
+        public override ModelBase Clone()
         {
-            return new TableViewPage {Rows = Rows.Select(row => row.Clone()).ToList()};
+            return new TableViewPage {Rows = Rows.Select(row => (TableViewRow)row.Clone()).ToList()};
         } 
 
         #endregion

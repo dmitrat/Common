@@ -65,7 +65,7 @@ namespace OutWit.Common.MVVM.Table
                    Index.Is(row.Index);
         }
 
-        public override TableViewRow Clone()
+        public override ModelBase Clone()
         {
             return new TableViewRow
             {

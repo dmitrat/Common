@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows.Input;
 using System.Windows.Threading;
 
-namespace OutWit.Common.MVVM.Commands
+namespace OutWit.Common.MVVM.WPF.Commands
 {
     public abstract class Command : ICommand
     {
@@ -27,16 +27,15 @@ namespace OutWit.Common.MVVM.Commands
 
         #region Functions
 
-        public abstract bool CanExecute(object parameter);
+        public abstract bool CanExecute(object? parameter);
 
-
-        public abstract void Execute(object parameter);
+        public abstract void Execute(object? parameter);
 
         #endregion
 
         #region Events
 
-        public event EventHandler CanExecuteChanged
+        public event EventHandler? CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }

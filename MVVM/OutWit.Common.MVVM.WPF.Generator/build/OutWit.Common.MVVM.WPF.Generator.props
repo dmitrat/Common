@@ -1,0 +1,5 @@
+<Project>
+	<ItemGroup>
+		<CompilerVisibleProperty Include="OutWit_Common_MVVM_WPF_Generator" />
+	</ItemGroup>
+</Project>

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 using System.Windows;
 
-namespace OutWit.Common.MVVM.Utils
+namespace OutWit.Common.MVVM.WPF.Utils
 {
     public static class PixelUtils
     {
@@ -19,20 +15,23 @@ namespace OutWit.Common.MVVM.Utils
 
         #endregion
 
+        #region Functions
+
         public static double DeviceUnitToInch(this double me)
         {
             return me / INCH_FACTOR;
         }
+
         public static double InchToDeviceUnit(this double me)
         {
             return me * INCH_FACTOR;
         }
 
-
         public static double DeviceUnitToCentimeter(this double me)
         {
             return me / CENTIMETER_FACTOR;
         }
+
         public static double CentimeterToDeviceUnit(this double me)
         {
             return me * CENTIMETER_FACTOR;
@@ -42,6 +41,7 @@ namespace OutWit.Common.MVVM.Utils
         {
             return me / MILLIMETER_FACTOR;
         }
+
         public static double MillimeterToDeviceUnit(this double me)
         {
             return me * MILLIMETER_FACTOR;
@@ -51,6 +51,7 @@ namespace OutWit.Common.MVVM.Utils
         {
             return me / POINT_FACTOR;
         }
+
         public static double PointToDeviceUnit(this double me)
         {
             return me * POINT_FACTOR;
@@ -60,6 +61,7 @@ namespace OutWit.Common.MVVM.Utils
         {
             return (ushort)Math.Round(me);
         }
+
         public static double PixelToDeviceUnit(this ushort me)
         {
             return me;
@@ -77,5 +79,7 @@ namespace OutWit.Common.MVVM.Utils
         {
             return Math.Abs((end.X - start.X) * (start.Y - me.Y) - (start.X - me.X) * (end.Y - start.Y)) / start.Distance(end);
         }
+
+        #endregion
     }
 }

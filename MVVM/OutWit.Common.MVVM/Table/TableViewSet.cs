@@ -42,9 +42,9 @@ namespace OutWit.Common.MVVM.Table
 
         }
 
-        public override TableViewSet Clone()
+        public override ModelBase Clone()
         {
-            return new TableViewSet { Tables = Tables.Select(table => table.Clone()).ToList() };
+            return new TableViewSet { Tables = Tables.Select(table => (TableView)table.Clone()).ToList() };
         } 
 
         #endregion

@@ -3,23 +3,23 @@ using System.Windows.Input;
 
 namespace OutWit.Common.MVVM.Commands
 {
-    public class DelegateCommand<T> : ICommand
+    public class RelayCommand : ICommand
     {
         #region Fields
 
-        private readonly Predicate<T?>? m_canExecute;
-        private readonly Action<T?> m_execute;
+        private readonly Predicate<object?>? m_canExecute;
+        private readonly Action<object?> m_execute;
 
         #endregion
 
         #region Constructors
 
-        public DelegateCommand(Action<T?> execute)
+        public RelayCommand(Action<object?> execute)
             : this(execute, null)
         {
         }
 
-        public DelegateCommand(Action<T?> execute, Predicate<T?>? canExecute)
+        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute)
         {
             m_execute = execute ?? throw new ArgumentNullException(nameof(execute));
             m_canExecute = canExecute;
@@ -31,12 +31,12 @@ namespace OutWit.Common.MVVM.Commands
 
         public bool CanExecute(object? parameter)
         {
-            return m_canExecute == null || m_canExecute((T?)parameter);
+            return m_canExecute == null || m_canExecute(parameter);
         }
 
         public void Execute(object? parameter)
         {
-            m_execute((T?)parameter);
+            m_execute(parameter);
         }
 
         public void RaiseCanExecuteChanged()

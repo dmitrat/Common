@@ -1,26 +1,43 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using OutWit.Common.Aspects;
+using System.Runtime.CompilerServices;
+#if NET9_0_OR_GREATER
+using System.Threading;
+#endif
 using OutWit.Common.MVVM.Interfaces;
-using OutWit.Common.MVVM.Utils;
 
 namespace OutWit.Common.MVVM.Collections
 {
     public class SortedCollection<TKey, TValue> : ISortedCollection<TValue>, INotifyPropertyChanged
+        where TKey : notnull
+        where TValue : notnull
     {
         #region Events
 
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        public event SortedCollectionEventHandler<TValue> ItemsAdded = delegate { };
-        public event SortedCollectionEventHandler<TValue> ItemsRemoved = delegate { };
-        public event SortedCollectionEventHandler<TValue> CollectionClear = delegate { };
-        public event SortedCollectionEventHandler<TValue> CollectionReset = delegate { };
+        public event SortedCollectionEventHandler<TValue>? ItemsAdded;
+        public event SortedCollectionEventHandler<TValue>? ItemsRemoved;
+        public event SortedCollectionEventHandler<TValue>? CollectionClear;
+        public event SortedCollectionEventHandler<TValue>? CollectionReset;
+
+        #endregion
+
+        #region Fields
+
+        private readonly Func<TValue, TKey> m_keyGetter;
+
+#if NET9_0_OR_GREATER
+        private readonly Lock m_lock = new Lock();
+#else
+        private readonly object m_lock = new object();
+#endif
+
+        private SortedList<TKey, TValue> m_inner;
+        private int m_count;
 
         #endregion
 
@@ -28,15 +45,17 @@ namespace OutWit.Common.MVVM.Collections
 
         public SortedCollection(Func<TValue, TKey> keyGetter)
         {
-            KeyGetter = keyGetter;
-            Inner = new SortedList<TKey, TValue>();
+            m_keyGetter = keyGetter ?? throw new ArgumentNullException(nameof(keyGetter));
+            m_inner = new SortedList<TKey, TValue>();
         }
 
         public SortedCollection(Func<TValue, TKey> keyGetter, IEnumerable<TValue> values)
         {
-            KeyGetter = keyGetter;
-
-            Reset(values);
+            m_keyGetter = keyGetter ?? throw new ArgumentNullException(nameof(keyGetter));
+            m_inner = new SortedList<TKey, TValue>();
+            
+            if (values != null)
+                Reset(values);
         }
 
         #endregion
@@ -45,118 +64,227 @@ namespace OutWit.Common.MVVM.Collections
 
         public void Reset(IEnumerable<TValue> values)
         {
-            Inner = new SortedList<TKey, TValue>(values.ToDictionary(value => KeyGetter(value), value => value));
+            if (values == null)
+                throw new ArgumentNullException(nameof(values));
 
-            Count = Inner.Count;
+            lock (m_lock)
+            {
+                var valuesList = values.ToList();
+                m_inner = new SortedList<TKey, TValue>(valuesList.ToDictionary(value => m_keyGetter(value), value => value));
+                Count = m_inner.Count;
+            }
 
-            CollectionReset(this, Values.ToList());
+            CollectionReset?.Invoke(this, Values.ToList());
         }
 
         public virtual void Add(TValue item)
         {
-            Inner.Add(KeyGetter(item), item);
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
 
-            Count = Inner.Count;
+            var key = m_keyGetter(item);
 
-            ItemsAdded(this, new[] {item});
+            lock (m_lock)
+            {
+                m_inner.Add(key, item);
+                Count = m_inner.Count;
+            }
+
+            ItemsAdded?.Invoke(this, new[] { item });
         }
 
         public virtual void Add(IReadOnlyCollection<TValue> items)
         {
-            foreach (var item in items)
-                Inner.Add(KeyGetter(item), item);
+            if (items == null)
+                throw new ArgumentNullException(nameof(items));
 
-            Count = Inner.Count;
+            if (items.Count == 0)
+                return;
 
-            ItemsAdded(this, items);
+            lock (m_lock)
+            {
+                foreach (var item in items)
+                {
+                    if (item == null)
+                        throw new ArgumentException("Item cannot be null", nameof(items));
+
+                    var key = m_keyGetter(item);
+                    m_inner.Add(key, item);
+                }
+
+                Count = m_inner.Count;
+            }
+
+            ItemsAdded?.Invoke(this, items);
         }
 
         public virtual void Clear()
         {
-            Inner.Clear();
-            Count = 0;
+            List<TValue> oldValues;
+            
+            lock (m_lock)
+            {
+                oldValues = m_inner.Values.ToList();
+                m_inner.Clear();
+                Count = 0;
+            }
 
-            CollectionClear(this, null);
+            CollectionClear?.Invoke(this, oldValues);
         }
 
         public bool Contains(TKey key)
         {
-            return Inner.ContainsKey(key);
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            lock (m_lock)
+            {
+                return m_inner.ContainsKey(key);
+            }
         }
 
         public bool Contains(TValue value)
         {
-            return Inner.ContainsValue(value);
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            lock (m_lock)
+            {
+                return m_inner.ContainsValue(value);
+            }
         }
 
         public void CopyTo(TValue[] array, int arrayIndex)
         {
-            Inner.Values.CopyTo(array, arrayIndex);
+            if (array == null)
+                throw new ArgumentNullException(nameof(array));
+
+            lock (m_lock)
+            {
+                m_inner.Values.CopyTo(array, arrayIndex);
+            }
         }
 
         public virtual void Remove(IReadOnlyCollection<TValue> values)
         {
-            var keys = values.Select(x => KeyGetter(x)).ToList();
-            foreach (var key in keys)
-                Inner.Remove(key);
+            if (values == null)
+                throw new ArgumentNullException(nameof(values));
 
-            Count = Inner.Count;
+            if (values.Count == 0)
+                return;
 
-            ItemsRemoved(this, values);
+            lock (m_lock)
+            {
+                var keys = values.Select(x => m_keyGetter(x)).ToList();
+                foreach (var key in keys)
+                    m_inner.Remove(key);
+
+                Count = m_inner.Count;
+            }
+
+            ItemsRemoved?.Invoke(this, values);
         }
 
-        public virtual TValue Remove(TKey key)
+        public virtual TValue? Remove(TKey key)
         {
-            var item = GetValueByKey(key);
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
-            Inner.Remove(key);
+            TValue? item;
+            
+            lock (m_lock)
+            {
+                if (!m_inner.TryGetValue(key, out item))
+                    return default;
 
-            Count = Inner.Count;
+                m_inner.Remove(key);
+                Count = m_inner.Count;
+            }
 
-            ItemsRemoved(this, new[] {item});
+            if (item != null)
+                ItemsRemoved?.Invoke(this, new[] { item });
 
             return item;
         }
 
         public virtual TValue RemoveAt(int index)
         {
-            var item = GetValueByIndex(index);
+            TValue item;
+            
+            lock (m_lock)
+            {
+                if (index < 0 || index >= m_inner.Count)
+                    throw new ArgumentOutOfRangeException(nameof(index));
 
-            Inner.RemoveAt(index);
+                item = m_inner.Values[index];
+                m_inner.RemoveAt(index);
+                Count = m_inner.Count;
+            }
 
-            Count = Inner.Count;
-
-            ItemsRemoved(this, new[] { item });
+            ItemsRemoved?.Invoke(this, new[] { item });
 
             return item;
         }
 
         public int IndexOfKey(TKey key)
         {
-            return Inner.IndexOfKey(key);
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            lock (m_lock)
+            {
+                return m_inner.IndexOfKey(key);
+            }
         }
 
         public int IndexOfValue(TValue value)
         {
-            return Inner.IndexOfValue(value);
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            lock (m_lock)
+            {
+                return m_inner.IndexOfValue(value);
+            }
         }
 
-        public TValue GetValueByKey(TKey key)
+        public TValue? GetValueByKey(TKey key)
         {
-            return Inner[key];
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            lock (m_lock)
+            {
+                return m_inner.TryGetValue(key, out var value) ? value : default;
+            }
         }
 
         public TValue GetValueByIndex(int index)
         {
-            return Inner.Values[index];
+            lock (m_lock)
+            {
+                if (index < 0 || index >= m_inner.Count)
+                    throw new ArgumentOutOfRangeException(nameof(index));
+
+                return m_inner.Values[index];
+            }
         }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         #endregion
 
         #region IEnumerable
 
         public IEnumerator<TValue> GetEnumerator()
         {
-            return Inner.Values.GetEnumerator();
+            lock (m_lock)
+            {
+                return m_inner.Values.ToList().GetEnumerator();
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -168,21 +296,44 @@ namespace OutWit.Common.MVVM.Collections
 
         #region Properties
 
-        private Func<TValue, TKey> KeyGetter { get; }
+        public IList<TKey> Keys
+        {
+            get
+            {
+                lock (m_lock)
+                {
+                    return m_inner.Keys.ToList();
+                }
+            }
+        }
 
-        private SortedList<TKey, TValue> Inner { get; set; }
+        public IList<TValue> Values
+        {
+            get
+            {
+                lock (m_lock)
+                {
+                    return m_inner.Values.ToList();
+                }
+            }
+        }
 
+        public int Count
+        {
+            get => m_count;
+            private set
+            {
+                if (m_count == value)
+                    return;
 
-        public IList<TKey> Keys => Inner.Keys;
-
-        public IList<TValue> Values => Inner.Values;
-
-
-        [Notify]
-        public int Count { get; private set; }
+                m_count = value;
+                OnPropertyChanged();
+            }
+        }
 
         #endregion
     }
 
-    public delegate void SortedCollectionEventHandler<TValue>(object sender, IReadOnlyCollection<TValue> items);
+    public delegate void SortedCollectionEventHandler<TValue>(object? sender, IReadOnlyCollection<TValue>? items)
+        where TValue : notnull;
 }

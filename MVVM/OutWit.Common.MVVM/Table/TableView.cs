@@ -51,15 +51,15 @@ namespace OutWit.Common.MVVM.Table
                    Pages.Is(table.Pages);
         }
 
-        public override TableView Clone()
+        public override ModelBase Clone()
         {
             return new TableView
             {
                 Title = Title,
-                HeaderRow = HeaderRow.Clone(),
+                HeaderRow = (TableViewRow)HeaderRow.Clone(),
                 ColumnsCount = ColumnsCount,
 
-                Pages = Pages.Select(page => page.Clone()).ToList()
+                Pages = Pages.Select(page => (TableViewPage)page.Clone()).ToList()
             };
         }
 

@@ -4,11 +4,11 @@ using OutWit.Common.MVVM.Collections;
 namespace OutWit.Common.MVVM.Interfaces
 {
     public interface ISortedCollection<TValue> : IReadOnlyCollection<TValue>
+        where TValue : notnull
     {
-        event SortedCollectionEventHandler<TValue> ItemsAdded;
-        event SortedCollectionEventHandler<TValue> ItemsRemoved;
-        event SortedCollectionEventHandler<TValue> CollectionClear;
-        event SortedCollectionEventHandler<TValue> CollectionReset;
-        
+        event SortedCollectionEventHandler<TValue>? ItemsAdded;
+        event SortedCollectionEventHandler<TValue>? ItemsRemoved;
+        event SortedCollectionEventHandler<TValue>? CollectionClear;
+        event SortedCollectionEventHandler<TValue>? CollectionReset;
     }
 }

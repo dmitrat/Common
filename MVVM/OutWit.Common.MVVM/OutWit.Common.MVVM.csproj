@@ -1,20 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0-windows;net8.0-windows;net7.0-windows;net6.0-windows</TargetFrameworks>
-		<UseWPF>true</UseWPF>
+		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;netstandard2.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
 
-		<Version>1.1.3</Version>
+		<Version>2.0.0</Version>
 
-		<Description>A collection of essential helpers and components for WPF and the MVVM pattern. Includes a ViewModelBase, DelegateCommand, a thread-safe SafeObservableCollection, SortedCollection, powerful binding utilities, and an AOP [Bindable] attribute to easily create DependencyProperties.</Description>
-		<PackageTags>OutWit;Common;MVVM</PackageTags>
+		<Description>Cross-platform base components for the MVVM pattern. Includes ViewModelBase, RelayCommand, DelegateCommand, SortedCollection, and Table data models. Platform-specific implementations are available in OutWit.Common.MVVM.WPF and OutWit.Common.MVVM.Avalonia packages.</Description>
+		<PackageTags>OutWit;Common;MVVM;Cross-Platform</PackageTags>
 
 		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM</RepositoryUrl>
 
 	</PropertyGroup>
 
 	<ItemGroup>
-    <ProjectReference Include="..\..\Logging\OutWit.Common.Logging\OutWit.Common.Logging.csproj" />
-  </ItemGroup>
+		<ProjectReference Include="..\..\Logging\OutWit.Common.Logging\OutWit.Common.Logging.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Aspects\" />
+	</ItemGroup>
 
 </Project>
