@@ -5,6 +5,7 @@
 		<OutputType>Library</OutputType>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
 		<IsRoslynComponent>true</IsRoslynComponent>
@@ -35,9 +36,5 @@
 		<None Include="build\**\*" Pack="true" PackagePath="build" />
 		<None Include="buildTransitive\**\*" Pack="true" PackagePath="buildTransitive" />
 	</ItemGroup>
-
-	<Target Name="EnsureBuild" BeforeTargets="Pack">
-		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" />
-	</Target>
 
 </Project>

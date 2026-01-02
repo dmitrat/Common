@@ -81,25 +81,13 @@ jobs:
           $lib = Get-ChildItem -Recurse -Filter "$name.csproj" | Select-Object -Expand FullName -First 1
           if (-not $lib) { Write-Error "Library project '$name.csproj' not found"; exit 1 }
           "libCsproj=$lib" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          
-          # Check if this is a source generator project (has IncludeBuildOutput=false)
-          $content = Get-Content $lib -Raw
-          $isGenerator = $content -match '<IncludeBuildOutput>false</IncludeBuildOutput>'
-          "isGenerator=$isGenerator" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          
           Write-Host "Resolved: $lib"
-          Write-Host "Is Generator: $isGenerator"
 
       - name: Build (all target frameworks)
         run: dotnet build "${{ steps.paths.outputs.libCsproj }}" -c Release -p:ContinuousIntegrationBuild=true
 
-      - name: Pack (no build - regular projects)
-        if: steps.paths.outputs.isGenerator != 'True'
+      - name: Pack (no build)
         run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" -c Release --no-build
-
-      - name: Pack (with build - source generators)
-        if: steps.paths.outputs.isGenerator == 'True'
-        run: dotnet pack "${{ steps.paths.outputs.libCsproj }}" -c Release
 
       - name: Collect packages
         shell: pwsh

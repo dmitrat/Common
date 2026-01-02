@@ -38,8 +38,4 @@
 		<None Include="buildTransitive\**\*" Pack="true" PackagePath="buildTransitive" />
 	</ItemGroup>
 
-	<Target Name="EnsureBuild" BeforeTargets="Pack">
-		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" />
-	</Target>
-
 </Project>
