@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Data;
 using OutWit.Common.Utils;
-using OutWit.Common.MVVM.Utils;
+using OutWit.Common.MVVM.Model;
 
 namespace OutWit.Common.MVVM.WPF.Utils
 {

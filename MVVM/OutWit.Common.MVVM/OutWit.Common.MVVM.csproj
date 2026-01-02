@@ -17,9 +17,4 @@
 		<ProjectReference Include="..\..\Logging\OutWit.Common.Logging\OutWit.Common.Logging.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Abstractions\" />
-	  <Folder Include="Aspects\" />
-	</ItemGroup>
-
 </Project>
