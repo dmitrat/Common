@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <!-- Include the source generator as an analyzer for consuming projects -->
+    <Analyzer Include="$(MSBuildThisFileDirectory)..\analyzers\dotnet\cs\OutWit.Common.MVVM.WPF.Generator.dll" />
+  </ItemGroup>
+</Project>

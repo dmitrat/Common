@@ -1,16 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 
-		<Version>2.0.0</Version>
+		<Version>2.0.1</Version>
 
 		<Description>Avalonia-specific helpers and components for the MVVM pattern. Includes AvaloniaDispatcher, BindingUtils, visual tree traversal utilities, and automatic StyledProperty/DirectProperty generation via source generator and AspectInjector. This is part of the OutWit.Common.MVVM family of libraries.</Description>
 		<PackageTags>OutWit;Common;MVVM;Avalonia;StyledProperty;DirectProperty;SourceGenerator;AspectInjector</PackageTags>
 
 		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Avalonia</RepositoryUrl>
-
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -18,9 +17,20 @@
 		<ProjectReference Include="..\OutWit.Common.MVVM\OutWit.Common.MVVM.csproj" />
 	</ItemGroup>
 
-	<!-- Include the source generator in the NuGet package -->
+	<!-- Reference generator project to ensure it builds, but don't include as assembly reference -->
 	<ItemGroup>
-		<ProjectReference Include="..\OutWit.Common.MVVM.Avalonia.Generator\OutWit.Common.MVVM.Avalonia.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\OutWit.Common.MVVM.Avalonia.Generator\OutWit.Common.MVVM.Avalonia.Generator.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+	</ItemGroup>
+
+	<!-- Include the generator dll as an analyzer in the NuGet package -->
+	<ItemGroup>
+		<None Include="..\OutWit.Common.MVVM.Avalonia.Generator\bin\$(Configuration)\netstandard2.0\OutWit.Common.MVVM.Avalonia.Generator.dll" 
+			  Pack="true" 
+			  PackagePath="analyzers/dotnet/cs" 
+			  Visible="false" />
+		<!-- Include build props for transitive analyzer reference -->
+		<None Include="build\**\*" Pack="true" PackagePath="build" />
+		<None Include="buildTransitive\**\*" Pack="true" PackagePath="buildTransitive" />
 	</ItemGroup>
 
 	<ItemGroup>
