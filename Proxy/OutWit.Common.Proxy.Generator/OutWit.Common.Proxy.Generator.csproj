@@ -1,38 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	  <TargetFramework>netstandard2.0</TargetFramework>
-	  <OutputType>Library</OutputType>
-	  <IncludeBuildOutput>false</IncludeBuildOutput>
-	  <Nullable>enable</Nullable>
-	  <LangVersion>latest</LangVersion>
-	  <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-	  <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-	  <IsRoslynComponent>true</IsRoslynComponent>
-	  <IsAnalyzer>true</IsAnalyzer>
-	  <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<OutputType>Library</OutputType>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<Nullable>enable</Nullable>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+		<IsRoslynComponent>true</IsRoslynComponent>
+		<IsAnalyzer>true</IsAnalyzer>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
-	  <Version>2.0.5</Version>
+		<Version>2.0.5</Version>
 
-	  <Description>The Roslyn Source Generator for the OutWit proxy library. Add this package to your project to automatically generate proxy implementations for your interfaces at compile-time.</Description>
-	  <PackageTags>OutWit;Common;Proxy;Generator</PackageTags>
+		<Description>The Roslyn Source Generator for the OutWit proxy library. Add this package to your project to automatically generate proxy implementations for your interfaces at compile-time.</Description>
+		<PackageTags>OutWit;Common;Proxy;Generator</PackageTags>
 
-	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Proxy/OutWit.Common.Proxy.Generator</RepositoryUrl>
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Proxy/OutWit.Common.Proxy.Generator</RepositoryUrl>
 
-  </PropertyGroup>
+	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
 	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\OutWit.Common.Proxy\OutWit.Common.Proxy.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.Proxy\OutWit.Common.Proxy.csproj" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 		<None Include="$(OutputPath)\$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" Condition="'$(Configuration)' == 'Debug' and Exists('$(OutputPath)\$(AssemblyName).pdb')" />
 		<None Include="build\OutWit.Common.Proxy.Generator.props" Pack="true" PackagePath="build" />
 	</ItemGroup>
+
+	<Target Name="EnsureBuild" BeforeTargets="Pack">
+		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" />
+	</Target>
 
 </Project>

@@ -1,29 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	  <TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-	  <Version>1.2.2</Version>
+		<Version>1.2.5</Version>
 
-	  <Description>Core components for the OutWit static proxy generator. Contains the essential interfaces and attributes needed to define interception logic and use the generated proxies.</Description>
-	  <PackageTags>OutWit;Common;Proxy;Generator;Interceptor</PackageTags>
+		<Description>Core components for the OutWit static proxy generator. Contains the essential interfaces and attributes needed to define interception logic and use the generated proxies.</Description>
+		<PackageTags>OutWit;Common;Proxy;Generator;Interceptor</PackageTags>
 
-	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Proxy/OutWit.Common.Proxy</RepositoryUrl>
-  </PropertyGroup>
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Proxy/OutWit.Common.Proxy</RepositoryUrl>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
-  </ItemGroup>
+	</PropertyGroup>
 
-  <!-- Include the generator dll as an analyzer in the NuGet package -->
-  <ItemGroup>
-    <None Include="..\OutWit.Common.Proxy.Generator\bin\$(Configuration)\netstandard2.0\OutWit.Common.Proxy.Generator.dll" 
-          Pack="true" 
-          PackagePath="analyzers/dotnet/cs" 
-          Visible="false" />
-    <!-- Include build props for transitive analyzer reference -->
-    <None Include="build\**\*" Pack="true" PackagePath="build" />
-    <None Include="buildTransitive\**\*" Pack="true" PackagePath="buildTransitive" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
+	</ItemGroup>
 
 </Project>
