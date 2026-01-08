@@ -3,6 +3,9 @@ using System.Windows.Input;
 
 namespace OutWit.Common.MVVM.Commands
 {
+    /// <summary>
+    /// Synchronous relay command implementation for cross-platform MVVM.
+    /// </summary>
     public class RelayCommand : ICommand
     {
         #region Fields
@@ -13,6 +16,16 @@ namespace OutWit.Common.MVVM.Commands
         #endregion
 
         #region Constructors
+
+        public RelayCommand(Action execute)
+            : this(execute, null)
+        {
+        }
+
+        public RelayCommand(Action execute, Func<bool>? canExecute)
+            : this(_ => execute(), canExecute != null ? _ => canExecute() : null)
+        {
+        }
 
         public RelayCommand(Action<object?> execute)
             : this(execute, null)

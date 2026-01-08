@@ -3,7 +3,11 @@ using System.Windows.Input;
 
 namespace OutWit.Common.MVVM.Commands
 {
-    public class DelegateCommand<T> : ICommand
+    /// <summary>
+    /// Strongly-typed synchronous relay command for cross-platform MVVM.
+    /// </summary>
+    /// <typeparam name="T">The type of the command parameter.</typeparam>
+    public class RelayCommand<T> : ICommand
     {
         #region Fields
 
@@ -14,12 +18,12 @@ namespace OutWit.Common.MVVM.Commands
 
         #region Constructors
 
-        public DelegateCommand(Action<T?> execute)
+        public RelayCommand(Action<T?> execute)
             : this(execute, null)
         {
         }
 
-        public DelegateCommand(Action<T?> execute, Predicate<T?>? canExecute)
+        public RelayCommand(Action<T?> execute, Predicate<T?>? canExecute)
         {
             m_execute = execute ?? throw new ArgumentNullException(nameof(execute));
             m_canExecute = canExecute;
