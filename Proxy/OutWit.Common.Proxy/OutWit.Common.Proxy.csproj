@@ -3,7 +3,7 @@
   <PropertyGroup>
 	  <TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-	  <Version>1.2.1</Version>
+	  <Version>1.2.2</Version>
 
 	  <Description>Core components for the OutWit static proxy generator. Contains the essential interfaces and attributes needed to define interception logic and use the generated proxies.</Description>
 	  <PackageTags>OutWit;Common;Proxy;Generator;Interceptor</PackageTags>
