@@ -250,7 +250,21 @@ The existing Blazor infrastructure handles these patterns well, so a source gene
 
 ## License
 
-Non-Commercial License (NCL) - Free for personal, educational, and research purposes.  
-For commercial use, contact licensing@ratner.io.
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
 
-See [LICENSE](LICENSE) for full details.
+## Attribution (optional)
+
+If you use OutWit.Common.MVVM.Blazor in a product, a mention is appreciated (but not required), for example:
+"Powered by OutWit.Common.MVVM.Blazor (https://ratner.io/)".
+
+## Trademark / Project name
+
+"OutWit" and the OutWit logo are used to identify the official project by Dmitry Ratner.
+
+You may:
+- refer to the project name in a factual way (e.g., "built with OutWit.Common.MVVM.Blazor");
+- use the name to indicate compatibility (e.g., "OutWit.Common.MVVM.Blazor-compatible").
+
+You may not:
+- use "OutWit.Common.MVVM.Blazor" as the name of a fork or a derived product in a way that implies it is the official project;
+- use the OutWit.Common.MVVM.Blazor logo to promote forks or derived products without permission.

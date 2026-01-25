@@ -1,4 +1,3 @@
-
 # OutWit.Common.Proxy.Generator
 
 `OutWit.Common.Proxy.Generator` is a source generator that automatically creates proxy classes for interfaces marked with the `ProxyTargetAttribute` from the `OutWit.Common.Proxy` library.
@@ -72,4 +71,25 @@ When a method is called, a `ProxyInvocation` object is created and passed to the
 The generator handles subscription (`add`) and unsubscription (`remove`) for events, passing the relevant details to the `Intercept` method.
 
 ---
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
+
+## Attribution (optional)
+
+If you use OutWit.Common.Proxy.Generator in a product, a mention is appreciated (but not required), for example:
+"Powered by OutWit.Common.Proxy.Generator (https://ratner.io/)".
+
+## Trademark / Project name
+
+"OutWit" and the OutWit logo are used to identify the official project by Dmitry Ratner.
+
+You may:
+- refer to the project name in a factual way (e.g., "built with OutWit.Common.Proxy.Generator");
+- use the name to indicate compatibility (e.g., "OutWit.Common.Proxy.Generator-compatible").
+
+You may not:
+- use "OutWit.Common.Proxy.Generator" as the name of a fork or a derived product in a way that implies it is the official project;
+- use the OutWit.Common.Proxy.Generator logo to promote forks or derived products without permission.
 

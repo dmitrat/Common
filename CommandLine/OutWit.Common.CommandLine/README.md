@@ -86,3 +86,24 @@ public static T DeserializeCommandLine<T>(this string[] me)
 ```
 - **Description**: Parses a string array of command-line arguments into an object of type `T`.
 - **Returns**: An instance of `T` populated with parsed values.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
+
+## Attribution (optional)
+
+If you use OutWit.Common.CommandLine in a product, a mention is appreciated (but not required), for example:
+"Powered by OutWit.Common.CommandLine (https://ratner.io/)".
+
+## Trademark / Project name
+
+"OutWit" and the OutWit logo are used to identify the official project by Dmitry Ratner.
+
+You may:
+- refer to the project name in a factual way (e.g., "built with OutWit.Common.CommandLine");
+- use the name to indicate compatibility (e.g., "OutWit.Common.CommandLine-compatible").
+
+You may not:
+- use "OutWit.Common.CommandLine" as the name of a fork or a derived product in a way that implies it is the official project;
+- use the OutWit.Common.CommandLine logo to promote forks or derived products without permission.

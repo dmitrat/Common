@@ -3,7 +3,7 @@
   <PropertyGroup>
 	  <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-	  <Version>1.1.1</Version>
+	  <Version>1.1.2</Version>
 
 	  <Description>An extension library for NUnit that provides fluent assertion helpers (Assert.That(actual, Was.EqualTo(expected))) for testing custom objects inheriting from ModelBase in the OutWit.Common framework. It simplifies semantic equality checks by integrating the ModelBase.Is() method directly into the NUnit constraint model for more readable and expressive tests.</Description>
 	  <PackageTags>OutWit;Common;NUnit;Test;Tools</PackageTags>

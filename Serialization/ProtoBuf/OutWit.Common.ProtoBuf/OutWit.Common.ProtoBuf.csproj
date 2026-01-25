@@ -3,17 +3,12 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-	  <Version>1.1.1</Version>
+	  <Version>1.1.2</Version>
 
 	  <Description>ProtoBuf (protobuf-net) serialization tools/snippets</Description>
 	  <PackageTags>OutWit;Common;ProtoBuf</PackageTags>
 
 	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.ProtoBuf</RepositoryUrl>
-	  <PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.ProtoBuf</PackageProjectUrl>
-
-	  <PackageIcon>OutWitIcon128.png</PackageIcon>
-	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
 
   </PropertyGroup>
 
@@ -36,11 +31,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
   </ItemGroup>
-
-	<ItemGroup>
-		<None Include="LICENSE" Pack="true" PackagePath="\" />
-		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
-		<None Include="README.md" Pack="true" PackagePath="\" />
-	</ItemGroup>
 
 </Project>

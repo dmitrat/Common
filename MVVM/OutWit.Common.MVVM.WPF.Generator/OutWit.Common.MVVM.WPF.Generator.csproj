@@ -12,7 +12,7 @@
 		<IsAnalyzer>true</IsAnalyzer>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
-		<Version>2.0.3</Version>
+		<Version>2.0.4</Version>
 
 		<Description>Roslyn Source Generator for WPF DependencyProperty. Automatically generates DependencyProperty definitions from properties marked with [StyledProperty] or [AttachedProperty] attributes at compile-time. This package is automatically included with OutWit.Common.MVVM.WPF.</Description>
 		<PackageTags>OutWit;Common;MVVM;WPF;SourceGenerator;DependencyProperty;Roslyn</PackageTags>

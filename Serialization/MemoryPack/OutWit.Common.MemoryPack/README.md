@@ -94,3 +94,24 @@ MemoryPackUtils.Register(options =>
     options.Register(new MyCustomTypeFormatter());
 });
 ```
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
+
+## Attribution (optional)
+
+If you use OutWit.Common.MemoryPack in a product, a mention is appreciated (but not required), for example:
+"Powered by OutWit.Common.MemoryPack (https://ratner.io/)"_.
+
+## Trademark / Project name
+
+"OutWit" and the OutWit logo are used to identify the official project by Dmitry Ratner.
+
+You may:
+- refer to the project name in a factual way (e.g., "built with OutWit.Common.MemoryPack");
+- use the name to indicate compatibility (e.g., "OutWit.Common.MemoryPack-compatible").
+
+You may not:
+- use "OutWit.Common.MemoryPack" as the name of a fork or a derived product in a way that implies it is the official project;
+- use the OutWit.Common.MemoryPack logo to promote forks or derived products without permission.

@@ -3,17 +3,12 @@
   <PropertyGroup>
 	  <TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-	  <Version>1.2.2</Version>
+	  <Version>1.2.3</Version>
 
 	  <Description>MessagePack serialization tools/snippets</Description>
 	  <PackageTags>OutWit;Common;MessagePack</PackageTags>
 
 	  <RepositoryUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.MessagePack</RepositoryUrl>
-	  <PackageProjectUrl>https://github.com/dmitrat/Common/tree/main/OutWit.Common.MessagePack</PackageProjectUrl>
-
-	  <PackageIcon>OutWitIcon128.png</PackageIcon>
-	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
 
   </PropertyGroup>
 
@@ -35,12 +30,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="LICENSE" Pack="true" PackagePath="\" />
-		<None Include="OutWitIcon128.png" Pack="true" PackagePath="\" />
-		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>

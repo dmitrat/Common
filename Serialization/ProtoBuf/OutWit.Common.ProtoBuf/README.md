@@ -106,3 +106,24 @@ var point = new ThirdPartyPoint { X = 10, Y = 20 };
 byte[] data = point.ToProtoBytes();
 var newPoint = data.FromProtoBytes<ThirdPartyPoint>();
 ```
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
+
+## Attribution (optional)
+
+If you use OutWit.Common.ProtoBuf in a product, a mention is appreciated (but not required), for example:
+"Powered by OutWit.Common.ProtoBuf (https://ratner.io/)"
+
+## Trademark / Project name
+
+"OutWit" and the OutWit logo are used to identify the official project by Dmitry Ratner.
+
+You may:
+- refer to the project name in a factual way (e.g., "built with OutWit.Common.ProtoBuf");
+- use the name to indicate compatibility (e.g., "OutWit.Common.ProtoBuf-compatible").
+
+You may not:
+- use "OutWit.Common.ProtoBuf" as the name of a fork or a derived product in a way that implies it is the official project;
+- use the OutWit.Common.ProtoBuf logo to promote forks or derived products without permission.

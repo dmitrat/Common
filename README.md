@@ -63,3 +63,26 @@ A lightweight set of abstractions for creating plugins for the `OutWit.Common.Pl
 # [OutWit.Common.Plugins](https://github.com/dmitrat/Common/tree/main/OutWit.Common.Plugins)
 
 A robust and flexible plugin system for .NET. Features dynamic discovery from directories, sophisticated dependency resolution (validates versions and detects circular dependencies), and isolated loading via `AssemblyLoadContext` to enable hot-reloading and unloading of plugins. It integrates seamlessly with `Microsoft.Extensions.DependencyInjection` for a modern, decoupled architecture.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
+
+## Attribution (optional)
+
+If you use OutWit.Common in a product, a mention is appreciated (but not required), for example:
+"Powered by OutWit.Common (https://ratner.io/)".
+
+## Trademark / Project name
+
+"OutWit" and the OutWit logo are used to identify the official project by Dmitry Ratner.
+
+You may:
+
+- refer to the project name in a factual way (e.g., "built with OutWit.Common");
+- use the name to indicate compatibility (e.g., "OutWit.Common-compatible").
+
+You may not:
+
+- use "OutWit.Common" as the name of a fork or a derived product in a way that implies it is the official project;
+- use the OutWit.Common logo to promote forks or derived products without permission.

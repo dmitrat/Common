@@ -105,3 +105,25 @@ When `DoSomething2` is called, the log will include the method’s execution tim
 - Enables easy performance measurement.
   
 For more details, check out [the article](https://ratner.io/2024/11/20/streamlining-net-development-with-practical-aspects/).
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
+
+
+## Attribution (optional)
+
+If you use OutWit.Common.Logging in a product, a mention is appreciated (but not required), for example:
+"Powered by OutWit.Common.Logging (https://ratner.io/)".
+
+## Trademark / Project name
+
+"OutWit" and the OutWit logo are used to identify the official project by Dmitry Ratner.
+
+You may:
+- refer to the project name in a factual way (e.g., "built with OutWit.Common.Logging");
+- use the name to indicate compatibility (e.g., "OutWit.Common.Logging-compatible").
+
+You may not:
+- use "OutWit.Common.Logging" as the name of a fork or a derived product in a way that implies it is the official project;
+- use the OutWit.Common.Logging logo to promote forks or derived products without permission.

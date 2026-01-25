@@ -106,3 +106,24 @@ public delegate void UniversalEventHandler<in TSender>(
 
 ## Installation
 Include the `OutWit.Common.Reflection` namespace in your project to access `EventUtils`.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
+
+## Attribution (optional)
+
+If you use OutWit.Common.Reflection in a product, a mention is appreciated (but not required), for example:
+"Powered by OutWit.Common.Reflection (https://ratner.io/)".
+
+## Trademark / Project name
+
+"OutWit" and the OutWit logo are used to identify the official project by Dmitry Ratner.
+
+You may:
+- refer to the project name in a factual way (e.g., "built with OutWit.Common.Reflection");
+- use the name to indicate compatibility (e.g., "OutWit.Common.Reflection-compatible").
+
+You may not:
+- use "OutWit.Common.Reflection" as the name of a fork or a derived product in a way that implies it is the official project;
+- use the OutWit.Common.Reflection logo to promote forks or derived products without permission.
