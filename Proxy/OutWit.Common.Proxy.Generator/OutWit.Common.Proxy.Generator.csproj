@@ -11,7 +11,7 @@
 		<IsAnalyzer>true</IsAnalyzer>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
-		<Version>2.0.9</Version>
+		<Version>2.0.10</Version>
 
 		<Description>The Roslyn Source Generator for the OutWit proxy library. Add this package to your project to automatically generate proxy implementations for your interfaces at compile-time.</Description>
 		<PackageTags>OutWit;Common;Proxy;Generator</PackageTags>
@@ -39,7 +39,7 @@
 		<None Include="build\OutWit.Common.Proxy.Generator.props" Pack="true" PackagePath="build" />
 	</ItemGroup>
 
-	<Target Name="EnsureBuild" BeforeTargets="Pack">
+	<Target Name="EnsureBuild" BeforeTargets="Pack" Condition="'$(NoBuild)' != 'true'">
 		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" />
 	</Target>
 
