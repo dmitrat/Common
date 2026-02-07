@@ -1,0 +1,66 @@
+@using OutWit.Common.Blazor.Logging.ViewModels.Components
+@using OutWit.Common.NewRelic.Model
+@inherits LogsTableViewModel
+
+<div class="m3-logs-table-wrapper">
+
+    <MudTable T="NewRelicLogEntry"
+              @ref="Table"
+              Items="@Entries"
+              Hover="true"
+              Dense="true"
+              FixedHeader="true"
+              Height="100%"
+              Style="height: 100%;"
+              Bordered="false"
+              Striped="false"
+              Virtualize="false"
+              RowClassFunc="@GetRowCss"
+              OnRowClick="OnRowClickedAsync"
+              Class="m3-logs-fixed-layout"
+              CustomHeader="true">
+
+        <ColGroup>
+            <col style="width: 160px;" />
+            <col style="width: 110px;" />
+            <col style="width: 220px;" />
+            <col />
+        </ColGroup>
+
+        <HeaderContent>
+            <MudTh Class="m3-log-cell">Timestamp</MudTh>
+            <MudTh Class="m3-log-cell">Level</MudTh>
+            <MudTh Class="m3-log-cell">Source</MudTh>
+            <MudTh Class="m3-log-cell">Message</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd Class="m3-log-cell m3-log-cell-time" DataLabel="Timestamp">
+                @context.Timestamp.ToLocalTime().ToString("MM-dd HH:mm:ss.fff")
+            </MudTd>
+
+            <MudTd Class="m3-log-cell m3-log-cell-level" DataLabel="Level">
+                @context.Level?.Value.ToUpperInvariant()
+            </MudTd>
+
+            <MudTd Class="m3-log-cell m3-log-cell-service" DataLabel="Source">
+                @context.SourceContext
+            </MudTd>
+
+            <MudTd Class="m3-log-cell m3-log-cell-message" DataLabel="Message">
+                @Highlight(context.Message)
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Align="Align.Center" Class="pa-4 text-secondary">
+                No logs found for the selected criteria.
+            </MudText>
+        </NoRecordsContent>
+
+        <LoadingContent>
+            <MudText Align="Align.Center" Class="pa-4">Loading...</MudText>
+        </LoadingContent>
+
+    </MudTable>
+</div>

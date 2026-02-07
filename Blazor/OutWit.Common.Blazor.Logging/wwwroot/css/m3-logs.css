@@ -1,0 +1,304 @@
+/* OutWit.Common.Blazor.Logging - Log Viewer Styles */
+
+/* Root container */
+.m3-logs-root {
+    position: relative;
+    height: calc(100vh - 112px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Toolbar */
+.m3-logs-toolbar {
+    flex: 0 0 auto;
+    background-color: var(--mud-palette-background-grey);
+}
+
+.m3-logs-toolbar-stack {
+}
+
+.m3-logs-toolbar-section {
+    min-width: 260px;
+}
+
+.m3-logs-toolbar-section-right {
+    margin-left: auto;
+    justify-content: flex-end;
+}
+
+/* Input sizes */
+.m3-logs-input-date,
+.m3-logs-input-time {
+    width: 140px;
+}
+
+.m3-logs-sources-select {
+    min-width: 260px;
+    max-width: 460px;
+}
+
+.m3-logs-page-size-select {
+    margin-right: 12px;
+    min-width: 120px;
+}
+
+.m3-logs-page-text {
+    white-space: nowrap;
+}
+
+/* Mobile responsive */
+@media (max-width: 960px) {
+    .m3-logs-toolbar-section {
+        min-width: 100%;
+    }
+
+    .m3-logs-toolbar-section-right {
+        margin-left: 0;
+    }
+
+    .m3-logs-input-date,
+    .m3-logs-input-time,
+    .m3-logs-sources-select,
+    .m3-logs-page-size-select {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* Main workspace */
+.m3-logs-workspace {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Sidebar (filters) */
+.m3-logs-sidebar {
+    flex: 0 0 300px;
+    border-right: 1px solid var(--mud-palette-lines-default);
+    display: flex;
+    flex-direction: column;
+    background-color: var(--mud-palette-drawer-background);
+}
+
+.m3-logs-filters-header {
+    padding: 8px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--mud-palette-divider);
+}
+
+.m3-logs-filters-tree {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.mud-treeview-item-content.mud-treeview-item-selected {
+    background-color: var(--mud-palette-action-default-hover) !important;
+    border-left: 4px solid var(--mud-palette-primary);
+}
+
+/* Content area */
+.m3-logs-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.m3-logs-table-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Loading overlay */
+.m3-logs-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(var(--mud-palette-surface-rgb), 0.7);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Splitter */
+.m3-logs-splitter {
+    height: 1px;
+    background-color: var(--mud-palette-table-lines);
+    flex: 0 0 auto;
+}
+
+/* Details panel */
+.m3-logs-details-wrapper {
+    flex: 0 0 250px;
+    height: 250px;
+    background-color: var(--mud-palette-surface);
+    border-top: 1px solid var(--mud-palette-lines-default);
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Table styles */
+.m3-logs-fixed-layout table {
+    table-layout: fixed;
+}
+
+.m3-log-cell {
+    padding: 2px 8px !important;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--mud-palette-table-lines);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
+}
+
+.m3-log-cell-time {
+    color: var(--mud-palette-text-secondary);
+}
+
+.m3-log-cell-level {
+    font-weight: 600;
+}
+
+.m3-log-cell-service {
+    color: var(--mud-palette-info);
+}
+
+.m3-log-cell-message {
+    color: var(--mud-palette-text-primary);
+}
+
+/* Multi-color highlighting */
+.log-highlight-level-0 {
+    background-color: #ffeb3b;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-1 {
+    background-color: #81d4fa;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-2 {
+    background-color: #a5d6a7;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-3 {
+    background-color: #ffcc80;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-4 {
+    background-color: #ce93d8;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-5 {
+    background-color: #f48fb1;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-6 {
+    background-color: #80cbc4;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-7 {
+    background-color: #c5e1a5;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-8 {
+    background-color: #ffe082;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight-level-9 {
+    background-color: #e0e0e0;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+}
+
+.log-highlight {
+    background-color: #ffeb3b;
+    color: #000 !important;
+    border-radius: 2px;
+    padding: 0 1px;
+    box-shadow: 0 0 0 1px #fdd835;
+}
+
+/* Row colors */
+.mud-table-row-selected > td {
+    background-color: var(--mud-palette-action-default-hover) !important;
+    border-bottom-color: var(--mud-palette-primary) !important;
+}
+
+.log-row-fatal > td,
+.log-row-error > td {
+    background-color: rgba(244, 67, 54, 0.08);
+    color: var(--mud-palette-error) !important;
+}
+
+.log-row-warn > td,
+.log-row-warning > td {
+    background-color: rgba(255, 152, 0, 0.08);
+    color: var(--mud-palette-warning) !important;
+}
+
+.log-row-info > td {
+}
+
+.log-row-debug > td,
+.log-row-trace > td {
+    color: var(--mud-palette-text-disabled) !important;
+}

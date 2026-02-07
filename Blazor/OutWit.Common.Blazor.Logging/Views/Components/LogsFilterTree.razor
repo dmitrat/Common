@@ -1,0 +1,82 @@
+@using OutWit.Common.Blazor.Logging.Model
+@using OutWit.Common.Blazor.Logging.ViewModels.Components
+@inherits LogsFilterTreeViewModel
+
+<div class="d-flex flex-column" style="height: 100%; overflow: hidden;">
+
+    <div class="d-flex align-center justify-space-between px-3 py-2 border-b mud-theme-border-color bg-surface">
+        <MudText Typo="Typo.subtitle2" Class="mud-text-secondary font-weight-bold">FILTERS</MudText>
+
+        <MudTooltip Text="Add Root Filter">
+            <MudIconButton Icon="@Icons.Material.Filled.Add"
+                           Size="Size.Small"
+                           OnClick="@(() => AddChildFilterDialogAsync(SelectedFilter ?? RootFilter))"
+                           Color="Color.Default" />
+        </MudTooltip>
+    </div>
+
+    <div class="flex-grow-1 overflow-y-auto custom-scrollbar py-2" @key="@TreeViewKey">
+        <MudTreeView T="LogFilterNode"
+                     Items="@TreeItems"
+                     SelectedValue="@SelectedFilter"
+                     SelectedValueChanged="@OnFilterChangedAsync"
+                     Hover="true"
+                     Dense="true"
+                     ExpandOnClick="false">
+            <ItemTemplate Context="item">
+                <MudTreeViewItem Items="@item.Children"
+                                 Value="@item.Value"
+                                 Expanded="@item.Expanded"
+                                 Icon="@(item.Value.IsExclusion ? Icons.Material.Filled.RemoveCircleOutline : Icons.Material.Filled.FilterAlt)"
+                                 IconColor="@(item.Value.IsExclusion ? Color.Error : (item.Value == RootFilter ? Color.Primary : Color.Default))">
+                    <BodyContent>
+                        <div class="d-flex align-center justify-space-between w-100"
+                             @ondblclick="@(() => EditFilterDialogAsync(item.Value))"
+                             @ondblclick:stopPropagation="true"
+                             style="cursor: pointer; user-select: none; height: 100%;">
+
+                            <MudText Typo="Typo.body2"
+                                     Class="@(item.Value.IsDisabled ? "mud-text-disabled" : "")"
+                                     Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px;">
+                                @item.Value.Title
+                            </MudText>
+
+                            <div @onclick:stopPropagation="true">
+                                <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                         Size="Size.Small"
+                                         Dense="true"
+                                         AnchorOrigin="Origin.BottomRight"
+                                         TransformOrigin="Origin.TopRight">
+
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit"
+                                                 OnClick="@(() => EditFilterDialogAsync(item.Value))">
+                                        Edit Criteria...
+                                    </MudMenuItem>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Add"
+                                                 OnClick="@(() => AddChildFilterDialogAsync(item.Value))">
+                                        Add Child...
+                                    </MudMenuItem>
+                                    <MudMenuItem Icon="@Icons.Material.Filled.ContentCopy"
+                                                 OnClick="@(() => OnDuplicateClickedAsync(item.Value))">
+                                        Duplicate
+                                    </MudMenuItem>
+                                    <MudDivider />
+                                    <MudMenuItem Icon="@(item.Value.IsDisabled ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                                 OnClick="@(() => OnDisabledToggledAsync(item.Value, !item.Value.IsDisabled))">
+                                        @(item.Value.IsDisabled ? "Enable" : "Disable")
+                                    </MudMenuItem>
+                                    <MudDivider />
+                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete"
+                                                 IconColor="Color.Error"
+                                                 OnClick="@(() => OnDeleteClickedAsync(item.Value))">
+                                        Delete
+                                    </MudMenuItem>
+                                </MudMenu>
+                            </div>
+                        </div>
+                    </BodyContent>
+                </MudTreeViewItem>
+            </ItemTemplate>
+        </MudTreeView>
+    </div>
+</div>

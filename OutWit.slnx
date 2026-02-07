@@ -18,6 +18,10 @@
     <Project Path="Aspects/OutWit.Common.Aspects.Tests/OutWit.Common.Aspects.Tests.csproj" />
     <Project Path="Aspects/OutWit.Common.Aspects/OutWit.Common.Aspects.csproj" />
   </Folder>
+  <Folder Name="/Blazor/">
+    <Project Path="Blazor/OutWit.Common.Blazor.Logging/OutWit.Common.Blazor.Logging.csproj" />
+    <Project Path="Blazor/OutWit.Common.Blazor.WitRPC/OutWit.Common.Blazor.WitRPC.csproj" />
+  </Folder>
   <Folder Name="/CommandLine/">
     <Project Path="CommandLine/OutWit.Common.CommandLine.Tests/OutWit.Common.CommandLine.Tests.csproj" />
     <Project Path="CommandLine/OutWit.Common.CommandLine/OutWit.Common.CommandLine.csproj" />

@@ -99,6 +99,12 @@ jobs:
               - 'NewRelic/**'
               - 'Rest/**'
               - 'Serialization/MemoryPack/**'
+            OutWit.Common.Blazor.Logging:
+              - 'Blazor/OutWit.Common.Blazor.Logging/**'
+              - 'NewRelic/**'
+              - 'MVVM/OutWit.Common.MVVM.Blazor/**'
+            OutWit.Common.Blazor.WitRPC:
+              - 'Blazor/OutWit.Common.Blazor.WitRPC/**'
 
   run-tests:
     name: Test ${{ matrix.project }}

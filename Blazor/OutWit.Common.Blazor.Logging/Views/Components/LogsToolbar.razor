@@ -1,0 +1,198 @@
+@using OutWit.Common.Blazor.Logging.ViewModels.Components
+@using OutWit.Common.NewRelic.Model
+@inherits LogsToolbarViewModel
+
+<MudPaper Elevation="0" Class="m3-logs-toolbar">
+    <MudStack Row="true"
+              Wrap="Wrap.Wrap"
+              AlignItems="AlignItems.Center"
+              Spacing="2"
+              Class="m3-logs-toolbar-stack">
+
+        <!-- Date/Time Section -->
+        <MudStack Row="true"
+                  AlignItems="AlignItems.Center"
+                  Spacing="2"
+                  Class="m3-logs-toolbar-section">
+
+            <MudDatePicker Label="Day"
+                           Class="m3-logs-input-date"
+                           Date="@SelectedDateTime"
+                           DateChanged="OnDateChangedAsync"
+                           DateFormat="d"
+                           AutoClose="true"
+                           Disabled="@IsLoading"
+                           Editable="false" />
+
+            <MudTimePicker Label="From"
+                           Class="m3-logs-input-time"
+                           Time="@SelectedMinTime"
+                           TimeChanged="OnMinTimeChangedAsync"
+                           Placeholder="00:00"
+                           TimeFormat="t"
+                           Clearable="true"
+                           AutoClose="true"
+                           Disabled="@IsLoading"
+                           Editable="false" />
+
+            <MudTimePicker Label="To"
+                           Class="m3-logs-input-time"
+                           Time="@SelectedMaxTime"
+                           TimeChanged="OnMaxTimeChangedAsync"
+                           Placeholder="00:00"
+                           TimeFormat="t"
+                           Clearable="true"
+                           AutoClose="true"
+                           Disabled="@IsLoading"
+                           Editable="false" />
+
+            <MudButton Variant="Variant.Outlined"
+                       Disabled="@IsLoading"
+                       OnClick="OnReloadClickedAsync">
+                @if (IsLoading)
+                {
+                    <MudProgressCircular Indeterminate="true"
+                                         Size="Size.Small"
+                                         Class="me-2" />
+                }
+                Reload
+            </MudButton>
+
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudDivider Vertical="true" FlexItem="true" Class="mx-2" />
+            </MudHidden>
+        </MudStack>
+
+        <!-- Sources Section -->
+        <MudStack Row="true"
+                  AlignItems="AlignItems.Center"
+                  Spacing="2"
+                  Class="m3-logs-toolbar-section">
+
+            <MudSelect T="string"
+                       Class="m3-logs-sources-select"
+                       Label="Sources"
+                       MultiSelection="true"
+                       MultiSelectionTextFunc="GetMultiSelectionText"
+                       SelectAll="true"
+                       SelectAllText="Select all sources"
+                       Disabled="@(IsLoading || AvailableSources.Count == 0)"
+                       SelectedValues="@SelectedSources"
+                       SelectedValuesChanged="OnSelectedSourcesChangedAsync"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Dense="true"
+                       AnchorOrigin="Origin.BottomLeft">
+                @foreach (var source in AvailableSources)
+                {
+                    <MudSelectItem T="string" Value="@source">
+                        <MudTooltip Text="@source">
+                            @source
+                        </MudTooltip>
+                    </MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudDivider Vertical="true" FlexItem="true" Class="mx-2" />
+            </MudHidden>
+        </MudStack>
+
+        <!-- Severity Toggles -->
+        <MudStack Row="true"
+                  AlignItems="AlignItems.Center"
+                  Spacing="1"
+                  Class="m3-logs-toolbar-section">
+
+            <MudTooltip Text="Toggle Errors & Critical">
+                <MudToggleIconButton Toggled="@ShowError"
+                                     ToggledChanged="@(_ => OnToggleLevelAsync(NewRelicLogSeverity.Error))"
+                                     Icon="@Icons.Material.Outlined.ErrorOutline"
+                                     Color="Color.Error"
+                                     ToggledIcon="@Icons.Material.Filled.Error"
+                                     ToggledColor="Color.Error"
+                                     Variant="Variant.Text" />
+            </MudTooltip>
+
+            <MudTooltip Text="Toggle Warnings">
+                <MudToggleIconButton Toggled="@ShowWarning"
+                                     ToggledChanged="@(_ => OnToggleLevelAsync(NewRelicLogSeverity.Warning))"
+                                     Icon="@Icons.Material.Outlined.WarningAmber"
+                                     Color="Color.Warning"
+                                     ToggledIcon="@Icons.Material.Filled.Warning"
+                                     ToggledColor="Color.Warning"
+                                     Variant="Variant.Text" />
+            </MudTooltip>
+
+            <MudTooltip Text="Toggle Information">
+                <MudToggleIconButton Toggled="@ShowInfo"
+                                     ToggledChanged="@(_ => OnToggleLevelAsync(NewRelicLogSeverity.Information))"
+                                     Icon="@Icons.Material.Outlined.Info"
+                                     Color="Color.Info"
+                                     ToggledIcon="@Icons.Material.Filled.Info"
+                                     ToggledColor="Color.Info"
+                                     Variant="Variant.Text" />
+            </MudTooltip>
+
+            <MudTooltip Text="Toggle Debug & Trace">
+                <MudToggleIconButton Toggled="@ShowDebug"
+                                     ToggledChanged="@(_ => OnToggleLevelAsync(NewRelicLogSeverity.Debug))"
+                                     Icon="@Icons.Material.Outlined.BugReport"
+                                     Color="Color.Default"
+                                     ToggledIcon="@Icons.Material.Filled.BugReport"
+                                     ToggledColor="Color.Default"
+                                     Variant="Variant.Text" />
+            </MudTooltip>
+
+            <MudDivider Vertical="true" FlexItem="true" Class="mx-2" />
+
+            <MudTooltip Text="Show Statistics & Data Consumption">
+                <MudIconButton Icon="@Icons.Material.Outlined.Info"
+                               Color="Color.Primary"
+                               Disabled="@IsLoading"
+                               OnClick="OnShowStatisticsClickedAsync"
+                               Variant="Variant.Text" />
+            </MudTooltip>
+
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+                <MudDivider Vertical="true" FlexItem="true" Class="mx-2" />
+            </MudHidden>
+        </MudStack>
+
+        <!-- Pagination -->
+        <MudStack Row="true"
+                  AlignItems="AlignItems.Center"
+                  Spacing="1"
+                  Class="m3-logs-toolbar-section m3-logs-toolbar-section-right">
+
+            <MudSelect T="int"
+                       Class="m3-logs-page-size-select"
+                       Label="Page Size"
+                       Disabled="@(IsLoading || AvailablePageSizes.Count == 0)"
+                       SelectedValues="@SelectedPageSize"
+                       SelectedValuesChanged="OnSelectedPageSizeChangedAsync"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Dense="true"
+                       AnchorOrigin="Origin.BottomLeft">
+                @foreach (var size in AvailablePageSizes)
+                {
+                    <MudSelectItem T="int" Value="@size">@size</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft"
+                           Disabled="@(!CanGoPrev || IsLoading)"
+                           OnClick="OnPrevClickedAsync" />
+
+            <MudText Typo="Typo.caption" Class="m3-logs-page-text">
+                Page @CurrentPageNumber
+            </MudText>
+
+            <MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight"
+                           Disabled="@(!CanGoNext || IsLoading)"
+                           OnClick="OnNextClickedAsync" />
+        </MudStack>
+
+    </MudStack>
+</MudPaper>

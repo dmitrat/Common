@@ -32,6 +32,8 @@ on:
           - OutWit.Common.Settings
           - OutWit.Common.Configuration
           - OutWit.Common.NewRelic
+          - OutWit.Common.Blazor.Logging
+          - OutWit.Common.Blazor.WitRPC
 
 permissions:
   contents: read

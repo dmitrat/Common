@@ -1,0 +1,53 @@
+@using OutWit.Common.Blazor.Logging.ViewModels.Dialogs
+@inherits DialogEditLogFilterViewModel
+
+<MudDialog @onkeydown="OnKeyDown" @onkeyup="OnKeyUp">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@(IsNew ? "Add Filter" : "Edit Filter")</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                Filter entries matching the text below.
+            </MudText>
+            <EditForm Model="@this" OnSubmit="() => Submit()">
+                <MudTextField @bind-Value="SearchText"
+                              Label="Contains Text"
+                              Placeholder="e.g. NullReferenceException"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              AutoFocus="true"
+                              HelperText="Press Enter to save, Shift+Enter to save as exclusion" />
+
+                <MudTextField @bind-Value="Title"
+                              Label="Display Name (Optional)"
+                              HelperText="Leave empty to use search text."
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                <MudSwitch @bind-Value="IsExclusion"
+                           Color="Color.Error"
+                           Label="Exclude matching entries"
+                           ThumbIcon="@(IsExclusion ? Icons.Material.Filled.RemoveCircle : Icons.Material.Filled.CheckCircle)"
+                           Size="Size.Small" />
+
+                <button type="submit" style="display:none"></button>
+            </EditForm>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                <strong>Keyboard shortcuts:</strong><br />
+                <kbd>Enter</kbd> - Save filter<br />
+                <kbd>Shift+Enter</kbd> - Save as exclusion filter<br />
+                <kbd>Esc</kbd> - Cancel
+            </MudText>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => Submit())">
+            @(IsNew ? "Add" : "Save")
+        </MudButton>
+    </DialogActions>
+</MudDialog>

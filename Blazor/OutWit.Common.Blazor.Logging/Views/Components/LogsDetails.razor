@@ -1,0 +1,79 @@
+@using OutWit.Common.Blazor.Logging.ViewModels.Components
+@inherits LogsDetailsViewModel
+
+<div style="height: 100%; overflow: hidden; display: flex; flex-direction: column;">
+
+    @if (Entry == null)
+    {
+        <div class="d-flex align-center justify-center flex-grow-1 mud-text-secondary">
+            <MudText Typo="Typo.body2">Select a log entry to view details.</MudText>
+        </div>
+    }
+    else
+    {
+        <div class="pa-3 pb-2 border-b mud-theme-border-color d-flex gap-4 align-center flex-none" style="position: relative;">
+            <MudText Typo="Typo.caption" Class="mud-text-secondary font-monospace">
+                @Entry.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.fff")
+            </MudText>
+
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@SeverityColor" Class="my-0 py-0">
+                @Entry.Level?.Value.ToUpperInvariant()
+            </MudChip>
+
+            <MudText Typo="Typo.caption" Class="mud-text-primary font-weight-bold">
+                @Entry.ServiceName
+            </MudText>
+
+            <div style="position: absolute; top: 8px; right: 8px;">
+                <MudTooltip Text="Copy message">
+                    <MudIconButton Icon="@Icons.Material.Filled.ContentCopy"
+                                   Size="Size.Small"
+                                   Color="Color.Default"
+                                   Variant="Variant.Text"
+                                   OnClick="CopyMessageAsync"
+                                   Style="opacity: 0.6;" />
+                </MudTooltip>
+            </div>
+        </div>
+
+        <div class="pa-3 flex-grow-1 overflow-y-auto custom-scrollbar" style="min-height: 0;">
+
+            <MudText Typo="Typo.body2" Style="font-family: Consolas, monospace; white-space: pre-wrap; word-break: break-all;">
+                @if (HighlightFunc != null)
+                {
+                    @((MarkupString)HighlightFunc(Entry.Message))
+                }
+                else
+                {
+                    @Entry.Message
+                }
+            </MudText>
+
+            @if (!string.IsNullOrEmpty(Entry.Exception))
+            {
+                <div class="mt-3 pa-2 rounded border border-solid mud-border-error" style="background-color: rgba(255,0,0,0.05);">
+                    <MudText Typo="Typo.caption" Color="Color.Error" Class="font-weight-bold">EXCEPTION</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1" Style="font-family: Consolas, monospace; white-space: pre-wrap; font-size: 12px;">
+                        @Entry.Exception
+                    </MudText>
+                </div>
+            }
+
+            @if (ContextProperties.Any())
+            {
+                <MudDivider Class="my-3" />
+                <MudText Typo="Typo.caption" Class="mud-text-secondary mb-2 d-block">CONTEXT PROPERTIES</MudText>
+
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var prop in ContextProperties)
+                    {
+                        <div class="d-flex gap-1 px-2 py-1 rounded" style="background-color: var(--mud-palette-background-grey); font-size: 11px;">
+                            <span class="mud-text-secondary">@prop.Key:</span>
+                            <span class="font-weight-bold">@prop.Value</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

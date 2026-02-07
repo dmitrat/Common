@@ -1,0 +1,182 @@
+@using OutWit.Common.Blazor.Logging.ViewModels.Dialogs
+@inherits DialogLogsStatisticsViewModel
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <!-- Period Info -->
+            <MudPaper Elevation="0" Class="pa-3" Style="background: var(--mud-palette-background-grey)">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.body2">
+                        <strong>Period:</strong> @From.ToString("g") - @To.ToString("g")
+                    </MudText>
+                    @if (Statistics != null)
+                    {
+                        <MudText Typo="Typo.body2">
+                            <strong>Duration:</strong> @Statistics.DurationDays.ToString("N1") days
+                        </MudText>
+                    }
+                </MudStack>
+            </MudPaper>
+
+            @if (Statistics != null)
+            {
+                <!-- Log Statistics Section -->
+                <MudText Typo="Typo.h6">Log Statistics</MudText>
+
+                <MudSimpleTable Dense="true" Hover="true" Bordered="true">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th class="text-end">Count</th>
+                            <th class="text-end">Percentage</th>
+                            <th class="text-end">Avg/Day</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Total Logs</strong></td>
+                            <td class="text-end">@Statistics.TotalCount.ToString("N0")</td>
+                            <td class="text-end">100.0%</td>
+                            <td class="text-end">@Statistics.AverageLogsPerDay.ToString("N0")</td>
+                        </tr>
+                        <tr style="color: var(--mud-palette-error)">
+                            <td>Errors & Critical</td>
+                            <td class="text-end">@Statistics.ErrorCount.ToString("N0")</td>
+                            <td class="text-end">@Statistics.ErrorRate.ToString("N2")%</td>
+                            <td class="text-end">@Statistics.AverageErrorsPerDay.ToString("N0")</td>
+                        </tr>
+                        <tr style="color: var(--mud-palette-warning)">
+                            <td>Warnings</td>
+                            <td class="text-end">@Statistics.WarningCount.ToString("N0")</td>
+                            <td class="text-end">@Statistics.WarningRate.ToString("N2")%</td>
+                            <td class="text-end">@Statistics.AverageWarningsPerDay.ToString("N0")</td>
+                        </tr>
+                        <tr style="color: var(--mud-palette-info)">
+                            <td>Information</td>
+                            <td class="text-end">@Statistics.InfoCount.ToString("N0")</td>
+                            <td class="text-end">@Statistics.InfoRate.ToString("N2")%</td>
+                            <td class="text-end">@((Statistics.InfoCount / Statistics.DurationDays).ToString("N0"))</td>
+                        </tr>
+                        <tr>
+                            <td>Debug & Trace</td>
+                            <td class="text-end">@Statistics.DebugCount.ToString("N0")</td>
+                            <td class="text-end">@Statistics.DebugRate.ToString("N2")%</td>
+                            <td class="text-end">@((Statistics.DebugCount / Statistics.DurationDays).ToString("N0"))</td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            @if (Consumption != null)
+            {
+                <!-- Data Consumption Section -->
+                <MudText Typo="Typo.h6" Class="mt-4">Data Consumption</MudText>
+
+                <MudSimpleTable Dense="true" Hover="true" Bordered="true">
+                    <tbody>
+                        <tr>
+                            <td><strong>Total Ingested</strong></td>
+                            <td class="text-end">@Consumption.TotalGigabytes.ToString("N2") GB</td>
+                        </tr>
+                        <tr>
+                            <td>Daily Average</td>
+                            <td class="text-end">@Consumption.DailyAverageGigabytes.ToString("N3") GB/day</td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+
+                <!-- Free Tier Status -->
+                @if (Consumption.MonthToDateGigabytes > 0)
+                {
+                    <MudText Typo="Typo.h6" Class="mt-4">Free Tier Status (100 GB limit)</MudText>
+
+                    <MudPaper Elevation="0" Class="pa-3" Style="@GetFreeTierBackgroundColor()">
+                        <MudStack Spacing="2">
+                            <MudProgressLinear Color="@GetFreeTierColor()"
+                                               Value="@Consumption.FreeTierUsagePercent"
+                                               Size="Size.Large"
+                                               Class="mb-2" />
+
+                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                <MudText Typo="Typo.body2">
+                                    <strong>Used:</strong> @Consumption.FreeTierUsagePercent.ToString("N1")%
+                                </MudText>
+                                <MudText Typo="Typo.body2">
+                                    <strong>Remaining:</strong> @Consumption.FreeTierRemainingGB.ToString("N2") GB
+                                </MudText>
+                            </MudStack>
+
+                            @if (Consumption.WillExceedFreeTier)
+                            {
+                                <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">
+                                    <strong>Warning:</strong> Projected to exceed free tier by @Consumption.ProjectedOverageGB.ToString("N2") GB this month!
+                                </MudAlert>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Success">
+                                    ? Within free tier limits
+                                </MudText>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                }
+
+                <!-- By Product Line -->
+                <MudText Typo="Typo.h6" Class="mt-4">Breakdown by Product</MudText>
+
+                <MudSimpleTable Dense="true" Hover="true" Bordered="true">
+                    <tbody>
+                        @if (Consumption.LogsGigabytes > 0)
+                        {
+                            <tr>
+                                <td>Logs</td>
+                                <td class="text-end">@Consumption.LogsGigabytes.ToString("N3") GB</td>
+                                <td class="text-end">@((Consumption.LogsGigabytes / Consumption.TotalGigabytes * 100).ToString("N1"))%</td>
+                            </tr>
+                        }
+                        @if (Consumption.MetricsGigabytes > 0)
+                        {
+                            <tr>
+                                <td>Metrics</td>
+                                <td class="text-end">@Consumption.MetricsGigabytes.ToString("N3") GB</td>
+                                <td class="text-end">@((Consumption.MetricsGigabytes / Consumption.TotalGigabytes * 100).ToString("N1"))%</td>
+                            </tr>
+                        }
+                        @if (Consumption.TracesGigabytes > 0)
+                        {
+                            <tr>
+                                <td>Traces (APM + Infrastructure)</td>
+                                <td class="text-end">@Consumption.TracesGigabytes.ToString("N3") GB</td>
+                                <td class="text-end">@((Consumption.TracesGigabytes / Consumption.TotalGigabytes * 100).ToString("N1"))%</td>
+                            </tr>
+                        }
+                        @if (Consumption.EventsGigabytes > 0)
+                        {
+                            <tr>
+                                <td>Events (Browser, Mobile, etc.)</td>
+                                <td class="text-end">@Consumption.EventsGigabytes.ToString("N3") GB</td>
+                                <td class="text-end">@((Consumption.EventsGigabytes / Consumption.TotalGigabytes * 100).ToString("N1"))%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            @if (Statistics == null && Consumption == null)
+            {
+                <MudAlert Severity="Severity.Info">
+                    No data available for the selected period.
+                </MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnClose"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
