@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+
+		<Version>1.0.0</Version>
+
+		<Description>New Relic integration utilities for .NET applications</Description>
+		<PackageTags>OutWit;Common;NewRelic;Monitoring</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/NewRelic/OutWit.Common.NewRelic</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Rest\OutWit.Common.Rest\OutWit.Common.Rest.csproj" />
+	  <ProjectReference Include="..\..\Serialization\MemoryPack\OutWit.Common.MemoryPack\OutWit.Common.MemoryPack.csproj" />
+	</ItemGroup>
+
+</Project>

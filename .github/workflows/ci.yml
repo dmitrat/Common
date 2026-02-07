@@ -93,6 +93,12 @@ jobs:
             OutWit.Common.Settings:
               - 'Settings/OutWit.Common.Settings/**'
               - 'Settings/OutWit.Common.Settings.Tests/**'
+            OutWit.Common.Configuration:
+              - 'Configuration/**'
+            OutWit.Common.NewRelic:
+              - 'NewRelic/**'
+              - 'Rest/**'
+              - 'Serialization/MemoryPack/**'
 
   run-tests:
     name: Test ${{ matrix.project }}

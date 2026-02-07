@@ -26,6 +26,10 @@
     <Project Path="Common/OutWit.Common.Tests/OutWit.Common.Tests.csproj" />
     <Project Path="Common/OutWit.Common/OutWit.Common.csproj" />
   </Folder>
+  <Folder Name="/Configuration/">
+    <Project Path="Configuration/OutWit.Common.Configuration.Tests/OutWit.Common.Configuration.Tests.csproj" />
+    <Project Path="Configuration/OutWit.Common.Configuration/OutWit.Common.Configuration.csproj" />
+  </Folder>
   <Folder Name="/Logging/">
     <Project Path="Logging/OutWit.Common.Logging.Tests/OutWit.Common.Logging.Tests.csproj" />
     <Project Path="Logging/OutWit.Common.Logging/OutWit.Common.Logging.csproj" />
@@ -43,6 +47,10 @@
     <Project Path="MVVM/OutWit.Common.MVVM.WPF.Tests/OutWit.Common.MVVM.WPF.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.WPF/OutWit.Common.MVVM.WPF.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM/OutWit.Common.MVVM.csproj" />
+  </Folder>
+  <Folder Name="/NewRelic/">
+    <Project Path="NewRelic/OutWit.Common.NewRelic.Tests/OutWit.Common.NewRelic.Tests.csproj" />
+    <Project Path="NewRelic/OutWit.Common.NewRelic/OutWit.Common.NewRelic.csproj" />
   </Folder>
   <Folder Name="/NUnit/">
     <Project Path="NUnit/OutWit.Common.NUnit/OutWit.Common.NUnit.csproj" />
