@@ -88,37 +88,19 @@ namespace OutWit.Common.Blazor.WitRPC
 
             await Encryptor.InitAsync();
 
-            var client = WitClientBuilder.Build(options =>
+            var client = WitClientBuilder.Build(builder =>
             {
-                options.WithWebSocket(apiUrl);
-                options.WithMemoryPack();
-                options.WithEncryptor(Encryptor);
-                options.WithLogger(Logger);
-                options.WithAccessTokenProvider(TokenProvider);
-                options.WithTimeout(TimeSpan.FromSeconds(Options.TimeoutSeconds));
+                builder.WithWebSocket(apiUrl);
+                builder.WithMemoryPack();
+                builder.WithEncryptor(Encryptor);
+                builder.WithLogger(Logger);
+                builder.WithAccessTokenProvider(TokenProvider);
+                builder.WithTimeout(TimeSpan.FromSeconds(Options.TimeoutSeconds));
 
-                options.WithAutoReconnect(reconnect =>
-                {
-                    reconnect.MaxAttempts = 0;
-                    reconnect.InitialDelay = TimeSpan.FromSeconds(1);
-                    reconnect.MaxDelay = TimeSpan.FromMinutes(2);
-                    reconnect.BackoffMultiplier = 2.0;
-                    reconnect.ReconnectOnDisconnect = true;
-                });
+                ConfigureReconnect(builder);
+                ConfigureRetry(builder);
 
-                options.WithRetryPolicy(retry =>
-                {
-                    retry.MaxRetries = 3;
-                    retry.InitialDelay = TimeSpan.FromMilliseconds(500);
-                    retry.MaxDelay = TimeSpan.FromSeconds(10);
-                    retry.BackoffMultiplier = 2.0;
-                    retry.BackoffType = BackoffType.Exponential;
-
-                    retry.RetryOnStatus(CommunicationStatus.InternalServerError);
-
-                    retry.RetryOn<TimeoutException>();
-                    retry.RetryOn<IOException>();
-                });
+                Options.ConfigureClient?.Invoke(builder);
             });
 
             try
@@ -145,6 +127,41 @@ namespace OutWit.Common.Blazor.WitRPC
                 await Client.Disconnect();
             
             Client = null;
+        }
+
+        private void ConfigureReconnect(WitClientBuilderOptions builder)
+        {
+            if (Options.Reconnect is not { } reconnect)
+                return;
+
+            builder.WithAutoReconnect(r =>
+            {
+                r.MaxAttempts = reconnect.MaxAttempts;
+                r.InitialDelay = reconnect.InitialDelay;
+                r.MaxDelay = reconnect.MaxDelay;
+                r.BackoffMultiplier = reconnect.BackoffMultiplier;
+                r.ReconnectOnDisconnect = reconnect.ReconnectOnDisconnect;
+            });
+        }
+
+        private void ConfigureRetry(WitClientBuilderOptions builder)
+        {
+            if (Options.Retry is not { } retry)
+                return;
+
+            builder.WithRetryPolicy(r =>
+            {
+                r.MaxRetries = retry.MaxRetries;
+                r.InitialDelay = retry.InitialDelay;
+                r.MaxDelay = retry.MaxDelay;
+                r.BackoffMultiplier = retry.BackoffMultiplier;
+                r.BackoffType = BackoffType.Exponential;
+
+                r.RetryOnStatus(CommunicationStatus.InternalServerError);
+
+                r.RetryOn<TimeoutException>();
+                r.RetryOn<IOException>();
+            });
         }
 
         #endregion
