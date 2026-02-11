@@ -93,6 +93,18 @@ jobs:
             OutWit.Common.Settings:
               - 'Settings/OutWit.Common.Settings/**'
               - 'Settings/OutWit.Common.Settings.Tests/**'
+            OutWit.Common.Settings.Json:
+              - 'Settings/Json/OutWit.Common.Settings.Json/**'
+              - 'Settings/Json/OutWit.Common.Settings.Json.Tests/**'
+              - 'Settings/OutWit.Common.Settings/**'
+            OutWit.Common.Settings.Csv:
+              - 'Settings/Csv/OutWit.Common.Settings.Csv/**'
+              - 'Settings/Csv/OutWit.Common.Settings.Csv.Tests/**'
+              - 'Settings/OutWit.Common.Settings/**'
+            OutWit.Common.Settings.Database:
+              - 'Settings/Database/OutWit.Common.Settings.Database/**'
+              - 'Settings/Database/OutWit.Common.Settings.Database.Tests/**'
+              - 'Settings/OutWit.Common.Settings/**'
             OutWit.Common.Configuration:
               - 'Configuration/**'
             OutWit.Common.NewRelic:

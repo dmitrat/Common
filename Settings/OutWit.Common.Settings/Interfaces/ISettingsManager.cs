@@ -1,28 +1,35 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using OutWit.Common.Settings.Collections;
 
 namespace OutWit.Common.Settings.Interfaces
 {
-    public interface ISettingsManager : IEnumerable<SettingsCollection>
+    public interface ISettingsManager
     {
-        event SettingsManagerEventHandler SettingsUpdated;
+        /// <summary>
+        /// Loads settings from all registered providers.
+        /// Default provider defines the schema; User/Global override values.
+        /// </summary>
+        void Load();
 
-        void AddCollection(SettingsCollection collection);
-        void AddConfiguration(IConfigurationManager configuration);
+        /// <summary>
+        /// Saves current user values to the writable provider.
+        /// </summary>
+        void Save();
 
-        void ResetUserConfiguration();
-        void MergeUserConfiguration();
+        /// <summary>
+        /// Merges Default schema into User storage:
+        /// adds new keys, removes obsolete ones, preserves existing user values.
+        /// </summary>
+        void Merge();
 
-        void Rebuild();
-        void Reset();
+        /// <summary>
+        /// Gets a collection by group name.
+        /// </summary>
+        SettingsCollection this[string group] { get; }
 
-        void Update();
-
+        /// <summary>
+        /// All loaded settings collections.
+        /// </summary>
         IReadOnlyList<SettingsCollection> Collections { get; }
     }
-
-    public delegate void SettingsManagerEventHandler();
 }

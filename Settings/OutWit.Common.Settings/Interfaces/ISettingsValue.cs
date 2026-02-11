@@ -1,34 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OutWit.Common.Interfaces;
+using System.ComponentModel;
+using OutWit.Common.Settings.Configuration;
 
 namespace OutWit.Common.Settings.Interfaces
 {
-	public interface ISettingsValue
-	{
-		string Key { get; }
-        string Name { get; }
+    public interface ISettingsValue : INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Unique identifier within a group.
+        /// </summary>
+        string Key { get; }
 
-		object UserValue { get; set; }
-		object DefaultValue { get; set; }
-		
-        bool UserHidden { get; }
-        bool DefaultHidden { get; }
+        /// <summary>
+        /// Display name (for UI). Defaults to Key.
+        /// </summary>
+        string Name { get; set; }
 
-        string UserTag { get; }
-        string DefaultTag { get; }
+        /// <summary>
+        /// Serializer kind identifier, e.g. "String", "Boolean", "Enum".
+        /// Determines which UI control to use.
+        /// </summary>
+        string ValueKind { get; }
 
-		bool HasUserValue { get; }
-		bool HasDefaultValue { get; }
+        /// <summary>
+        /// The active value (loaded from the appropriate scope provider).
+        /// </summary>
+        object Value { get; set; }
 
+        /// <summary>
+        /// The default value (from Default provider). Read-only.
+        /// </summary>
+        object DefaultValue { get; }
+
+        /// <summary>
+        /// True when Value equals DefaultValue.
+        /// </summary>
         bool IsDefault { get; }
 
-        bool Is(ISettingsValue value);
+        /// <summary>
+        /// The scope this setting belongs to (Default, User, or Global).
+        /// </summary>
+        SettingsScope Scope { get; }
 
-        void Reset(IResources resources);
-		void Update(IResources resources);
-	}
+        /// <summary>
+        /// Whether this setting should be hidden from UI.
+        /// </summary>
+        bool Hidden { get; }
+
+        /// <summary>
+        /// Additional metadata (e.g. fully qualified enum type name).
+        /// </summary>
+        string Tag { get; }
+
+        /// <summary>
+        /// Value-based equality check.
+        /// </summary>
+        bool Is(ISettingsValue other);
+    }
 }

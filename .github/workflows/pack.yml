@@ -30,6 +30,9 @@ on:
           - OutWit.Common.Plugins
           - OutWit.Common.Plugins.Abstractions
           - OutWit.Common.Settings
+          - OutWit.Common.Settings.Json
+          - OutWit.Common.Settings.Csv
+          - OutWit.Common.Settings.Database
           - OutWit.Common.Configuration
           - OutWit.Common.NewRelic
           - OutWit.Common.Blazor.Logging

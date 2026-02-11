@@ -1,21 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<Description>Automatic Settings API</Description>
-		<Authors>Dmitry Ratner</Authors>
-		<Company>OutWit</Company>
-		<Product>OutWit.Common.Settings</Product>
-		<SignAssembly>False</SignAssembly>
-	</PropertyGroup>
+<PropertyGroup>
+<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+<LangVersion>latest</LangVersion>
+<Nullable>enable</Nullable>
+
+<Version>2.0.0</Version>
+
+<Description>A powerful, type-safe settings management library for .NET. Features AOP-powered property interception, multi-scope storage (Default, User, Global), fluent builder API, and pluggable storage providers.</Description>
+<PackageTags>OutWit;Common;Settings;Configuration;AOP;TypeSafe</PackageTags>
+
+<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Settings/OutWit.Common.Settings</RepositoryUrl>
+</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="OutWit.Common.Aspects" Version="1.3.3" />
+    <PackageReference Include="OutWit.Common.MemoryPack" Version="1.1.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
+    <InternalsVisibleTo Include="OutWit.Common.Settings.Tests" />
   </ItemGroup>
 
 </Project>

@@ -1,87 +1,91 @@
-﻿using System;
+using System;
 using System.Linq;
 using AspectInjector.Broker;
-using OutWit.Common.Settings.Interfaces;
+using OutWit.Common.Settings.Configuration;
 
 namespace OutWit.Common.Settings.Aspects
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    [Injection(typeof(SettingAspect))]
-    public class SettingAttribute : Attribute
-    {
-        public SettingAttribute(string collectionName) 
-            : this(collectionName, SettingScope.User)
-        {
-        }
-
-        public SettingAttribute(string collectionName, SettingScope scope)
-        {
-            CollectionName = collectionName;
-            Scope = scope;
-        }
-
-
-        public SettingScope Scope { get; }
-        public string CollectionName { get; }
-    }
-
-    public enum SettingScope
-    {
-        Default = 0,
-        User = 1
-    }
-
+    /// <summary>
+    /// Aspect that intercepts property access on <see cref="SettingsContainer"/>
+    /// implementations to read/write settings values automatically.
+    /// </summary>
     [Aspect(Scope.PerInstance)]
-    public class SettingAspect
+    public sealed class SettingAspect
     {
+        #region Functions
+
+        /// <summary>
+        /// Intercepts property getters to return the settings value
+        /// from the appropriate scope (Default or User).
+        /// </summary>
+        /// <param name="source">The object instance being accessed.</param>
+        /// <param name="propName">The property name.</param>
+        /// <param name="injections">The trigger attributes.</param>
+        /// <returns>The settings value, or <c>null</c> if not found.</returns>
         [Advice(Kind.Around, Targets = Target.AnyAccess | Target.Getter)]
-        public object Getter([Argument(Source.Instance)] object source, [Argument(Source.Name)] string propName, [Argument(Source.Triggers)] Attribute[] injections)
+        public object? Getter(
+            [Argument(Source.Instance)] object source,
+            [Argument(Source.Name)] string propName,
+            [Argument(Source.Triggers)] Attribute[] injections)
         {
-            var attribute = injections.OfType<SettingAttribute>().Single();
-
-            var type = source.GetType();
-            var collectionProperty = type.GetProperty(attribute.CollectionName);
-            var collection = collectionProperty?.GetValue(source) as SettingsCollection;
-
-            if (collection == null || !collection.ContainsKey(propName))
+            var attribute = injections.OfType<SettingAttribute>().SingleOrDefault();
+            if (attribute == null)
                 return null;
 
-            ISettingsValue setting = collection[propName];
-            
-            switch (attribute.Scope)
-            {
-                case SettingScope.User: 
-                    return setting.HasUserValue? setting.UserValue: setting.DefaultValue;
-                default: 
-                    return setting.DefaultValue;
-            }
+            if (source is not SettingsContainer container)
+                return null;
+
+            var manager = container.SettingsManager;
+            var collection = manager[attribute.Group];
+
+            if (!collection.ContainsKey(propName))
+                return null;
+
+            var value = collection[propName];
+
+            return attribute.Scope == SettingsScope.Default
+                ? value.DefaultValue
+                : value.Value;
         }
 
+        /// <summary>
+        /// Intercepts property setters to update the settings value.
+        /// Writes are ignored for Default-scoped properties.
+        /// </summary>
+        /// <param name="source">The object instance being accessed.</param>
+        /// <param name="propName">The property name.</param>
+        /// <param name="arguments">The setter arguments.</param>
+        /// <param name="injections">The trigger attributes.</param>
         [Advice(Kind.After, Targets = Target.AnyAccess | Target.Setter)]
-        public void Setter([Argument(Source.Instance)] object source, [Argument(Source.Name)] string propName, [Argument(Source.Arguments)] object[] arguments, [Argument(Source.Triggers)] Attribute[] injections)
+        public void Setter(
+            [Argument(Source.Instance)] object source,
+            [Argument(Source.Name)] string propName,
+            [Argument(Source.Arguments)] object[] arguments,
+            [Argument(Source.Triggers)] Attribute[] injections)
         {
-            var attribute = injections.OfType<SettingAttribute>().Single();
-
-            var type = source.GetType();
-            var collectionProperty = type.GetProperty(attribute.CollectionName);
-            var collection = collectionProperty?.GetValue(source) as SettingsCollection;
-
-            if (collection == null || !collection.ContainsKey(propName))
+            var attribute = injections.OfType<SettingAttribute>().SingleOrDefault();
+            if (attribute == null)
                 return;
 
-            ISettingsValue setting = collection[propName];
+            if (source is not SettingsContainer container)
+                return;
 
-            switch (attribute.Scope)
-            {
-                case SettingScope.User: 
-                    if(setting.HasUserValue)
-                        setting.UserValue = arguments.SingleOrDefault();
-                    break;
-                default:
-                    if(setting.HasDefaultValue)
-                        setting.DefaultValue = arguments.SingleOrDefault();
-                    break;
-            }
+            if (attribute.Scope == SettingsScope.Default)
+                return;
+
+            var manager = container.SettingsManager;
+            var collection = manager[attribute.Group];
+
+            if (!collection.ContainsKey(propName))
+                return;
+
+            if (arguments.Length == 0)
+                return;
+
+            var value = collection[propName];
+            value.Value = arguments[0];
         }
+
+        #endregion
     }
 }

@@ -1,48 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using OutWit.Common.Aspects;
-using OutWit.Common.Configuration;
 using OutWit.Common.Settings.Aspects;
 using OutWit.Common.Settings.Configuration;
-using OutWit.Common.Settings.Tests.Properties;
+using OutWit.Common.Settings.Interfaces;
 
 namespace OutWit.Common.Settings.Tests.Utils
 {
-    public class TestSettings : ConfigurationManager
+    public class TestSettings : SettingsContainer
     {
-        public TestSettings() :
-            base(Assembly.GetExecutingAssembly(), true, 2, "Configuration")
+        #region Constructors
+
+        public TestSettings(ISettingsManager manager)
+            : base(manager)
         {
-            General = new SettingsCollection(new ResourcesBase<Resources>(Assembly.GetExecutingAssembly()), this, "General");
         }
 
-
-        [Setting(nameof(General))]
-        public string ModuleFolder { get; }
-       
-        [Setting(nameof(General))]
-        public bool UsePcSpeaker { get; }
-
-        [Setting(nameof(General))]
-        public bool ShowSplashScreen { get; }
-
-        [Setting(nameof(General))]
-        public bool HideWhileLoading { get; }
-
-        [Setting(nameof(General))]
-        public bool IsNavigationBarFixed { get; set; }
-
-        [Setting(nameof(General))]
-        public string CurrentLanguage { get; set; }
-
-        [Setting(nameof(General))]
-        public TestEnum TestEnum { get; set; }
+        #endregion
 
         #region Properties
 
-        public SettingsCollection General { get; }
+        [Setting("General")]
+        public virtual string UserName { get; set; } = null!;
+
+        [Setting("General")]
+        public virtual bool DarkMode { get; set; }
+
+        [Setting("General")]
+        public virtual int MaxRetries { get; set; }
+
+        [Setting("General", SettingsScope.Default)]
+        public virtual string AppVersion { get; set; } = null!;
 
         #endregion
     }
