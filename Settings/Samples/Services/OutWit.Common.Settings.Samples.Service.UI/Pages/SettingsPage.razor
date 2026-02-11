@@ -1,0 +1,225 @@
+@page "/"
+@using OutWit.Communication.Client.Blazor
+@inject IChannelFactory ChannelFactory
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+
+    @if (m_groups == null)
+    {
+        <MudProgressCircular Indeterminate="true"/>
+    }
+    else
+    {
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+            @foreach (var group in m_groups)
+            {
+                <MudTabPanel Text="@group.DisplayName">
+                    <MudStack Spacing="2">
+                        @if (m_values.TryGetValue(group.Group, out var values))
+                        {
+                            @foreach (var value in values)
+                            {
+                                <MudGrid>
+                                    <MudItem xs="4">
+                                        <MudText Typo="@(value.IsDefault ? Typo.body1 : Typo.subtitle1)"
+                                                 Class="@(value.IsDefault ? "" : "mud-text-secondary")">
+                                            @value.Name
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem xs="7">
+                                        @switch (value)
+                                        {
+                                            case SettingsValue<bool> v:
+                                                <MudSwitch T="bool"
+                                                           Value="@v.Value"
+                                                           ValueChanged="@(val => OnValueChanged(group.Group, v, val.ToString()))"/>
+                                                break;
+                                            case SettingsValue<int> v:
+                                                <MudNumericField T="int"
+                                                                 Value="@v.Value"
+                                                                 ValueChanged="@(val => OnValueChanged(group.Group, v, val.ToString()))"
+                                                                 Variant="Variant.Outlined"/>
+                                                break;
+                                            case SettingsValue<long> v:
+                                                <MudNumericField T="long"
+                                                                 Value="@v.Value"
+                                                                 ValueChanged="@(val => OnValueChanged(group.Group, v, val.ToString()))"
+                                                                 Variant="Variant.Outlined"/>
+                                                break;
+                                            case SettingsValue<double> v:
+                                                <MudNumericField T="double"
+                                                                 Value="@v.Value"
+                                                                 ValueChanged="@(val => OnValueChanged(group.Group, v, val.ToString()))"
+                                                                 Variant="Variant.Outlined"/>
+                                                break;
+                                            case SettingsValue<decimal> v:
+                                                <MudNumericField T="decimal"
+                                                                 Value="@v.Value"
+                                                                 ValueChanged="@(val => OnValueChanged(group.Group, v, val.ToString()))"
+                                                                 Variant="Variant.Outlined"/>
+                                                break;
+                                            case SettingsValue<BoundedInt> v when v.Value != null:
+                                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                                    <MudSlider T="int"
+                                                               Value="@v.Value.Value"
+                                                               Min="@v.Value.Min"
+                                                               Max="@v.Value.Max"
+                                                               ValueChanged="@(val => OnValueChanged(group.Group, v, val.ToString()))"/>
+                                                    <MudText Typo="Typo.body2">@v.Value.Value</MudText>
+                                                </MudStack>
+                                                break;
+                                            case SettingsValue<ColorRgb> v when v.Value != null:
+                                                <MudStack Row="true" Spacing="2">
+                                                    <MudNumericField T="byte" Label="R" Value="@v.Value.R"
+                                                                     ValueChanged="@(val => OnColorChanged(group.Group, v, val, v.Value.G, v.Value.B))"
+                                                                     Variant="Variant.Outlined" Min="0" Max="255"/>
+                                                    <MudNumericField T="byte" Label="G" Value="@v.Value.G"
+                                                                     ValueChanged="@(val => OnColorChanged(group.Group, v, v.Value.R, val, v.Value.B))"
+                                                                     Variant="Variant.Outlined" Min="0" Max="255"/>
+                                                    <MudNumericField T="byte" Label="B" Value="@v.Value.B"
+                                                                     ValueChanged="@(val => OnColorChanged(group.Group, v, v.Value.R, v.Value.G, val))"
+                                                                     Variant="Variant.Outlined" Min="0" Max="255"/>
+                                                    <MudPaper Width="40px" Height="40px"
+                                                              Style="@($"background:rgb({v.Value.R},{v.Value.G},{v.Value.B})")"
+                                                              Elevation="1"/>
+                                                </MudStack>
+                                                break;
+                                            case SettingsValue<object> v when v.ValueKind == "Enum":
+                                                <MudSelect T="string"
+                                                           Value="@(v.Value?.ToString() ?? "")"
+                                                           ValueChanged="@(val => OnValueChanged(group.Group, v, val))"
+                                                           Variant="Variant.Outlined">
+                                                    @foreach (var name in GetEnumNames(v.Tag))
+                                                    {
+                                                        <MudSelectItem Value="@name">@name</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                                break;
+                                            case SettingsValue<TimeSpan> v:
+                                                <MudTextField T="string"
+                                                              Value="@v.Value.ToString()"
+                                                              ValueChanged="@(val => OnValueChanged(group.Group, v, val ?? ""))"
+                                                              Variant="Variant.Outlined"/>
+                                                break;
+                                            case SettingsValue<string> v:
+                                                <MudTextField T="string"
+                                                              Value="@v.Value"
+                                                              ValueChanged="@(val => OnValueChanged(group.Group, v, val ?? ""))"
+                                                              Variant="Variant.Outlined"
+                                                              InputType="@(v.ValueKind == "Password" ? InputType.Password : InputType.Text)"/>
+                                                break;
+                                            default:
+                                                <MudTextField T="string"
+                                                              Value="@(value.Value?.ToString() ?? "")"
+                                                              ValueChanged="@(val => OnValueChanged(group.Group, value, val ?? ""))"
+                                                              Variant="Variant.Outlined"/>
+                                                break;
+                                        }
+                                    </MudItem>
+                                    <MudItem xs="1">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                                                       Disabled="@value.IsDefault"
+                                                       OnClick="@(() => OnReset(group.Group, value))"
+                                                       Size="Size.Small"/>
+                                    </MudItem>
+                                </MudGrid>
+                            }
+                        }
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Warning"
+                                   OnClick="@(() => OnResetGroup(group.Group))">
+                            Reset All
+                        </MudButton>
+                    </MudStack>
+                </MudTabPanel>
+            }
+        </MudTabs>
+
+        <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnSave">Save</MudButton>
+            <MudButton Variant="Variant.Outlined" OnClick="OnCancel">Cancel</MudButton>
+        </MudStack>
+    }
+</MudContainer>
+
+@code {
+    private ISettingsService? m_service;
+    private IReadOnlyList<SettingsGroupInfo>? m_groups;
+    private Dictionary<string, IReadOnlyList<ISettingsValue>> m_values = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        m_service = await ChannelFactory.GetServiceAsync<ISettingsService>();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (m_service == null)
+            return;
+
+        m_groups = await m_service.GetGroupsAsync();
+        m_values.Clear();
+        foreach (var g in m_groups)
+            m_values[g.Group] = await m_service.GetValuesAsync(g.Group);
+    }
+
+    private async Task OnValueChanged(string group, ISettingsValue value, string? stringValue)
+    {
+        if (m_service == null || stringValue == null)
+            return;
+
+        await m_service.UpdateValueAsync(group, value.Key, stringValue);
+        m_values[group] = await m_service.GetValuesAsync(group);
+    }
+
+    private async Task OnColorChanged(string group, ISettingsValue value, byte r, byte g, byte b)
+    {
+        if (m_service == null)
+            return;
+
+        await m_service.UpdateValueAsync(group, value.Key, $"{r},{g},{b}");
+        m_values[group] = await m_service.GetValuesAsync(group);
+    }
+
+    private async Task OnReset(string group, ISettingsValue value)
+    {
+        if (m_service == null)
+            return;
+
+        await m_service.ResetValueAsync(group, value.Key);
+        m_values[group] = await m_service.GetValuesAsync(group);
+    }
+
+    private async Task OnResetGroup(string group)
+    {
+        if (m_service == null)
+            return;
+
+        await m_service.ResetGroupAsync(group);
+        m_values[group] = await m_service.GetValuesAsync(group);
+    }
+
+    private async Task OnSave()
+    {
+        if (m_service != null)
+            await m_service.SaveAsync();
+    }
+
+    private async Task OnCancel()
+    {
+        await LoadAsync();
+    }
+
+    private static IReadOnlyList<string> GetEnumNames(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return Array.Empty<string>();
+
+        var type = Type.GetType(tag);
+        if (type == null || !type.IsEnum)
+            return Array.Empty<string>();
+
+        return Enum.GetNames(type);
+    }
+}

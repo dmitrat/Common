@@ -1,0 +1,5 @@
+Group,Key,Value,ValueKind,Tag,Hidden
+NetworkSettings,ApiEndpoint,http://localhost:5000,ServiceUrl,,False
+NetworkSettings,ProxyUrl,,Url,,False
+NetworkSettings,ConnectionTimeout,00:00:30,TimeSpan,,False
+NetworkSettings,MaxRetries,3,Integer,,False

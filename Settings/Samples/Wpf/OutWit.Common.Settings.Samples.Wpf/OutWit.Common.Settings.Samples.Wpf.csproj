@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+	  <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OutWit.Common.MVVM.WPF" Version="2.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OutWit.Common.Settings.Samples.Wpf.Module.Json\OutWit.Common.Settings.Samples.Wpf.Module.Json.csproj" />
+    <ProjectReference Include="..\OutWit.Common.Settings.Samples.Wpf.Module.Csv\OutWit.Common.Settings.Samples.Wpf.Module.Csv.csproj" />
+    <ProjectReference Include="..\OutWit.Common.Settings.Samples.Wpf.Module.Database\OutWit.Common.Settings.Samples.Wpf.Module.Database.csproj" />
+    <ProjectReference Include="..\OutWit.Common.Settings.Samples.Wpf.Module.SharedDatabase\OutWit.Common.Settings.Samples.Wpf.Module.SharedDatabase.csproj" />
+  </ItemGroup>
+
+</Project>

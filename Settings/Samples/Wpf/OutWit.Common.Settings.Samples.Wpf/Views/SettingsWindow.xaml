@@ -1,0 +1,198 @@
+<Window x:Class="OutWit.Common.Settings.Samples.Wpf.Views.SettingsWindow"
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:vm="clr-namespace:OutWit.Common.Settings.Samples.Wpf.ViewModels"
+xmlns:editors="clr-namespace:OutWit.Common.Settings.Samples.Wpf.Views.Editors"
+        Title="Settings"
+        Width="700" Height="500"
+        WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+
+        <!-- String -->
+        <DataTemplate x:Key="StringEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Integer -->
+        <DataTemplate x:Key="IntegerEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Long -->
+        <DataTemplate x:Key="LongEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Double -->
+        <DataTemplate x:Key="DoubleEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Decimal -->
+        <DataTemplate x:Key="DecimalEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Boolean -->
+        <DataTemplate x:Key="BooleanEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <CheckBox IsChecked="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                      VerticalAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Enum -->
+        <DataTemplate x:Key="EnumEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <ComboBox ItemsSource="{Binding EnumValues}"
+                      SelectedItem="{Binding SelectedEnumName, UpdateSourceTrigger=PropertyChanged}"
+                      VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Password -->
+        <DataTemplate x:Key="PasswordEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center"
+                     FontFamily="Consolas" />
+        </DataTemplate>
+
+        <!-- Folder -->
+        <DataTemplate x:Key="FolderEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Path -->
+        <DataTemplate x:Key="PathEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Url -->
+        <DataTemplate x:Key="UrlEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- ServiceUrl -->
+        <DataTemplate x:Key="ServiceUrlEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- TimeSpan -->
+        <DataTemplate x:Key="TimeSpanEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- Language -->
+        <DataTemplate x:Key="LanguageEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalContentAlignment="Center" />
+        </DataTemplate>
+
+        <!-- BoundedInt -->
+        <DataTemplate x:Key="BoundedIntEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <editors:BoundedIntEditor DataContext="{Binding}" />
+        </DataTemplate>
+
+        <!-- ColorRgb -->
+        <DataTemplate x:Key="ColorRgbEditorTemplate" DataType="{x:Type vm:SettingsValueViewModel}">
+            <editors:ColorRgbEditor DataContext="{Binding}" />
+        </DataTemplate>
+
+        <editors:EditorTemplateSelector x:Key="EditorSelector"
+            StringTemplate="{StaticResource StringEditorTemplate}"
+            IntegerTemplate="{StaticResource IntegerEditorTemplate}"
+            LongTemplate="{StaticResource LongEditorTemplate}"
+            DoubleTemplate="{StaticResource DoubleEditorTemplate}"
+            DecimalTemplate="{StaticResource DecimalEditorTemplate}"
+            BooleanTemplate="{StaticResource BooleanEditorTemplate}"
+            EnumTemplate="{StaticResource EnumEditorTemplate}"
+            PasswordTemplate="{StaticResource PasswordEditorTemplate}"
+            FolderTemplate="{StaticResource FolderEditorTemplate}"
+            PathTemplate="{StaticResource PathEditorTemplate}"
+            UrlTemplate="{StaticResource UrlEditorTemplate}"
+            ServiceUrlTemplate="{StaticResource ServiceUrlEditorTemplate}"
+            TimeSpanTemplate="{StaticResource TimeSpanEditorTemplate}"
+            LanguageTemplate="{StaticResource LanguageEditorTemplate}"
+            BoundedIntTemplate="{StaticResource BoundedIntEditorTemplate}"
+            ColorRgbTemplate="{StaticResource ColorRgbEditorTemplate}" />
+
+        <Style x:Key="ModifiedLabelStyle" TargetType="TextBlock">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDefault}" Value="False">
+                    <Setter Property="FontWeight" Value="Bold" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- Bottom buttons -->
+        <StackPanel DockPanel.Dock="Bottom"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="8">
+            <Button Content="Save" Width="80" Margin="0,0,8,0"
+                    Command="{Binding SaveCommand}" />
+            <Button Content="Cancel" Width="80"
+                    Command="{Binding CancelCommand}" />
+        </StackPanel>
+
+        <!-- Tab control with groups -->
+        <TabControl ItemsSource="{Binding Groups}" Margin="8,8,8,0">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}" />
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Bottom"
+                                Content="Reset All"
+                                HorizontalAlignment="Right"
+                                Margin="0,4,0,0"
+                                Command="{Binding ResetAllCommand}" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding VisibleValues}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="4,4,4,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="160" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Name}"
+                                                       VerticalAlignment="Center"
+                                                       Style="{StaticResource ModifiedLabelStyle}" />
+
+                                            <ContentControl Grid.Column="1"
+                                                            Content="{Binding}"
+                                                            ContentTemplateSelector="{StaticResource EditorSelector}"
+                                                            Margin="4,0" />
+
+                                            <Button Grid.Column="2"
+                                                    Content="↩"
+                                                    ToolTip="Reset to default"
+                                                    Width="24" Height="24"
+                                                    Command="{Binding ResetCommand}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+    </DockPanel>
+</Window>

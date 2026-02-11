@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+	  <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Json\OutWit.Common.Settings.Json\OutWit.Common.Settings.Json.csproj" />
+    <ProjectReference Include="..\..\OutWit.Common.Settings.Samples.Serializers\OutWit.Common.Settings.Samples.Serializers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

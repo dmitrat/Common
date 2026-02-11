@@ -31,7 +31,7 @@
 
   </PropertyGroup>
 
-	<ItemGroup Condition="'$(IsTestProject)' != 'true'">
+	<ItemGroup Condition="'$(IsTestProject)' != 'true' AND '$(IsPackable)' != 'false'">
 		<None Include="LICENSE" Pack="true" PackagePath="\" />
 		<None Include="OutWit-logo.png" Pack="true" PackagePath="\" />
 		<None Include="README.md" Pack="true" PackagePath="\" />

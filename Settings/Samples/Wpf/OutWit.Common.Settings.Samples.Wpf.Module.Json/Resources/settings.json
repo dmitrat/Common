@@ -1,0 +1,62 @@
+{
+  "__groups__": {
+    "AppSettings": {
+      "displayName": "Application",
+      "priority": 0
+    },
+    "Notifications": {
+      "displayName": "Notifications",
+      "priority": 5
+    }
+  },
+  "AppSettings": [
+    {
+      "key": "Theme",
+      "value": "Light",
+      "valueKind": "Enum",
+      "tag": "OutWit.Common.Settings.Samples.Wpf.Module.Json.AppTheme, OutWit.Common.Settings.Samples.Wpf.Module.Json"
+    },
+    {
+      "key": "Language",
+      "value": "en-US",
+      "valueKind": "Language"
+    },
+    {
+      "key": "StartMinimized",
+      "value": "False",
+      "valueKind": "Boolean"
+    },
+    {
+      "key": "AutoSave",
+      "value": "True",
+      "valueKind": "Boolean"
+    },
+    {
+      "key": "AutoSaveInterval",
+      "value": "30",
+      "valueKind": "Integer"
+    },
+    {
+      "key": "AccentColor",
+      "value": "0,120,215",
+      "valueKind": "ColorRgb"
+    }
+  ],
+  "Notifications": [
+    {
+      "key": "EnableNotifications",
+      "value": "True",
+      "valueKind": "Boolean"
+    },
+    {
+      "key": "EmailAddress",
+      "value": "",
+      "valueKind": "String"
+    },
+    {
+      "key": "MaxPerDay",
+      "value": "50",
+      "valueKind": "Integer"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "OutWit.Common.Settings.Samples.Service.UI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:59065;http://localhost:59066"
+    }
+  }
+}

@@ -107,4 +107,31 @@
     <Project Path="Settings/OutWit.Common.Settings.Tests/OutWit.Common.Settings.Tests.csproj" />
     <Project Path="Settings/OutWit.Common.Settings/OutWit.Common.Settings.csproj" />
   </Folder>
+  <Folder Name="/Settings/Csv/">
+    <Project Path="Settings/Csv/OutWit.Common.Settings.Csv.Tests/OutWit.Common.Settings.Csv.Tests.csproj" />
+    <Project Path="Settings/Csv/OutWit.Common.Settings.Csv/OutWit.Common.Settings.Csv.csproj" />
+  </Folder>
+  <Folder Name="/Settings/Database/">
+    <Project Path="Settings/Database/OutWit.Common.Settings.Database.Tests/OutWit.Common.Settings.Database.Tests.csproj" />
+    <Project Path="Settings/Database/OutWit.Common.Settings.Database/OutWit.Common.Settings.Database.csproj" />
+  </Folder>
+  <Folder Name="/Settings/Json/">
+    <Project Path="Settings/Json/OutWit.Common.Settings.Json.Tests/OutWit.Common.Settings.Json.Tests.csproj" />
+    <Project Path="Settings/Json/OutWit.Common.Settings.Json/OutWit.Common.Settings.Json.csproj" />
+  </Folder>
+  <Folder Name="/Settings/Samples/">
+    <Project Path="Settings/Samples/OutWit.Common.Settings.Samples.Serializers/OutWit.Common.Settings.Samples.Serializers.csproj" />
+  </Folder>
+  <Folder Name="/Settings/Samples/Services/">
+    <Project Path="Settings/Samples/Services/OutWit.Common.Settings.Samples.Service.UI/OutWit.Common.Settings.Samples.Service.UI.csproj" />
+    <Project Path="Settings/Samples/Services/OutWit.Common.Settings.Samples.Service.Contracts/OutWit.Common.Settings.Samples.Service.Contracts.csproj" />
+    <Project Path="Settings/Samples/Services/OutWit.Common.Settings.Samples.Service/OutWit.Common.Settings.Samples.Service.csproj" />
+  </Folder>
+  <Folder Name="/Settings/Samples/Wpf/">
+    <Project Path="Settings/Samples/Wpf/OutWit.Common.Settings.Samples.Wpf.Module.Csv/OutWit.Common.Settings.Samples.Wpf.Module.Csv.csproj" />
+    <Project Path="Settings/Samples/Wpf/OutWit.Common.Settings.Samples.Wpf.Module.Database/OutWit.Common.Settings.Samples.Wpf.Module.Database.csproj" />
+    <Project Path="Settings/Samples/Wpf/OutWit.Common.Settings.Samples.Wpf.Module.Json/OutWit.Common.Settings.Samples.Wpf.Module.Json.csproj" />
+    <Project Path="Settings/Samples/Wpf/OutWit.Common.Settings.Samples.Wpf.Module.SharedDatabase/OutWit.Common.Settings.Samples.Wpf.Module.SharedDatabase.csproj" />
+    <Project Path="Settings/Samples/Wpf/OutWit.Common.Settings.Samples.Wpf/OutWit.Common.Settings.Samples.Wpf.csproj" />
+  </Folder>
 </Solution>

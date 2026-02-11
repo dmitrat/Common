@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+	  <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.2" PrivateAssets="all" />
+    <PackageReference Include="MudBlazor" Version="8.15.0" />
+    <PackageReference Include="OutWit.Communication.Client.Blazor" Version="1.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Wpf\OutWit.Common.Settings.Samples.Wpf.Module.Json\OutWit.Common.Settings.Samples.Wpf.Module.Json.csproj" />
+    <ProjectReference Include="..\..\Wpf\OutWit.Common.Settings.Samples.Wpf.Module.Csv\OutWit.Common.Settings.Samples.Wpf.Module.Csv.csproj" />
+    <ProjectReference Include="..\..\Wpf\OutWit.Common.Settings.Samples.Wpf.Module.Database\OutWit.Common.Settings.Samples.Wpf.Module.Database.csproj" />
+    <ProjectReference Include="..\..\OutWit.Common.Settings.Samples.Serializers\OutWit.Common.Settings.Samples.Serializers.csproj" />
+    <ProjectReference Include="..\OutWit.Common.Settings.Samples.Service.Contracts\OutWit.Common.Settings.Samples.Service.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

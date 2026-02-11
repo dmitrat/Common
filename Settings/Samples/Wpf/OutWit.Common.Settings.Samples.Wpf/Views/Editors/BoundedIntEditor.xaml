@@ -1,0 +1,23 @@
+<UserControl x:Class="OutWit.Common.Settings.Samples.Wpf.Views.Editors.BoundedIntEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="60" />
+        </Grid.ColumnDefinitions>
+
+        <Slider Grid.Column="0"
+                Minimum="{Binding BoundedMin}"
+                Maximum="{Binding BoundedMax}"
+                Value="{Binding BoundedValue, UpdateSourceTrigger=PropertyChanged}"
+                IsSnapToTickEnabled="True"
+                TickFrequency="1"
+                VerticalAlignment="Center" />
+
+        <TextBlock Grid.Column="1"
+                   Text="{Binding BoundedValue}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center" />
+    </Grid>
+</UserControl>
