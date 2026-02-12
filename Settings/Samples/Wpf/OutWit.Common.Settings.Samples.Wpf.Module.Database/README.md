@@ -61,12 +61,12 @@ DatabaseSeeder.EnsureDefaults(SettingsPathResolver.GetDefaultsPath(".db"));
 var module = new AdvancedModule();
 module.Initialize();
 
-// Access typed settings
-var settings = module.Settings;
+// Create typed container bound to the manager
+var settings = new AdvancedSettings(module.Manager);
 Console.WriteLine(settings.LogLevel);     // LogLevel.Info
 Console.WriteLine(settings.AccentColor);  // ColorRgb(0, 120, 215)
 
-// Modify
+// Modify via typed container (intercepted by AOP)
 settings.LogLevel = LogLevel.Debug;
 settings.AccentColor = new ColorRgb(255, 0, 0);
 module.Manager.Save();
@@ -94,8 +94,11 @@ public sealed class AdvancedModule : IAdvancedModule
     }
 
     public ISettingsManager Manager { get; private set; }
-    public AdvancedSettings Settings => Manager.GetContainer<AdvancedSettings>();
 }
+
+// Create a typed container anywhere:
+var settings = new AdvancedSettings(module.Manager);
+settings.LogLevel = LogLevel.Debug;  // AOP intercepts and writes to manager
 ```
 
 ## When to Use Database

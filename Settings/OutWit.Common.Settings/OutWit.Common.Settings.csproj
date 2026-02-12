@@ -5,7 +5,7 @@
 <LangVersion>latest</LangVersion>
 <Nullable>enable</Nullable>
 
-<Version>2.0.0</Version>
+<Version>2.0.1</Version>
 
 <Description>A powerful, type-safe settings management library for .NET. Features AOP-powered property interception, multi-scope storage (Default, User, Global), fluent builder API, and pluggable storage providers.</Description>
 <PackageTags>OutWit;Common;Settings;Configuration;AOP;TypeSafe</PackageTags>
@@ -19,10 +19,12 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
   </ItemGroup>
 

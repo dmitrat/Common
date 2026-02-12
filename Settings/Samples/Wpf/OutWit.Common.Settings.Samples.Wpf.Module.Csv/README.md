@@ -45,13 +45,13 @@ NetworkSettings,MaxRetries,Integer,,Max Retries,3
 var module = new NetworkModule();
 module.Initialize();
 
-// Access typed settings
-var settings = module.Settings;
+// Create typed container bound to the manager
+var settings = new NetworkSettings(module.Manager);
 Console.WriteLine(settings.ProxyEnabled);       // false
 Console.WriteLine(settings.ConnectionTimeout);  // 00:00:30
 Console.WriteLine(settings.MaxRetries);         // 3
 
-// Modify
+// Modify via typed container (intercepted by AOP)
 settings.MaxRetries = 5;
 module.Manager.Save();
 ```
@@ -73,8 +73,11 @@ public sealed class NetworkModule : INetworkModule
     }
 
     public ISettingsManager Manager { get; private set; }
-    public NetworkSettings Settings => Manager.GetContainer<NetworkSettings>();
 }
+
+// Create a typed container anywhere:
+var settings = new NetworkSettings(module.Manager);
+settings.MaxRetries = 5;  // AOP intercepts and writes to manager
 ```
 
 ## When to Use CSV

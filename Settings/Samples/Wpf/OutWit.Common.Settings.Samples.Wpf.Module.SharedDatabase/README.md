@@ -55,7 +55,8 @@ shared-settings.witdb
 var module = new SharedDatabaseModule();
 module.Initialize();
 
-var settings = module.Settings;
+// Create typed container bound to the manager
+var settings = new SharedSettings(module.Manager);
 
 // Global setting - visible to all users
 settings.GlobalSetting = "new value";  // Changes for everyone

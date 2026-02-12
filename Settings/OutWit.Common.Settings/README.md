@@ -121,6 +121,48 @@ Built-in support for MemoryPack binary serialization, enabling efficient setting
 SettingsBuilder.RegisterMemoryPack(b => b.AddSerializer(new ColorRgbSerializer()));
 ```
 
+### 9. Dependency Injection Integration
+Register the settings manager and all typed containers as singletons with a single call. `Merge()` and `Load()` are called automatically:
+
+```csharp
+services.AddSettings(settings => settings
+    .UseJson()
+    .AddSerializer(new ColorRgbSerializer())
+    .RegisterContainer<ApplicationSettings>()
+    .RegisterContainer<NetworkSettings>()
+);
+
+// Resolve from DI
+var appSettings = provider.GetRequiredService<ApplicationSettings>();
+```
+
+Containers can also be registered under a service interface for better abstraction:
+
+```csharp
+services.AddSettings(settings => settings
+    .UseJson()
+    .RegisterContainer<IAppSettings, ApplicationSettings>()
+    .RegisterContainer<NetworkSettings>()
+);
+
+// Resolve by interface
+var appSettings = provider.GetRequiredService<IAppSettings>();
+```
+
+The manual fluent API remains available for scenarios that require additional control over the lifecycle:
+
+```csharp
+var manager = new SettingsBuilder()
+    .UseJson()
+    .RegisterContainer<ApplicationSettings>()
+    .Build();
+
+manager.Merge();
+manager.Load();
+
+var settings = new ApplicationSettings(manager);
+```
+
 ## Installation
 
 Install the package via NuGet:

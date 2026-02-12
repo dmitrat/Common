@@ -4,7 +4,7 @@ using OutWit.Common.Settings.Interfaces;
 
 namespace OutWit.Common.Settings.Tests.Utils
 {
-    public class TestSettings : SettingsContainer
+    public class TestSettings : SettingsContainer, ITestSettings
     {
         #region Constructors
 

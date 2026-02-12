@@ -19,8 +19,8 @@ namespace OutWit.Common.Settings.Configuration
     {
         #region Static Fields
 
-        private static readonly object s_memoryPackLock = new();
-        private static readonly HashSet<Type> s_registeredValueTypes = new();
+        private static readonly object m_memoryPackLock = new();
+        private static readonly HashSet<Type> m_registeredValueTypes = new();
 
         #endregion
 
@@ -29,7 +29,7 @@ namespace OutWit.Common.Settings.Configuration
         private readonly List<(SettingsScope Scope, ISettingsProvider Provider)> m_providers = new();
         private readonly List<ISettingsSerializer> m_serializers = new();
         private readonly List<SettingsGroupInfo> m_configuredGroups = new();
-        private readonly List<Type> m_containerTypes = new();
+        private readonly List<(Type ServiceType, Type ImplementationType)> m_containerTypes = new();
 
         private int m_depth = 1;
         private string? m_fileNameOverride;
@@ -61,14 +61,28 @@ namespace OutWit.Common.Settings.Configuration
         }
 
         /// <summary>
-        /// Registers a settings container type. The manager will use <see cref="Aspects.SettingAttribute"/>
+        /// Registers a settings container type. The container is registered in DI under its own type.
+        /// The manager will use <see cref="Aspects.SettingAttribute"/>
         /// from this type's properties to determine the scope of each setting.
-        /// Entries in defaults without a matching property are ignored during Load().
         /// </summary>
         /// <typeparam name="T">The container type inheriting from <see cref="SettingsContainer"/>.</typeparam>
         public SettingsBuilder RegisterContainer<T>() where T : SettingsContainer
         {
-            m_containerTypes.Add(typeof(T));
+            m_containerTypes.Add((typeof(T), typeof(T)));
+            return this;
+        }
+
+        /// <summary>
+        /// Registers a settings container type under a service interface.
+        /// The container is registered in DI as <typeparamref name="TService"/>,
+        /// resolved to <typeparamref name="TImplementation"/>.
+        /// </summary>
+        /// <typeparam name="TService">The service type (interface or base class) for DI resolution.</typeparam>
+        /// <typeparam name="TImplementation">The container type inheriting from <see cref="SettingsContainer"/>.</typeparam>
+        public SettingsBuilder RegisterContainer<TService, TImplementation>()
+            where TImplementation : SettingsContainer, TService
+        {
+            m_containerTypes.Add((typeof(TService), typeof(TImplementation)));
             return this;
         }
 
@@ -187,8 +201,8 @@ namespace OutWit.Common.Settings.Configuration
             foreach (var groupInfo in m_configuredGroups)
                 manager.AddGroupOverride(groupInfo);
 
-            foreach (var type in m_containerTypes)
-                manager.RegisterContainerType(type);
+            foreach (var (_, implType) in m_containerTypes)
+                manager.RegisterContainerType(implType);
 
             AutoCreateScopeProviders(manager);
 
@@ -211,7 +225,7 @@ namespace OutWit.Common.Settings.Configuration
 
             var explicitScopes = m_providers.Select(p => p.Scope).ToHashSet();
             var requiredScopes = ComputeRequiredScopes();
-            var assembly = m_containerTypes[0].Assembly;
+            var assembly = m_containerTypes[0].ImplementationType.Assembly;
 
             foreach (var scope in new[] { SettingsScope.User, SettingsScope.Global })
             {
@@ -242,9 +256,9 @@ namespace OutWit.Common.Settings.Configuration
         {
             var scopes = new HashSet<SettingsScope>();
 
-            foreach (var type in m_containerTypes)
+            foreach (var (_, implType) in m_containerTypes)
             {
-                foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                foreach (var prop in implType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
                     var attr = prop.GetCustomAttribute<SettingAttribute>();
                     if (attr != null)
@@ -257,15 +271,15 @@ namespace OutWit.Common.Settings.Configuration
 
         private void RegisterMemoryPackInternal()
         {
-            lock (s_memoryPackLock)
+            lock (m_memoryPackLock)
             {
                 foreach (var serializer in CreateBuiltInSerializers())
-                    s_registeredValueTypes.Add(serializer.ValueType);
+                    m_registeredValueTypes.Add(serializer.ValueType);
 
                 foreach (var serializer in m_serializers)
-                    s_registeredValueTypes.Add(serializer.ValueType);
+                    m_registeredValueTypes.Add(serializer.ValueType);
 
-                var unionMembers = s_registeredValueTypes
+                var unionMembers = m_registeredValueTypes
                     .Select(vt => typeof(SettingsValue<>).MakeGenericType(vt))
                     .OrderBy(t => t.FullName, StringComparer.Ordinal)
                     .Select((t, i) => ((ushort)i, t))
@@ -284,24 +298,9 @@ namespace OutWit.Common.Settings.Configuration
         /// </summary>
         public static void ResetMemoryPackRegistrations()
         {
-            lock (s_memoryPackLock)
+            lock (m_memoryPackLock)
             {
-                s_registeredValueTypes.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Returns the number of value types currently registered for MemoryPack serialization.
-        /// Intended for test verification only.
-        /// </summary>
-        public static int MemoryPackRegistrationCount
-        {
-            get
-            {
-                lock (s_memoryPackLock)
-                {
-                    return s_registeredValueTypes.Count;
-                }
+                m_registeredValueTypes.Clear();
             }
         }
 
@@ -330,6 +329,30 @@ namespace OutWit.Common.Settings.Configuration
                 new SettingsSerializerLanguage(),
                 new SettingsSerializerPassword(),
             };
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the container registrations: service type and implementation type pairs.
+        /// </summary>
+        internal IReadOnlyList<(Type ServiceType, Type ImplementationType)> ContainerRegistrations => m_containerTypes;
+
+        /// <summary>
+        /// Returns the number of value types currently registered for MemoryPack serialization.
+        /// Intended for test verification only.
+        /// </summary>
+        public static int MemoryPackRegistrationCount
+        {
+            get
+            {
+                lock (m_memoryPackLock)
+                {
+                    return m_registeredValueTypes.Count;
+                }
+            }
         }
 
         #endregion
