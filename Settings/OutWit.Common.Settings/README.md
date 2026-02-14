@@ -26,6 +26,24 @@ public class ApplicationSettings : SettingsContainer
 }
 ```
 
+When the group name matches the container class name, it can be omitted — the group is inferred automatically:
+
+```csharp
+public class AppSettings : SettingsContainer
+{
+    public AppSettings(ISettingsManager manager) : base(manager) { }
+
+    [Setting]                        // group = "AppSettings" (from class name)
+    public virtual string Language { get; set; } = null!;
+
+    [Setting]                        // group = "AppSettings"
+    public virtual bool AutoSave { get; set; }
+
+    [Setting(SettingsScope.Default)] // group = "AppSettings", read-only
+    public virtual string Version { get; set; } = null!;
+}
+```
+
 ### 2. Multi-Scope Storage
 Settings support three scopes with automatic value resolution:
 - **Default** - Read-only defaults shipped with the application

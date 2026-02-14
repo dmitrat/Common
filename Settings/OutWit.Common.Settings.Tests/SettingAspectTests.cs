@@ -171,6 +171,112 @@ namespace OutWit.Common.Settings.Tests
 
         #endregion
 
+        #region Implicit Group Tests
+
+        [Test]
+        public void AspectGetterResolvesImplicitGroupFromClassNameTest()
+        {
+            var defaultProvider = new MemorySettingsProvider(isReadOnly: true);
+            defaultProvider.AddEntry("ImplicitGroupSettings", new SettingsEntry
+            {
+                Key = "UserName",
+                Value = "implicit_user",
+                ValueKind = "String"
+            });
+            defaultProvider.AddEntry("ImplicitGroupSettings", new SettingsEntry
+            {
+                Key = "GlobalValue",
+                Value = "global_val",
+                ValueKind = "String"
+            });
+            defaultProvider.AddEntry("ImplicitGroupSettings", new SettingsEntry
+            {
+                Key = "DefaultValue",
+                Value = "default_val",
+                ValueKind = "String"
+            });
+
+            var manager = new SettingsBuilder()
+                .AddProvider(SettingsScope.Default, defaultProvider)
+                .RegisterContainer<ImplicitGroupSettings>()
+                .Build();
+
+            manager.Load();
+
+            var settings = new ImplicitGroupSettings(manager);
+
+            Assert.That(settings.UserName, Is.EqualTo("implicit_user"));
+            Assert.That(settings.DefaultValue, Is.EqualTo("default_val"));
+        }
+
+        [Test]
+        public void AspectSetterWorksWithImplicitGroupTest()
+        {
+            var defaultProvider = new MemorySettingsProvider(isReadOnly: true);
+            defaultProvider.AddEntry("ImplicitGroupSettings", new SettingsEntry
+            {
+                Key = "UserName",
+                Value = "original",
+                ValueKind = "String"
+            });
+
+            var userProvider = new MemorySettingsProvider();
+
+            var manager = new SettingsBuilder()
+                .AddProvider(SettingsScope.Default, defaultProvider)
+                .AddProvider(SettingsScope.User, userProvider)
+                .RegisterContainer<ImplicitGroupSettings>()
+                .Build();
+
+            manager.Merge();
+            manager.Load();
+
+            var settings = new ImplicitGroupSettings(manager);
+            settings.UserName = "modified";
+
+            Assert.That(settings.UserName, Is.EqualTo("modified"));
+            Assert.That(settings.SettingsManager["ImplicitGroupSettings"]["UserName"].Value,
+                Is.EqualTo("modified"));
+        }
+
+        [Test]
+        public void ImplicitGroupMatchesExplicitGroupWithSameNameTest()
+        {
+            var defaultProvider = new MemorySettingsProvider(isReadOnly: true);
+            defaultProvider.AddEntry("ImplicitGroupSettings", new SettingsEntry
+            {
+                Key = "UserName",
+                Value = "test_user",
+                ValueKind = "String"
+            });
+            defaultProvider.AddEntry("ImplicitGroupSettings", new SettingsEntry
+            {
+                Key = "GlobalValue",
+                Value = "gv",
+                ValueKind = "String"
+            });
+            defaultProvider.AddEntry("ImplicitGroupSettings", new SettingsEntry
+            {
+                Key = "DefaultValue",
+                Value = "dv",
+                ValueKind = "String"
+            });
+
+            var manager = new SettingsBuilder()
+                .AddProvider(SettingsScope.Default, defaultProvider)
+                .RegisterContainer<ImplicitGroupSettings>()
+                .Build();
+
+            manager.Load();
+
+            var collection = manager["ImplicitGroupSettings"];
+            Assert.That(collection, Is.Not.Null);
+            Assert.That(collection.ContainsKey("UserName"), Is.True);
+            Assert.That(collection.ContainsKey("GlobalValue"), Is.True);
+        }
+
+        #endregion
+
         #region Helpers
 
         private static TestSettings CreateTestSettings()

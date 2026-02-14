@@ -35,8 +35,9 @@ namespace OutWit.Common.Settings.Aspects
             if (source is not SettingsContainer container)
                 return null;
 
+            var group = attribute.ResolveGroup(container.GetType());
             var manager = container.SettingsManager;
-            var collection = manager[attribute.Group];
+            var collection = manager[group];
 
             if (!collection.ContainsKey(propName))
                 return null;
@@ -73,8 +74,9 @@ namespace OutWit.Common.Settings.Aspects
             if (attribute.Scope == SettingsScope.Default)
                 return;
 
+            var group = attribute.ResolveGroup(container.GetType());
             var manager = container.SettingsManager;
-            var collection = manager[attribute.Group];
+            var collection = manager[group];
 
             if (!collection.ContainsKey(propName))
                 return;

@@ -239,7 +239,8 @@ namespace OutWit.Common.Settings.Configuration
                 if (attribute == null)
                     continue;
 
-                m_scopeMap[(attribute.Group, property.Name)] = attribute.Scope;
+                var group = attribute.ResolveGroup(containerType);
+                m_scopeMap[(group, property.Name)] = attribute.Scope;
             }
         }
 
