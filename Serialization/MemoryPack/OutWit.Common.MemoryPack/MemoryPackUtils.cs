@@ -16,6 +16,7 @@ namespace OutWit.Common.MemoryPack
         static MemoryPackUtils()
         {
             Register(new PropertyChangedEventArgsFormatter());
+            Register(new DateTimeOffsetFormatter());
         }
 
         #endregion
