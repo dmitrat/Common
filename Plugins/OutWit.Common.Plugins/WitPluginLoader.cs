@@ -13,7 +13,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if !NETSTANDARD2_0
 using System.Runtime.Loader;
+#endif
 using OutWit.Common.Values;
 
 namespace OutWit.Common.Plugins
@@ -39,7 +41,11 @@ namespace OutWit.Common.Plugins
 
         public WitPluginLoader(string searchPath, bool useIsolatedContexts = true, ILogger? logger = null)
         {
+#if NETSTANDARD2_0
+            UseIsolatedContext = false;
+#else
             UseIsolatedContext = useIsolatedContexts;
+#endif
             Logger = logger;
 
             if (string.IsNullOrEmpty(searchPath))
@@ -98,8 +104,10 @@ namespace OutWit.Common.Plugins
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void UnloadPlugin(string pluginName)
         {
+#if !NETSTANDARD2_0
             if(!UseIsolatedContext)
                 return;
+#endif
 
             var dependents = new List<string>();
 
@@ -115,6 +123,16 @@ namespace OutWit.Common.Plugins
                 throw new InvalidOperationException($"Cannot unload plugin '{pluginName}' because it is a dependency for: {string.Join(", ", dependents)}.");
             }
 
+#if NETSTANDARD2_0
+            if (!m_loadedPlugins.TryGetValue(pluginName, out var loadedPlugin))
+            {
+                Logger?.LogError($"Plugin '{pluginName}' is not loaded or does not exist.");
+                return;
+            }
+
+            m_loadedPlugins.Remove(pluginName);
+            loadedPlugin.Plugin.Dispose();
+#else
             if (!m_loadedPlugins.Remove(pluginName, out var loadedPlugin))
             {
                 Logger?.LogError($"Plugin '{pluginName}' is not loaded or does not exist.");
@@ -123,6 +141,7 @@ namespace OutWit.Common.Plugins
             
             loadedPlugin.Plugin.Dispose();
             loadedPlugin.LoadContext.Unload();
+#endif
         }
 
         private void LoadSinglePlugin(WitPluginMetadata metadata)
@@ -131,6 +150,7 @@ namespace OutWit.Common.Plugins
                 return;
 
             Assembly assembly;
+#if !NETSTANDARD2_0
             AssemblyLoadContext loadContext = AssemblyLoadContext.Default;
             WeakReference? reference = null;
 
@@ -157,6 +177,22 @@ namespace OutWit.Common.Plugins
             }
 
             m_loadedPlugins[metadata.Name] = new WitPluginContext<TPlugin>(instance, metadata, loadContext, reference);
+#else
+            assembly = Assembly.LoadFrom(metadata.FilePath);
+
+            TPlugin instance;
+            try
+            {
+                instance = (TPlugin)Activator.CreateInstance(assembly.GetType(metadata.PluginTypeName));
+            }
+            catch (Exception e)
+            {
+                Logger?.LogError(e, $"Failed to create instance of plugin '{metadata.Name}' from '{metadata.FilePath}'.");
+                throw;
+            }
+
+            m_loadedPlugins[metadata.Name] = new WitPluginContext<TPlugin>(instance, metadata);
+#endif
         }
 
 

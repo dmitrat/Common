@@ -36,14 +36,20 @@ namespace OutWit.Common.Plugins.Model
                    Dependencies.Is(metadata.Dependencies);
         }
 
-        public override WitPluginMetadata Clone()
+        public override
+#if NETSTANDARD2_0
+            ModelBase
+#else
+            WitPluginMetadata
+#endif
+            Clone()
         {
             return new WitPluginMetadata(Name, PluginTypeName, FilePath)
             {
                 Version = Version,
                 Priority = Priority,
                 LoadOrder = LoadOrder,
-                Dependencies = Dependencies.Select(dependency => dependency.Clone()).ToList()
+                Dependencies = Dependencies.Select(dependency => (WitPluginDependency)dependency.Clone()).ToList()
             };
         }
 
@@ -59,13 +65,31 @@ namespace OutWit.Common.Plugins.Model
         public string FilePath { get; }
 
         [ToString]
-        public Version? Version { get; init; }
+        public Version? Version { get;
+#if NETSTANDARD2_0
+            set;
+#else
+            init;
+#endif
+        }
         
-        public int Priority { get; init; }
+        public int Priority { get;
+#if NETSTANDARD2_0
+            set;
+#else
+            init;
+#endif
+        }
         
         public int LoadOrder { get; set; }
 
-        public IReadOnlyList<WitPluginDependency> Dependencies { get; init; }
+        public IReadOnlyList<WitPluginDependency> Dependencies { get;
+#if NETSTANDARD2_0
+            set;
+#else
+            init;
+#endif
+        }
 
         #endregion
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETSTANDARD2_0
+using System;
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -43,3 +44,4 @@ namespace OutWit.Common.Plugins.Model
         #endregion
     }
 }
+#endif

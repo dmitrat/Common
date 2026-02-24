@@ -31,7 +31,13 @@ namespace OutWit.Common.Plugins.Model
                    MinimumVersion.Is(dependency.MinimumVersion);
         }
 
-        public override WitPluginDependency Clone()
+        public override
+#if NETSTANDARD2_0
+            ModelBase
+#else
+            WitPluginDependency
+#endif
+            Clone()
         {
             return new WitPluginDependency(PluginName, MinimumVersion);
         }
