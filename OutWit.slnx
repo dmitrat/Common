@@ -67,6 +67,7 @@
     <Project Path="Plugins/OutWit.Common.Plugins.Tests.Mock.MissingDependencyPlugin/OutWit.Common.Plugins.Tests.Mock.MissingDependencyPlugin.csproj" />
     <Project Path="Plugins/OutWit.Common.Plugins.Tests.Mock.PluginA/OutWit.Common.Plugins.Tests.Mock.PluginA.csproj" />
     <Project Path="Plugins/OutWit.Common.Plugins.Tests.Mock.PluginB/OutWit.Common.Plugins.Tests.Mock.PluginB.csproj" />
+    <Project Path="Plugins/OutWit.Common.Plugins.Tests.Mock.PluginC/OutWit.Common.Plugins.Tests.Mock.PluginC.csproj" />
     <Project Path="Plugins/OutWit.Common.Plugins.Tests.Mock.VersionMismatchPlugin/OutWit.Common.Plugins.Tests.Mock.VersionMismatchPlugin.csproj" />
     <Project Path="Plugins/OutWit.Common.Plugins.Tests.Mock/OutWit.Common.Plugins.Tests.Mock.csproj" />
     <Project Path="Plugins/OutWit.Common.Plugins.Tests/OutWit.Common.Plugins.Tests.csproj" />

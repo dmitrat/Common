@@ -7,6 +7,7 @@ using OutWit.Common.Plugins.Tests.Mock.Interfaces;
 using OutWit.Common.Plugins.Tests.Mock.MissingDependencyPlugin;
 using OutWit.Common.Plugins.Tests.Mock.PluginA;
 using OutWit.Common.Plugins.Tests.Mock.PluginB;
+using OutWit.Common.Plugins.Tests.Mock.PluginC;
 using OutWit.Common.Plugins.Tests.Mock.VersionMismatchPlugin;
 using System;
 using System.IO;
@@ -59,6 +60,24 @@ namespace OutWit.Common.Plugins.Tests
             {
                 File.Copy(depsPath, targetPath.Replace(".dll", ".deps.json"), true);
             }
+        }
+
+        /// <summary>
+        /// Copies a plugin assembly into a named subfolder under _pluginDir,
+        /// simulating module-per-folder deployment (e.g. "general.module/Plugin.dll").
+        /// Also copies the shared ITestPlugin interface assembly to the same subfolder
+        /// to reproduce the shared-dependency duplication scenario.
+        /// </summary>
+        private void StagePluginInSubfolder(Type pluginType, string subfolderName)
+        {
+            var moduleDir = Path.Combine(_pluginDir, subfolderName);
+            Directory.CreateDirectory(moduleDir);
+
+            var pluginSource = pluginType.Assembly.Location;
+            File.Copy(pluginSource, Path.Combine(moduleDir, Path.GetFileName(pluginSource)), true);
+
+            var interfaceSource = typeof(ITestPlugin).Assembly.Location;
+            File.Copy(interfaceSource, Path.Combine(moduleDir, Path.GetFileName(interfaceSource)), true);
         }
 
         [Test]
@@ -194,5 +213,88 @@ namespace OutWit.Common.Plugins.Tests
             Assert.That(plugin, Is.Not.Null);
             Assert.DoesNotThrow(() => { var casted = (PluginA)plugin; });
         }
+
+        [Test]
+        public void LoadPluginsFromSubfoldersWithSharedDependencyTest()
+        {
+            // Arrange: Two plugins in separate module subfolders,
+            // each containing their own copy of the shared ITestPlugin interface DLL.
+            StagePluginInSubfolder(typeof(PluginA), "pluginA.module");
+            StagePluginInSubfolder(typeof(PluginC), "pluginC.module");
+
+            var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+
+            // Act & Assert: should NOT throw AggregateException about duplicate assembly
+            Assert.DoesNotThrow(() => loader.Load());
+
+            var plugins = loader.ToList();
+            Assert.That(plugins, Has.Count.EqualTo(2));
+            Assert.That(plugins.Select(p => p.GetName()),
+                Is.EquivalentTo(new[] { "PluginA", "PluginC" }));
+
+            loader.Dispose();
+        }
+
+        [Test]
+        public void LoadPluginsFromSubfoldersWithDependencyChainTest()
+        {
+            // Arrange: PluginB depends on PluginA
+            StagePluginInSubfolder(typeof(PluginA), "base.module");
+            StagePluginInSubfolder(typeof(PluginB), "dependent.module");
+
+            var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => loader.Load());
+
+            var plugins = loader.ToList();
+            Assert.That(plugins, Has.Count.EqualTo(2));
+            Assert.That(plugins[0].GetName(), Is.EqualTo("PluginA"));
+            Assert.That(plugins[1].GetName(), Is.EqualTo("PluginB"));
+
+            loader.Dispose();
+        }
+
+        [Test]
+        public void LoadPluginsFromMultipleSubfoldersWithSharedDependencyTest()
+        {
+            // Arrange: Three plugins in three subfolders, all sharing the interface DLL
+            StagePluginInSubfolder(typeof(PluginA), "module.a");
+            StagePluginInSubfolder(typeof(PluginB), "module.b");
+            StagePluginInSubfolder(typeof(PluginC), "module.c");
+
+            var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => loader.Load());
+
+            var plugins = loader.ToList();
+            Assert.That(plugins, Has.Count.EqualTo(3));
+            Assert.That(plugins.Select(p => p.GetName()),
+                Is.EquivalentTo(new[] { "PluginA", "PluginB", "PluginC" }));
+
+            loader.Dispose();
+        }
+
+        [Test]
+        public void LoadPluginsFromSubfoldersIsolatedContextWithSharedDependencyTest()
+        {
+            // Arrange: Two plugins in separate subfolders, each with a copy of the shared interface DLL.
+            // With the shared-assembly fix in WitPluginLoadContext, the host's interface assembly
+            // is reused instead of loading a duplicate, so casting works correctly.
+            StagePluginInSubfolder(typeof(PluginA), "pluginA.module");
+            StagePluginInSubfolder(typeof(PluginC), "pluginC.module");
+
+            using var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: true);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => loader.Load());
+
+            var plugins = loader.ToList();
+            Assert.That(plugins, Has.Count.EqualTo(2));
+            Assert.That(plugins.Select(p => p.GetName()),
+                Is.EquivalentTo(new[] { "PluginA", "PluginC" }));
+        }
+
     }
 }

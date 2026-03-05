@@ -31,6 +31,7 @@
 	  <ProjectReference Include="..\OutWit.Common.Plugins.Tests.Mock.MissingDependencyPlugin\OutWit.Common.Plugins.Tests.Mock.MissingDependencyPlugin.csproj" />
 	  <ProjectReference Include="..\OutWit.Common.Plugins.Tests.Mock.PluginA\OutWit.Common.Plugins.Tests.Mock.PluginA.csproj" />
 	  <ProjectReference Include="..\OutWit.Common.Plugins.Tests.Mock.PluginB\OutWit.Common.Plugins.Tests.Mock.PluginB.csproj" />
+	  <ProjectReference Include="..\OutWit.Common.Plugins.Tests.Mock.PluginC\OutWit.Common.Plugins.Tests.Mock.PluginC.csproj" />
 	  <ProjectReference Include="..\OutWit.Common.Plugins.Tests.Mock.VersionMismatchPlugin\OutWit.Common.Plugins.Tests.Mock.VersionMismatchPlugin.csproj" />
 	  <ProjectReference Include="..\OutWit.Common.Plugins.Tests.Mock\OutWit.Common.Plugins.Tests.Mock.csproj" />
 	  <ProjectReference Include="..\OutWit.Common.Plugins\OutWit.Common.Plugins.csproj" />

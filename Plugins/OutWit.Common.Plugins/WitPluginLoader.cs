@@ -156,7 +156,12 @@ namespace OutWit.Common.Plugins
 
             if (UseIsolatedContext)
             {
-                loadContext = new WitPluginLoadContext(metadata.FilePath);
+                var sharedAssemblyNames = AssemblyLoadContext.Default.Assemblies
+                    .Select(a => a.GetName().Name!)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .ToList();
+
+                loadContext = new WitPluginLoadContext(metadata.FilePath, sharedAssemblyNames);
                 assembly = loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(metadata.FilePath)));
                 reference = new WeakReference(loadContext, trackResurrection: true);
             }
@@ -201,9 +206,14 @@ namespace OutWit.Common.Plugins
             var metadata = new Dictionary<string, WitPluginMetadata>();
             errors = new List<Exception>();
 
+            var uniquePaths = assemblyPaths
+                .GroupBy(p => Path.GetFileName(p), StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .ToList();
+
             using var metadataContext = new MetadataLoadContext(GetAssemblyResolver(assemblyPaths));
 
-            foreach (var path in assemblyPaths)
+            foreach (var path in uniquePaths)
             {
                 try
                 {
@@ -306,7 +316,15 @@ namespace OutWit.Common.Plugins
 
         private PathAssemblyResolver GetAssemblyResolver(IReadOnlyList<string> assemblyPaths)
         {
-            return new PathAssemblyResolver(assemblyPaths.Concat(GetParentAssemblies()).Concat(GetRuntimeAssemblies()));
+            var allPaths = assemblyPaths
+                .Concat(GetParentAssemblies())
+                .Concat(GetRuntimeAssemblies());
+
+            var deduplicated = allPaths
+                .GroupBy(p => Path.GetFileName(p), StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First());
+
+            return new PathAssemblyResolver(deduplicated);
         }
 
         private IReadOnlyList<string> GetPluginCandidates()
