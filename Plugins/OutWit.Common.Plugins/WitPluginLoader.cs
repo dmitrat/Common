@@ -397,8 +397,17 @@ namespace OutWit.Common.Plugins
             if (loadedAssemblies.Any())
                 return loadedAssemblies;
 
-            Logger?.LogError($"Cannot find host assemblies for metadata resolution. Directory='{assemblyDirectory}'");
-            throw new DirectoryNotFoundException($"Cannot find host assemblies for metadata resolution. Directory='{assemblyDirectory}'");
+            var trustedPlatformAssemblies = (AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string)
+                ?.Split(Path.PathSeparator)
+                .Where(path => !string.IsNullOrEmpty(path) && File.Exists(path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToImmutableList();
+
+            if (trustedPlatformAssemblies != null && trustedPlatformAssemblies.Any())
+                return trustedPlatformAssemblies;
+
+            Logger?.LogWarning($"Cannot find host assemblies on disk for metadata resolution. Directory='{assemblyDirectory}'. Falling back to runtime and plugin assemblies only.");
+            return Array.Empty<string>();
 
         }
 
