@@ -12,6 +12,7 @@ using OutWit.Common.Plugins.Tests.Mock.VersionMismatchPlugin;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -294,6 +295,110 @@ namespace OutWit.Common.Plugins.Tests
             Assert.That(plugins, Has.Count.EqualTo(2));
             Assert.That(plugins.Select(p => p.GetName()),
                 Is.EquivalentTo(new[] { "PluginA", "PluginC" }));
+        }
+
+        [Test]
+        public void GetParentAssembliesReturnsHostAssembliesForMetadataResolutionTest()
+        {
+            // Arrange
+            StagePlugin(typeof(PluginA));
+            using var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+
+            // Act
+            var method = typeof(WitPluginLoader<ITestPlugin>)
+                .GetMethod("GetParentAssemblies", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+
+            var result = method!.Invoke(loader, null) as System.Collections.Generic.IReadOnlyList<string>;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!, Is.Not.Empty);
+            Assert.That(result!.Any(path => path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)), Is.True);
+        }
+
+        [Test]
+        public void GetAssemblyResolverBuildsWithoutErrorsTest()
+        {
+            // Arrange
+            StagePlugin(typeof(PluginA));
+            using var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+
+            var candidates = Directory.GetFiles(_pluginDir, "*.dll", SearchOption.AllDirectories)
+                .ToList()
+                .AsReadOnly();
+
+            // Act
+            var method = typeof(WitPluginLoader<ITestPlugin>)
+                .GetMethod("GetAssemblyResolver", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            var resolver = method!.Invoke(loader, new object[] { candidates });
+
+            // Assert
+            Assert.That(resolver, Is.Not.Null);
+        }
+
+        [Test]
+        public void SharedDependenciesDoNotProduceDuplicateLoadOrderEntriesTest()
+        {
+            // Arrange: PluginB and PluginC both depend on PluginA.
+            StagePlugin(typeof(PluginA));
+            StagePlugin(typeof(PluginB));
+            StagePlugin(typeof(PluginC));
+
+            using var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+
+            var candidates = Directory.GetFiles(_pluginDir, "*.dll", SearchOption.AllDirectories)
+                .ToList();
+
+            var discoverMethod = typeof(WitPluginLoader<ITestPlugin>)
+                .GetMethod("DiscoverMetadata", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            var orderMethod = typeof(WitPluginLoader<ITestPlugin>)
+                .GetMethod("GetLoadOrder", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(discoverMethod, Is.Not.Null);
+            Assert.That(orderMethod, Is.Not.Null);
+
+            var discoverArgs = new object?[] { candidates, null };
+            var availablePlugins = discoverMethod!.Invoke(loader, discoverArgs);
+
+            Assert.That(availablePlugins, Is.Not.Null);
+
+            var orderArgs = new[] { availablePlugins!, null };
+            var loadOrder = orderMethod!.Invoke(loader, orderArgs) as System.Collections.IEnumerable;
+
+            Assert.That(loadOrder, Is.Not.Null);
+
+            var names = loadOrder!
+                .Cast<object>()
+                .Select(item => item.GetType().GetProperty("Name")!.GetValue(item) as string)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Cast<string>()
+                .ToList();
+
+            Assert.That(names, Has.Count.EqualTo(names.Distinct(StringComparer.Ordinal).Count()));
+            Assert.That(names, Is.EquivalentTo(new[] { "PluginA", "PluginB", "PluginC" }));
+            Assert.That(names.IndexOf("PluginA"), Is.LessThan(names.IndexOf("PluginB")));
+            Assert.That(names.IndexOf("PluginA"), Is.LessThan(names.IndexOf("PluginC")));
+        }
+
+        [Test]
+        public void EnumerableConstructorSupportsNonIsolatedModeTest()
+        {
+            // Arrange
+            StagePlugin(typeof(PluginA));
+            using var loader = new WitPluginLoader<ITestPlugin>(new[] { _pluginDir }, useIsolatedContexts: false);
+
+            // Act
+            loader.Load();
+
+            // Assert
+            var plugin = loader.Single();
+            Assert.That(plugin, Is.Not.Null);
+            Assert.DoesNotThrow(() => { var casted = (PluginA)plugin; });
         }
 
     }

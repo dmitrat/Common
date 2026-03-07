@@ -63,7 +63,17 @@ namespace OutWit.Common.Plugins
         }
 
         public WitPluginLoader(IEnumerable<string> searchPaths, ILogger? logger = null)
+            : this(searchPaths, true, logger)
         {
+        }
+
+        public WitPluginLoader(IEnumerable<string> searchPaths, bool useIsolatedContexts, ILogger? logger = null)
+        {
+#if NETSTANDARD2_0
+            UseIsolatedContext = false;
+#else
+            UseIsolatedContext = useIsolatedContexts;
+#endif
             Logger = logger;
 
             if (searchPaths == null)
@@ -71,8 +81,11 @@ namespace OutWit.Common.Plugins
 
             foreach (var path in searchPaths.Where(Directory.Exists))
                 m_pluginSearchPaths.Add(path);
-            
+
             Logger?.LogInformation($"Looking for plugins in {string.Join(", ", m_pluginSearchPaths)}");
+
+            if (!UseIsolatedContext)
+                AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
         }
 
         #endregion
@@ -282,6 +295,19 @@ namespace OutWit.Common.Plugins
 
         private void Visit(WitPluginMetadata plugin, IReadOnlyDictionary<string, WitPluginMetadata> available, Dictionary<string, WitPluginVisitState> visited, List<WitPluginMetadata> sorted, List<Exception> errors)
         {
+            if (visited.TryGetValue(plugin.Name, out var pluginState))
+            {
+                if (pluginState == WitPluginVisitState.Visited)
+                    return;
+
+                if (pluginState == WitPluginVisitState.Visiting)
+                {
+                    Logger?.LogError($"Circular dependency detected: '{plugin.Name}' references itself through dependency chain.");
+                    errors.Add(new InvalidOperationException($"Circular dependency detected: '{plugin.Name}' references itself through dependency chain."));
+                    return;
+                }
+            }
+
             visited[plugin.Name] = WitPluginVisitState.Visiting;
 
             foreach (var dependency in plugin.Dependencies)
@@ -305,12 +331,14 @@ namespace OutWit.Common.Plugins
                 }
                 else
                 {
-                    Visit(metadata, available, visited, sorted, errors);
+                    if (!visited.TryGetValue(dependency.PluginName, out _))
+                        Visit(metadata, available, visited, sorted, errors);
                 }
             }
 
             visited[plugin.Name] = WitPluginVisitState.Visited;
-            sorted.Add(plugin);
+            if (sorted.All(metadata => !metadata.Name.Is(plugin.Name)))
+                sorted.Add(plugin);
         }
 
 
@@ -337,12 +365,40 @@ namespace OutWit.Common.Plugins
         {
             var assembly = Assembly.GetCallingAssembly();
             string? assemblyDirectory = Path.GetDirectoryName(assembly.Location);
-            
+
+            if (string.IsNullOrEmpty(assemblyDirectory) || !Directory.Exists(assemblyDirectory))
+                assemblyDirectory = AppContext.BaseDirectory;
+
             if (!string.IsNullOrEmpty(assemblyDirectory) && Directory.Exists(assemblyDirectory))
-                return Directory.GetFiles(assemblyDirectory, ASSEMBLY_SEARCH_PATTERN);
-            
-            Logger?.LogError($"Cannot find base assembly directory '{assemblyDirectory}'");
-            throw new DirectoryNotFoundException($"Cannot find base assembly directory '{assemblyDirectory}'");
+            {
+                var files = Directory.GetFiles(assemblyDirectory, ASSEMBLY_SEARCH_PATTERN);
+                if (files.Length > 0)
+                    return files;
+            }
+
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(assemblyInfo => !assemblyInfo.IsDynamic)
+                .Select(assemblyInfo =>
+                {
+                    try
+                    {
+                        return assemblyInfo.Location;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                })
+                .Where(path => !string.IsNullOrEmpty(path) && File.Exists(path))
+                .Cast<string>()
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToImmutableList();
+
+            if (loadedAssemblies.Any())
+                return loadedAssemblies;
+
+            Logger?.LogError($"Cannot find host assemblies for metadata resolution. Directory='{assemblyDirectory}'");
+            throw new DirectoryNotFoundException($"Cannot find host assemblies for metadata resolution. Directory='{assemblyDirectory}'");
 
         }
 
@@ -382,7 +438,7 @@ namespace OutWit.Common.Plugins
                 }
                 catch
                 {
-                    Logger?.LogWarning($"Failed to unload plugin '{plugin}' on shutdown.");
+                    Logger?.LogWarning($"Failed to unload plugin '{plugin.Metadata.Name}' on shutdown.");
                 }
             }
         
