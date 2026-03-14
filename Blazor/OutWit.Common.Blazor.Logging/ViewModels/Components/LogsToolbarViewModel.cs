@@ -15,7 +15,7 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
     {
         #region Functions
 
-        protected string GetMultiSelectionText(List<string>? selectedValues)
+        protected string GetMultiSelectionText(IReadOnlyList<string>? selectedValues)
         {
             if (selectedValues == null || selectedValues.Count == 0)
                 return "None selected";
