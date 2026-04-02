@@ -401,5 +401,43 @@ namespace OutWit.Common.Plugins.Tests
             Assert.DoesNotThrow(() => { var casted = (PluginA)plugin; });
         }
 
+        [Test]
+        public void GetParentAssembliesCanBeInvokedForMetadataResolutionTest()
+        {
+            // Arrange
+            StagePlugin(typeof(PluginA));
+            using var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+
+            // Act
+            var method = typeof(WitPluginLoader<ITestPlugin>)
+                .GetMethod("GetParentAssemblies", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            Assert.DoesNotThrow(() => method!.Invoke(loader, null));
+
+            var result = method!.Invoke(loader, null) as System.Collections.Generic.IReadOnlyList<string>;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+        }
+
+        [Test]
+        public void LoadSkipsNativeRuntimePayloadDllTest()
+        {
+            // Arrange: a plugin folder may contain native/runtime payloads (for example Blender dlls).
+            StagePlugin(typeof(PluginA));
+
+            var runtimeDir = Path.Combine(_pluginDir, "blender", "runtime");
+            Directory.CreateDirectory(runtimeDir);
+            File.WriteAllBytes(Path.Combine(runtimeDir, "python311.dll"), new byte[] { 0, 1, 2, 3, 4, 5 });
+            File.WriteAllBytes(Path.Combine(runtimeDir, "embree.dll"), new byte[] { 6, 7, 8, 9, 10, 11 });
+
+            using var loader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => loader.Load());
+            Assert.That(loader.Select(plugin => plugin.GetName()), Is.EquivalentTo(new[] { "PluginA" }));
+        }
+
     }
 }

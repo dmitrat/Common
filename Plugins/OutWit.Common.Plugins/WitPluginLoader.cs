@@ -232,13 +232,34 @@ namespace OutWit.Common.Plugins
                 {
                     var assemblyBytes = File.ReadAllBytes(path);
                     var assembly = metadataContext.LoadFromByteArray(assemblyBytes);
-                    foreach (var type in assembly.GetTypes())
+                    foreach (var type in GetLoadableTypes(assembly, path))
                     {
-                        bool isPluginType = type.GetInterfaces().Any(x => x.FullName == typeof(TPlugin).FullName);
+                        bool isPluginType;
+                        try
+                        {
+                            isPluginType = type.GetInterfaces().Any(x => x.FullName == typeof(TPlugin).FullName);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger?.LogWarning(ex, "Skipping type metadata inspection for '{path}' because interfaces cannot be resolved.", path);
+                            continue;
+                        }
+
                         if (!isPluginType)
                             continue;
-                        
-                        var manifestData = type.GetAttributeData<WitPluginManifestAttribute>();
+
+                        CustomAttributeData? manifestData;
+                        try
+                        {
+                            manifestData = type.GetAttributeData<WitPluginManifestAttribute>();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger?.LogError(ex, $"Failed to inspect plugin manifest metadata in '{path}'.");
+                            errors.Add(new FileLoadException($"Failed to inspect plugin manifest metadata in '{path}'.", ex));
+                            continue;
+                        }
+
                         if (manifestData == null)
                             continue;
 
@@ -256,11 +277,23 @@ namespace OutWit.Common.Plugins
                             continue;
                         }
                         
+                        IReadOnlyList<WitPluginDependency> dependencies;
+                        try
+                        {
+                            dependencies = type.GetDependencies();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger?.LogError(ex, $"Failed to inspect plugin dependencies in '{path}'.");
+                            errors.Add(new FileLoadException($"Failed to inspect plugin dependencies in '{path}'.", ex));
+                            continue;
+                        }
+
                         metadata[pluginName] = new WitPluginMetadata(pluginName, type.FullName!, path)
                         {
                             Version = manifestData.GetVersion(),
                             Priority = manifestData.GetPriority(),
-                            Dependencies = type.GetDependencies()
+                            Dependencies = dependencies
                         };
                     }
                 }
@@ -270,11 +303,31 @@ namespace OutWit.Common.Plugins
                 }
                 catch (Exception ex)
                 {
-                    Logger?.LogError(ex, $"Failed to inspect metadata of '{path}'.");
-                    errors.Add(new FileLoadException($"Failed to inspect metadata of '{path}'.", ex));
+                    Logger?.LogWarning(ex, "Skipping assembly '{path}' because metadata discovery failed.", path);
                 }
             }
             return metadata;
+        }
+
+        private IReadOnlyList<Type> GetLoadableTypes(Assembly assembly, string path)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                Logger?.LogWarning(ex, "Partial type load failure while inspecting '{path}'. Unloadable types will be skipped.", path);
+                return ex.Types
+                    .Where(type => type != null)
+                    .Cast<Type>()
+                    .ToImmutableList();
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogWarning(ex, "Skipping assembly '{path}' because types cannot be enumerated.", path);
+                return Array.Empty<Type>();
+            }
         }
 
         private List<WitPluginMetadata> GetLoadOrder(IReadOnlyDictionary<string, WitPluginMetadata> availablePlugins, out List<Exception> errors)
