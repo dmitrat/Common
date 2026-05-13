@@ -40,7 +40,7 @@ If you only want to call the loader API, see [`OutWit.Common.Plugins/README.md`]
 dotnet add package OutWit.Shared.Email.Provider.Resend
 ```
 
-…and on the next build, the plugin's DLLs land in the host's output under `@Plugins/resend.module/`. At runtime the host's plugin loader scans that folder, finds the plugin's manifest, registers its services in DI, and the host can now send email via Resend without any code change.
+…and on the next build, the plugin's DLLs land in the host's output under `@Email/resend.module/`. At runtime the host's plugin loader scans that folder, finds the plugin's manifest, registers its services in DI, and the host can now send email via Resend without any code change.
 
 **The mechanism**, in five layers:
 
@@ -50,7 +50,7 @@ dotnet add package OutWit.Shared.Email.Provider.Resend
 │   • writes class : WitPluginBase, IEmailProviderPlugin    │
 │   • marks it with [WitPluginManifest("Resend", ...)]      │
 │   • csproj: NuspecFile + CopyPluginToOutputDirectory tgt  │ ← stages locally
-│   • nuspec: build/.targets + plugins/<module>/**          │ ← shapes the package
+│   • nuspec: build/.targets + <category>/<module>/**          │ ← shapes the package
 │   • dotnet pack → publishes Resend.module.nupkg           │
 └──────────────────────────────────────────────────────────┘
                           ▼
@@ -66,8 +66,8 @@ dotnet add package OutWit.Shared.Email.Provider.Resend
 │ Host (e.g. WitIdentity)                                   │
 │   • <PackageReference Include="...Plugin.Resend" />        │
 │   • build/Resend.targets runs AfterTargets="Build"         │ ← copies into output
-│   • output: bin/.../@Plugins/resend.module/<DLLs>         │
-│   • Startup: services.AddEmailPlugins("@Plugins");         │ ← scans folder
+│   • output: bin/.../@Email/resend.module/<DLLs>         │
+│   • Startup: services.AddEmailPlugins("@Email");         │ ← scans folder
 │   • Plugin loader picks up the manifest, loads the DLL,    │
 │     calls Initialize(services) then OnInitialized(sp).     │
 └──────────────────────────────────────────────────────────┘
@@ -85,7 +85,7 @@ That's the entire story. The rest of this document fills in the details.
 |---|---|
 | **Host** | The application that hosts plugins. References `OutWit.Common.Plugins` (the loader). Defines a plugin contract (typically a marker interface like `IEmailProviderPlugin : IWitPlugin`). |
 | **Plugin** | A .NET class implementing `IWitPlugin` (usually via `WitPluginBase`) decorated with `[WitPluginManifest]`. One plugin per assembly is typical. |
-| **Module** | The deployed *folder* containing a plugin's DLLs plus its transitive dependencies — `resend.module/`, `loki.module/`, etc. The host loader scans a parent directory (`@Plugins/`) and treats each subfolder as one module. |
+| **Module** | The deployed *folder* containing a plugin's DLLs plus its transitive dependencies — `resend.module/`, `loki.module/`, etc. The host loader scans a parent directory (`@Email/`) and treats each subfolder as one module. |
 | **Manifest** | The `[WitPluginManifest]` attribute on the plugin class, plus optional `[WitPluginDependency]` attributes. Read at discovery time by the loader. |
 
 ### 3.2 Two-phase initialization
@@ -122,7 +122,7 @@ foreach plugin: plugin.OnInitialized(sp)      // plugins discover each other
 A built plugin module is a flat folder containing:
 
 ```
-@Plugins/resend.module/
+@Email/resend.module/
 ├── OutWit.Shared.Email.Provider.Resend.dll   ← the plugin entry point
 ├── OutWit.Shared.Email.Provider.Resend.deps.json
 ├── Resend.dll                              ← vendor SDK
@@ -132,6 +132,26 @@ A built plugin module is a flat folder containing:
 ```
 
 Why all the transitive DLLs sit in the module folder rather than in the host's main output: **plugin assembly resolution** is local to the module. The plugin loader uses an `AssemblyLoadContext` that probes the plugin's folder first. This isolates plugin dependencies — version 1.4 of `Resend.dll` in `resend.module/` doesn't collide with a different version another plugin might ship.
+
+#### One root folder per plugin category
+
+Every host picks a **root folder** the loader scans. The host is free to use a single shared root (`@Plugins/`) or split by category (`@Email/`, `@Logging/`, `@Database/`). The OutWit ecosystem follows the **category-per-root** convention:
+
+| Plugin category | Root folder | Plugin contract |
+|---|---|---|
+| Email transports | `@Email/` | `IEmailProviderPlugin` |
+| Log query backends | `@Logging/` | `ILogProviderPlugin` |
+| Database providers | `@Database/` | `IDatabaseProviderPlugin` |
+
+Benefits over a single mixed root:
+
+- **No module-name collisions** — `null.module/` inside `@Email/` is unambiguous; if it were under `@Plugins/` next to a Log-side `null.module/`, the two would fight for the same path.
+- **Loader I/O scoped to one category** — `WitPluginLoader<IEmailProviderPlugin>` reads only `@Email/`, not every plugin in the system.
+- **Operator-facing clarity** — `ls @Email/` is self-explanatory; `rm -rf @Logging/` cleanly removes a whole category.
+
+The convention is enforced at the plugin's side: its `build/*.targets` writes to `$(OutputPath)@Email/<key>.module/` (or whichever category the plugin belongs to). Hosts wire `WitPluginLoader<TPlugin>` to the matching root in their startup code.
+
+Norav.Records uses the same shape with its own category names (`@Providers/` for record format plugins, `@Encryptors/` for encryption plugins). The pattern is the same — one root per plugin contract.
 
 ### 3.4 Isolated assembly load contexts
 
@@ -203,7 +223,7 @@ dotnet new classlib -f net10.0
   </ItemGroup>
 
   <!--
-    Stage the plugin into the solution's local @Plugins folder after build.
+    Stage the plugin into the solution's local @Email folder after build.
     AfterTargets="Build" ensures NuGet-resolved deps are already in TargetDir
     by the time we glob *.dll. The Condition guards against running this when
     MSBuild has no SolutionDir (i.e. during `dotnet pack` from outside a solution).
@@ -220,7 +240,7 @@ dotnet new classlib -f net10.0
     </ItemGroup>
 
     <Copy SourceFiles="@(PluginFiles)"
-          DestinationFolder="$(SolutionDir)@Plugins\$(Configuration)\mailgun.module\%(RecursiveDir)"
+          DestinationFolder="$(SolutionDir)@Email\$(Configuration)\mailgun.module\%(RecursiveDir)"
           SkipUnchangedFiles="true"
           OverwriteReadOnlyFiles="true" />
   </Target>
@@ -231,7 +251,7 @@ dotnet new classlib -f net10.0
 Two important details:
 
 - **`NuspecFile`** — we override the default Pack with a hand-written `.nuspec` (see §7). Otherwise `dotnet pack` would produce a regular library package, which is not what we want.
-- **`CopyPluginToOutputDirectory` MSBuild target** — when the plugin is built *inside* a solution that also contains a host (developer workflow), this target lays the plugin files out in the solution's `@Plugins/<Config>/mailgun.module/` folder. The host's own build then picks them up (see §5.4). The `Condition` ensures this is a no-op when `dotnet pack` builds the project in isolation.
+- **`CopyPluginToOutputDirectory` MSBuild target** — when the plugin is built *inside* a solution that also contains a host (developer workflow), this target lays the plugin files out in the solution's `@Email/<Config>/mailgun.module/` folder. The host's own build then picks them up (see §5.4). The `Condition` ensures this is a no-op when `dotnet pack` builds the project in isolation.
 
 ### 4.2 Define the plugin class
 
@@ -334,7 +354,7 @@ public sealed class MailgunEmailTransport : IEmailTransport
 
 ```bash
 dotnet build -c Release
-ls @Plugins/Release/mailgun.module/
+ls @Email/Release/mailgun.module/
 # OutWit.Shared.Email.Provider.Mailgun.dll
 # OutWit.Shared.Email.Provider.Mailgun.deps.json
 # RestSharp.dll
@@ -347,7 +367,7 @@ ls @Plugins/Release/mailgun.module/
 If the host is built next, its `PreBuild` target (§5.4) will copy this folder into the host's output. Or you can hand-copy for a one-off test:
 
 ```bash
-cp -r @Plugins/Release/mailgun.module /path/to/host/bin/Release/net10.0/@Plugins/
+cp -r @Email/Release/mailgun.module /path/to/host/bin/Release/net10.0/@Email/
 ```
 
 ---
@@ -388,7 +408,7 @@ public static class EmailServiceCollectionExtensions
         string? moduleFolder = null,
         ILogger? logger = null)
     {
-        moduleFolder ??= Path.Combine(AppContext.BaseDirectory, "@Plugins");
+        moduleFolder ??= Path.Combine(AppContext.BaseDirectory, "@Email");
 
         var loader = new WitPluginLoader<IEmailProviderPlugin>(
             moduleFolder,
@@ -447,30 +467,30 @@ Alternative: register every plugin's transport keyed by name and have the host r
 
 ### 5.4 PreBuild copy for in-solution development
 
-When a host and one of its plugins live in the same solution, the plugin's `CopyPluginToOutputDirectory` target stages files into `<solution>/@Plugins/<Config>/<key>.module/`. The host needs a matching `PreBuild` target to copy those into its own output directory:
+When a host and one of its plugins live in the same solution, the plugin's `CopyPluginToOutputDirectory` target stages files into `<solution>/@Email/<Config>/<key>.module/`. The host needs a matching `PreBuild` target to copy those into its own output directory:
 
 ```xml
 <!-- In the host csproj -->
 <Target Name="PreBuild" BeforeTargets="Build">
   <ItemGroup>
-    <PluginModuleFiles Include="$(MSBuildThisFileDirectory)..\@Plugins\$(Configuration)\**\*" />
+    <PluginModuleFiles Include="$(MSBuildThisFileDirectory)..\@Email\$(Configuration)\**\*" />
   </ItemGroup>
   <Copy SourceFiles="@(PluginModuleFiles)"
-        DestinationFolder="$(TargetDir)@Plugins\%(RecursiveDir)"
+        DestinationFolder="$(TargetDir)@Email\%(RecursiveDir)"
         SkipUnchangedFiles="true" />
 </Target>
 
 <Target Name="PostPublish" AfterTargets="Publish">
   <ItemGroup>
-    <PluginModulePublishFiles Include="$(MSBuildThisFileDirectory)..\@Plugins\$(Configuration)\**\*" />
+    <PluginModulePublishFiles Include="$(MSBuildThisFileDirectory)..\@Email\$(Configuration)\**\*" />
   </ItemGroup>
   <Copy SourceFiles="@(PluginModulePublishFiles)"
-        DestinationFolder="$(PublishDir)@Plugins\%(RecursiveDir)"
+        DestinationFolder="$(PublishDir)@Email\%(RecursiveDir)"
         SkipUnchangedFiles="true" />
 </Target>
 ```
 
-When the host is built *outside* the plugin's solution and pulls plugins via NuGet, the package's own `build/*.targets` (see §7) takes over — same end state in `$(OutputPath)@Plugins/<module>/`. The host doesn't care which path put the files there.
+When the host is built *outside* the plugin's solution and pulls plugins via NuGet, the package's own `build/*.targets` (see §7) takes over — same end state in `$(OutputPath)@Email/<module>/`. The host doesn't care which path put the files there.
 
 ---
 
@@ -479,7 +499,7 @@ When the host is built *outside* the plugin's solution and pulls plugins via NuG
 Each plugin owns its own `appsettings.json`, deployed inside its module folder:
 
 ```
-@Plugins/mailgun.module/
+@Email/mailgun.module/
 ├── OutWit.Shared.Email.Provider.Mailgun.dll
 ├── appsettings.json          ← plugin-private config
 └── …deps…
@@ -550,7 +570,7 @@ A plugin ships as a NuGet package with a specific layout that triggers automatic
           target="build" />
     <file src="build\OutWit.Shared.Email.Provider.Mailgun.targets"
           target="buildTransitive" />
-    <file src="..\..\@Plugins\Release\mailgun.module\**\*"
+    <file src="..\..\@Email\Release\mailgun.module\**\*"
           target="plugins\mailgun.module" />
     <file src="bin\Release\net10.0\OutWit.Shared.Email.Provider.Mailgun.dll"
           target="lib\net10.0" />
@@ -564,7 +584,7 @@ Four file entries, four jobs:
 |---|---|---|
 | `build\<id>.targets` | `build/` | NuGet auto-imports this targets file into a consumer that adds your package as a `PackageReference`. |
 | `build\<id>.targets` | `buildTransitive/` | Same file, but auto-imported when your package is referenced *transitively* through another package. |
-| `..\..\@Plugins\Release\mailgun.module\**\*` | `plugins/mailgun.module/` | The actual plugin module folder — everything staged by the csproj's `CopyPluginToOutputDirectory`. |
+| `..\..\@Email\Release\mailgun.module\**\*` | `plugins/mailgun.module/` | The actual plugin module folder — everything staged by the csproj's `CopyPluginToOutputDirectory`. |
 | `bin\Release\net10.0\<id>.dll` | `lib/net10.0/` | Formal "library for this TFM" entry — required for NuGet metadata sanity. See §8 for what consumers do about the compile reference this implies. |
 
 The `$version$` placeholder is filled in by MSBuild via `<NuspecProperties>version=$(Version)</NuspecProperties>` in the csproj.
@@ -580,7 +600,7 @@ The `$version$` placeholder is filled in by MSBuild via `<NuspecProperties>versi
       <_MailgunFiles Include="$(MSBuildThisFileDirectory)..\plugins\mailgun.module\**\*" />
     </ItemGroup>
     <Copy SourceFiles="@(_MailgunFiles)"
-          DestinationFolder="$(OutputPath)@Plugins\mailgun.module\%(RecursiveDir)"
+          DestinationFolder="$(OutputPath)@Email\mailgun.module\%(RecursiveDir)"
           SkipUnchangedFiles="true" />
   </Target>
 
@@ -589,7 +609,7 @@ The `$version$` placeholder is filled in by MSBuild via `<NuspecProperties>versi
       <_MailgunPubFiles Include="$(MSBuildThisFileDirectory)..\plugins\mailgun.module\**\*" />
     </ItemGroup>
     <Copy SourceFiles="@(_MailgunPubFiles)"
-          DestinationFolder="$(PublishDir)@Plugins\mailgun.module\%(RecursiveDir)"
+          DestinationFolder="$(PublishDir)@Email\mailgun.module\%(RecursiveDir)"
           SkipUnchangedFiles="true" />
   </Target>
 </Project>
@@ -604,7 +624,7 @@ Two targets — Build and Publish — because hosts that publish via `dotnet pub
 Once the nuspec is in place:
 
 ```bash
-dotnet build -c Release   # produces @Plugins/Release/mailgun.module/...
+dotnet build -c Release   # produces @Email/Release/mailgun.module/...
 dotnet pack -c Release    # produces OutWit.Shared.Email.Provider.Mailgun.<version>.nupkg
 ```
 
@@ -661,7 +681,7 @@ The plugin author simply doesn't ship `lib/<TFM>/<plugin>.dll`. NuGet still acce
 <files>
   <file src="build\<id>.targets" target="build" />
   <file src="build\<id>.targets" target="buildTransitive" />
-  <file src="..\..\@Plugins\Release\<module>\**\*" target="plugins\<module>" />
+  <file src="..\..\@Email\Release\<module>\**\*" target="plugins\<module>" />
 </files>
 ```
 
@@ -681,10 +701,10 @@ The host's test project should follow the same `PreBuild` pattern as the host it
 <!-- HostTests.csproj -->
 <Target Name="PreBuild" BeforeTargets="Build">
   <ItemGroup>
-    <PluginModuleFiles Include="$(MSBuildThisFileDirectory)..\@Plugins\$(Configuration)\**\*" />
+    <PluginModuleFiles Include="$(MSBuildThisFileDirectory)..\@Email\$(Configuration)\**\*" />
   </ItemGroup>
   <Copy SourceFiles="@(PluginModuleFiles)"
-        DestinationFolder="$(TargetDir)@Plugins\%(RecursiveDir)"
+        DestinationFolder="$(TargetDir)@Email\%(RecursiveDir)"
         SkipUnchangedFiles="true" />
 </Target>
 ```
@@ -700,7 +720,7 @@ public class EmailPluginIntegrationTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(BuildConfiguration());
-        services.AddEmailPlugins(moduleFolder: Path.Combine(AppContext.BaseDirectory, "@Plugins"));
+        services.AddEmailPlugins(moduleFolder: Path.Combine(AppContext.BaseDirectory, "@Email"));
         var sp = services.BuildServiceProvider();
 
         var loader = sp.GetRequiredService<WitPluginLoader<IEmailProviderPlugin>>();
@@ -749,7 +769,7 @@ For testing the actual transport logic without hitting a live vendor:
 ### Module folder layout
 
 ```
-@Plugins/                       ← parent folder the host scans (configurable)
+@Email/                       ← parent folder the host scans (configurable)
 ├── resend.module/              ← one folder per plugin; name typically matches Key
 │   ├── <plugin>.dll
 │   ├── <plugin>.deps.json
@@ -811,7 +831,7 @@ loader.Load()    foreach plugin           services.BuildSp()       foreach plugi
                  Condition="Exists('$(MSBuildThisFileDirectory)appsettings.json')" />
   </ItemGroup>
   <Copy SourceFiles="@(PluginFiles)"
-        DestinationFolder="$(SolutionDir)@Plugins\$(Configuration)\<key>.module\%(RecursiveDir)"
+        DestinationFolder="$(SolutionDir)@Email\$(Configuration)\<key>.module\%(RecursiveDir)"
         SkipUnchangedFiles="true" />
 </Target>
 ```
@@ -822,7 +842,7 @@ loader.Load()    foreach plugin           services.BuildSp()       foreach plugi
 <files>
   <file src="build\<id>.targets" target="build" />
   <file src="build\<id>.targets" target="buildTransitive" />
-  <file src="..\..\@Plugins\Release\<key>.module\**\*" target="plugins\<key>.module" />
+  <file src="..\..\@Email\Release\<key>.module\**\*" target="<category>\<key>.module" />
   <file src="bin\Release\net10.0\<id>.dll" target="lib\net10.0" />
 </files>
 ```
@@ -836,14 +856,14 @@ loader.Load()    foreach plugin           services.BuildSp()       foreach plugi
       <_<Name>Files Include="$(MSBuildThisFileDirectory)..\plugins\<key>.module\**\*" />
     </ItemGroup>
     <Copy SourceFiles="@(_<Name>Files)"
-          DestinationFolder="$(OutputPath)@Plugins\<key>.module\%(RecursiveDir)" />
+          DestinationFolder="$(OutputPath)@Email\<key>.module\%(RecursiveDir)" />
   </Target>
   <Target Name="_Copy<Name>PluginPublish" AfterTargets="Publish">
     <ItemGroup>
       <_<Name>PubFiles Include="$(MSBuildThisFileDirectory)..\plugins\<key>.module\**\*" />
     </ItemGroup>
     <Copy SourceFiles="@(_<Name>PubFiles)"
-          DestinationFolder="$(PublishDir)@Plugins\<key>.module\%(RecursiveDir)" />
+          DestinationFolder="$(PublishDir)@Email\<key>.module\%(RecursiveDir)" />
   </Target>
 </Project>
 ```
@@ -853,18 +873,18 @@ loader.Load()    foreach plugin           services.BuildSp()       foreach plugi
 ```xml
 <Target Name="PreBuild" BeforeTargets="Build">
   <ItemGroup>
-    <PluginModuleFiles Include="$(MSBuildThisFileDirectory)..\@Plugins\$(Configuration)\**\*" />
+    <PluginModuleFiles Include="$(MSBuildThisFileDirectory)..\@Email\$(Configuration)\**\*" />
   </ItemGroup>
   <Copy SourceFiles="@(PluginModuleFiles)"
-        DestinationFolder="$(TargetDir)@Plugins\%(RecursiveDir)" />
+        DestinationFolder="$(TargetDir)@Email\%(RecursiveDir)" />
 </Target>
 
 <Target Name="PostPublish" AfterTargets="Publish">
   <ItemGroup>
-    <PluginModulePublishFiles Include="$(MSBuildThisFileDirectory)..\@Plugins\$(Configuration)\**\*" />
+    <PluginModulePublishFiles Include="$(MSBuildThisFileDirectory)..\@Email\$(Configuration)\**\*" />
   </ItemGroup>
   <Copy SourceFiles="@(PluginModulePublishFiles)"
-        DestinationFolder="$(PublishDir)@Plugins\%(RecursiveDir)" />
+        DestinationFolder="$(PublishDir)@Email\%(RecursiveDir)" />
 </Target>
 ```
 
@@ -919,7 +939,7 @@ A: Yes — declare `[WitPluginDependency("OtherPluginName", MinimumVersion = "x.
 A: Create the loader with `useIsolatedContexts: true`, then call `loader.UnloadPlugin(pluginName)`. The plugin's `AssemblyLoadContext` is collected on the next GC. Note: any references to plugin types held by the host or other plugins will keep the assembly alive.
 
 **Q: Where does my plugin's `appsettings.json` get read from?**
-A: From inside the plugin's module folder at runtime (`@Plugins/<key>.module/appsettings.json`). Use `Assembly.Location` + `Path.GetDirectoryName` to find your own directory. See §6 for the recommended `ConfigurationBuilder` setup.
+A: From inside the plugin's module folder at runtime (`@Email/<key>.module/appsettings.json`). Use `Assembly.Location` + `Path.GetDirectoryName` to find your own directory. See §6 for the recommended `ConfigurationBuilder` setup.
 
 **Q: My plugin needs a binary native dependency. Where does it go?**
 A: Same module folder as the managed DLLs. The plugin's `AssemblyLoadContext` resolves native dependencies relative to the managed assembly's location, the same way a regular .NET process does.
