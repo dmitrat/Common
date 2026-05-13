@@ -39,7 +39,6 @@ on:
           - OutWit.Common.Logging.Query
           - OutWit.Common.Logging.NewRelic
           - OutWit.Common.Logging.Loki
-          - OutWit.Common.Blazor.Logging
 
 permissions:
   contents: read

@@ -127,10 +127,6 @@ jobs:
               - 'Logging/OutWit.Common.Logging.Loki/**'
               - 'Logging/OutWit.Common.Logging.Loki.Tests/**'
               - 'Logging/OutWit.Common.Logging.Query/**'
-            OutWit.Common.Blazor.Logging:
-              - 'Blazor/OutWit.Common.Blazor.Logging/**'
-              - 'Logging/OutWit.Common.Logging.Query/**'
-              - 'MVVM/OutWit.Common.MVVM.Blazor/**'
 
   run-tests:
     name: Test ${{ matrix.project }}

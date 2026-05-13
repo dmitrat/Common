@@ -37,7 +37,6 @@ on:
           - OutWit.Common.Logging.Query
           - OutWit.Common.Logging.NewRelic
           - OutWit.Common.Logging.Loki
-          - OutWit.Common.Blazor.Logging
       configuration:
         description: 'Build configuration'
         required: false
