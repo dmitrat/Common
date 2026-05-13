@@ -37,7 +37,7 @@ If you only want to call the loader API, see [`OutWit.Common.Plugins/README.md`]
 **The deal**: an OutWit host (e.g. `WitIdentity`) defines a contract — "send an email", "query a log backend". A plugin author publishes a NuGet package that implements that contract for one vendor (Resend, SMTP, NewRelic, Loki, …). The host operator runs:
 
 ```bash
-dotnet add package OutWit.Shared.Email.Plugin.Resend
+dotnet add package OutWit.Shared.Email.Provider.Resend
 ```
 
 …and on the next build, the plugin's DLLs land in the host's output under `@Plugins/resend.module/`. At runtime the host's plugin loader scans that folder, finds the plugin's manifest, registers its services in DI, and the host can now send email via Resend without any code change.
@@ -123,8 +123,8 @@ A built plugin module is a flat folder containing:
 
 ```
 @Plugins/resend.module/
-├── OutWit.Shared.Email.Plugin.Resend.dll   ← the plugin entry point
-├── OutWit.Shared.Email.Plugin.Resend.deps.json
+├── OutWit.Shared.Email.Provider.Resend.dll   ← the plugin entry point
+├── OutWit.Shared.Email.Provider.Resend.deps.json
 ├── Resend.dll                              ← vendor SDK
 ├── OutWit.Common.Email.dll                 ← OutWit base abstraction
 ├── …all other transitive deps the plugin needs to run…
@@ -165,12 +165,12 @@ We'll build a fictional **Mailgun email plugin** for WitIdentity. The pattern tr
 ### 4.1 Set up the project
 
 ```bash
-mkdir OutWit.Shared.Email.Plugin.Mailgun
-cd OutWit.Shared.Email.Plugin.Mailgun
+mkdir OutWit.Shared.Email.Provider.Mailgun
+cd OutWit.Shared.Email.Provider.Mailgun
 dotnet new classlib -f net10.0
 ```
 
-`OutWit.Shared.Email.Plugin.Mailgun.csproj`:
+`OutWit.Shared.Email.Provider.Mailgun.csproj`:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -197,7 +197,7 @@ dotnet new classlib -f net10.0
   <ItemGroup>
     <PackageReference Include="OutWit.Common.Plugins.Abstractions" Version="1.1.*" />
     <PackageReference Include="OutWit.Common.Email" Version="1.0.*" />
-    <PackageReference Include="OutWit.Shared.Email.Plugins" Version="1.0.*" />
+    <PackageReference Include="OutWit.Shared.Email.Providers" Version="1.0.*" />
     <!-- Vendor SDK -->
     <PackageReference Include="RestSharp" Version="112.1.0" />
   </ItemGroup>
@@ -242,9 +242,9 @@ using Microsoft.Extensions.DependencyInjection;
 using OutWit.Common.Email;
 using OutWit.Common.Plugins.Abstractions;
 using OutWit.Common.Plugins.Abstractions.Attributes;
-using OutWit.Shared.Email.Plugins;
+using OutWit.Shared.Email.Providers;
 
-namespace OutWit.Shared.Email.Plugin.Mailgun
+namespace OutWit.Shared.Email.Provider.Mailgun
 {
     [WitPluginManifest("Mailgun Email Provider", Version = "1.0.0")]
     public sealed class MailgunEmailProviderPlugin : WitPluginBase, IEmailProviderPlugin
@@ -288,7 +288,7 @@ namespace OutWit.Shared.Email.Plugin.Mailgun
 Anatomy:
 
 - Inherits **`WitPluginBase`** (provides default no-op `OnUnloading`, default `Priority=0`).
-- Implements **`IEmailProviderPlugin`** — the host's contract (lives in `OutWit.Shared.Email.Plugins`). The discriminator `Key` lets the host pick *this* plugin when its operator sets `Email__ProviderKey=Mailgun`.
+- Implements **`IEmailProviderPlugin`** — the host's contract (lives in `OutWit.Shared.Email.Providers`). The discriminator `Key` lets the host pick *this* plugin when its operator sets `Email__ProviderKey=Mailgun`.
 - Decorated with **`[WitPluginManifest("display name", Version = "x.y.z")]`** — required for the loader to recognize the class as a plugin.
 - The `Initialize` method registers everything the transport needs *and* the `IEmailTransport` itself. The host resolves `IEmailTransport` later and doesn't care which plugin provided it.
 
@@ -335,12 +335,12 @@ public sealed class MailgunEmailTransport : IEmailTransport
 ```bash
 dotnet build -c Release
 ls @Plugins/Release/mailgun.module/
-# OutWit.Shared.Email.Plugin.Mailgun.dll
-# OutWit.Shared.Email.Plugin.Mailgun.deps.json
+# OutWit.Shared.Email.Provider.Mailgun.dll
+# OutWit.Shared.Email.Provider.Mailgun.deps.json
 # RestSharp.dll
 # OutWit.Common.Email.dll
 # OutWit.Common.Plugins.Abstractions.dll
-# OutWit.Shared.Email.Plugins.dll
+# OutWit.Shared.Email.Providers.dll
 # appsettings.json
 ```
 
@@ -365,7 +365,7 @@ If you're building a service that *consumes* plugins, the host side is responsib
 A marker interface keeps plugin categories separate. If a host has both email plugins and log plugins, two interfaces means two `WitPluginLoader<T>` instances each filtering for its own category:
 
 ```csharp
-namespace OutWit.Shared.Email.Plugins
+namespace OutWit.Shared.Email.Providers
 {
     public interface IEmailProviderPlugin : IWitPlugin
     {
@@ -480,7 +480,7 @@ Each plugin owns its own `appsettings.json`, deployed inside its module folder:
 
 ```
 @Plugins/mailgun.module/
-├── OutWit.Shared.Email.Plugin.Mailgun.dll
+├── OutWit.Shared.Email.Provider.Mailgun.dll
 ├── appsettings.json          ← plugin-private config
 └── …deps…
 ```
@@ -531,13 +531,13 @@ A plugin ships as a NuGet package with a specific layout that triggers automatic
 
 ### 7.1 The nuspec
 
-`OutWit.Shared.Email.Plugin.Mailgun.nuspec`, sitting next to the csproj:
+`OutWit.Shared.Email.Provider.Mailgun.nuspec`, sitting next to the csproj:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
-    <id>OutWit.Shared.Email.Plugin.Mailgun</id>
+    <id>OutWit.Shared.Email.Provider.Mailgun</id>
     <version>$version$</version>
     <authors>Your Name</authors>
     <description>Mailgun email transport plugin for OutWit hosts.</description>
@@ -546,13 +546,13 @@ A plugin ships as a NuGet package with a specific layout that triggers automatic
     <tags>OutWit Email Plugin Mailgun</tags>
   </metadata>
   <files>
-    <file src="build\OutWit.Shared.Email.Plugin.Mailgun.targets"
+    <file src="build\OutWit.Shared.Email.Provider.Mailgun.targets"
           target="build" />
-    <file src="build\OutWit.Shared.Email.Plugin.Mailgun.targets"
+    <file src="build\OutWit.Shared.Email.Provider.Mailgun.targets"
           target="buildTransitive" />
     <file src="..\..\@Plugins\Release\mailgun.module\**\*"
           target="plugins\mailgun.module" />
-    <file src="bin\Release\net10.0\OutWit.Shared.Email.Plugin.Mailgun.dll"
+    <file src="bin\Release\net10.0\OutWit.Shared.Email.Provider.Mailgun.dll"
           target="lib\net10.0" />
   </files>
 </package>
@@ -571,7 +571,7 @@ The `$version$` placeholder is filled in by MSBuild via `<NuspecProperties>versi
 
 ### 7.2 The consumer-side targets file
 
-`build/OutWit.Shared.Email.Plugin.Mailgun.targets` (lives next to the csproj, packaged into the .nupkg):
+`build/OutWit.Shared.Email.Provider.Mailgun.targets` (lives next to the csproj, packaged into the .nupkg):
 
 ```xml
 <Project>
@@ -605,7 +605,7 @@ Once the nuspec is in place:
 
 ```bash
 dotnet build -c Release   # produces @Plugins/Release/mailgun.module/...
-dotnet pack -c Release    # produces OutWit.Shared.Email.Plugin.Mailgun.<version>.nupkg
+dotnet pack -c Release    # produces OutWit.Shared.Email.Provider.Mailgun.<version>.nupkg
 ```
 
 The csproj's `NuspecFile` property tells `dotnet pack` to use your file instead of generating one.
@@ -636,15 +636,15 @@ Three viable patterns:
 ### Pattern A — accept the unused reference
 
 ```xml
-<PackageReference Include="OutWit.Shared.Email.Plugin.Mailgun" Version="1.0.0" />
+<PackageReference Include="OutWit.Shared.Email.Provider.Mailgun" Version="1.0.0" />
 ```
 
-The host's compile-time graph gains `OutWit.Shared.Email.Plugin.Mailgun.dll` as a reference. It's never imported by any `using`, so it sits unused. **Pro**: zero ceremony. **Con**: the unused reference shows up in `dotnet list package` output and the host has slightly more compile-time noise.
+The host's compile-time graph gains `OutWit.Shared.Email.Provider.Mailgun.dll` as a reference. It's never imported by any `using`, so it sits unused. **Pro**: zero ceremony. **Con**: the unused reference shows up in `dotnet list package` output and the host has slightly more compile-time noise.
 
 ### Pattern B — exclude the compile reference, keep the build targets
 
 ```xml
-<PackageReference Include="OutWit.Shared.Email.Plugin.Mailgun" Version="1.0.0">
+<PackageReference Include="OutWit.Shared.Email.Provider.Mailgun" Version="1.0.0">
   <ExcludeAssets>compile;runtime</ExcludeAssets>
   <IncludeAssets>build</IncludeAssets>
 </PackageReference>
@@ -766,7 +766,7 @@ For testing the actual transport logic without hitting a live vendor:
 
 | Thing | Convention | Example |
 |---|---|---|
-| Plugin assembly | `OutWit.<Product>.<Category>.Plugin.<Vendor>` | `OutWit.Shared.Email.Plugin.Resend` |
+| Plugin assembly | `OutWit.<Product>.<Category>.Plugin.<Vendor>` | `OutWit.Shared.Email.Provider.Resend` |
 | Plugin class | `<Vendor><Category>ProviderPlugin` | `ResendEmailProviderPlugin` |
 | Plugin folder | `<vendor-lowercase>.module` | `resend.module` |
 | Plugin Key | `<Vendor>` (PascalCase or as documented by host) | `"Resend"`, `"Mailgun"`, `"NewRelic"` |
