@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+
+		<Version>1.0.0</Version>
+
+		<Description>Vendor-neutral log query model and provider abstraction (ILogQueryProvider, LogQuery, LogEntry, LogFilter, LogStatistics, LogStorageInfo). Concrete backends live in OutWit.Common.Logging.NewRelic, OutWit.Common.Logging.Loki, etc.</Description>
+		<PackageTags>OutWit;Common;Logging;Query;Log;Search</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Logging/OutWit.Common.Logging.Query</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
+		<ProjectReference Include="..\..\Serialization\MemoryPack\OutWit.Common.MemoryPack\OutWit.Common.MemoryPack.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,5 +1,5 @@
 using OutWit.Common.MVVM.Model;
-using OutWit.Common.NewRelic.Model;
+using OutWit.Common.Logging.Query.Model;
 using OutWit.Common.Values;
 
 namespace OutWit.Common.Blazor.Logging.Model
@@ -36,19 +36,19 @@ namespace OutWit.Common.Blazor.Logging.Model
         /// </summary>
         public void ResetLevels()
         {
-            Levels = new Dictionary<NewRelicLogSeverity, SelectableValue<NewRelicLogSeverity>>
+            Levels = new Dictionary<LogSeverity, SelectableValue<LogSeverity>>
             {
-                { NewRelicLogSeverity.Critical, NewRelicLogSeverity.Critical },
-                { NewRelicLogSeverity.Error, NewRelicLogSeverity.Error },
-                { NewRelicLogSeverity.Warning, NewRelicLogSeverity.Warning },
-                { NewRelicLogSeverity.Information, NewRelicLogSeverity.Information }
+                { LogSeverity.Critical, LogSeverity.Critical },
+                { LogSeverity.Error, LogSeverity.Error },
+                { LogSeverity.Warning, LogSeverity.Warning },
+                { LogSeverity.Information, LogSeverity.Information }
             };
         }
 
         /// <summary>
         /// Checks whether the specified severity level is currently active.
         /// </summary>
-        public bool IsActiveLevel(NewRelicLogSeverity level)
+        public bool IsActiveLevel(LogSeverity level)
         {
             return Levels.TryGetValue(level, out var selectable)
                    && selectable.IsSelected;
@@ -57,34 +57,34 @@ namespace OutWit.Common.Blazor.Logging.Model
         /// <summary>
         /// Toggles the active state of the specified severity level.
         /// </summary>
-        public void ToggleActiveLevel(NewRelicLogSeverity level)
+        public void ToggleActiveLevel(LogSeverity level)
         {
             if (Levels.TryGetValue(level, out var selectable))
                 selectable.ToggleSelection();
         }
 
-        private IReadOnlyList<NewRelicLogFilter> BuildLevelsFilters()
+        private IReadOnlyList<LogFilter> BuildLevelsFilters()
         {
-            NewRelicLogSeverity[] selectedLevels = Levels
+            LogSeverity[] selectedLevels = Levels
                 .Values
                 .Where(value => value.IsSelected)
                 .SelectMany(value => GetLevelsForGroup(value.Value))
                 .ToArray();
 
             if (selectedLevels.Length > 0)
-                return [NewRelicLogFilters.LevelIn(selectedLevels)];
+                return [LogFilters.LevelIn(selectedLevels)];
 
             return [];
         }
 
-        private static IEnumerable<NewRelicLogSeverity> GetLevelsForGroup(NewRelicLogSeverity group)
+        private static IEnumerable<LogSeverity> GetLevelsForGroup(LogSeverity group)
         {
             return group switch
             {
-                _ when group.Is(NewRelicLogSeverity.Error) => new[] { NewRelicLogSeverity.Error, NewRelicLogSeverity.Critical, NewRelicLogSeverity.Fatal },
-                _ when group.Is(NewRelicLogSeverity.Warning) => new[] { NewRelicLogSeverity.Warning },
-                _ when group.Is(NewRelicLogSeverity.Information) => new[] { NewRelicLogSeverity.Information },
-                _ when group.Is(NewRelicLogSeverity.Debug) => new[] { NewRelicLogSeverity.Debug, NewRelicLogSeverity.Trace },
+                _ when group.Is(LogSeverity.Error) => new[] { LogSeverity.Error, LogSeverity.Critical, LogSeverity.Fatal },
+                _ when group.Is(LogSeverity.Warning) => new[] { LogSeverity.Warning },
+                _ when group.Is(LogSeverity.Information) => new[] { LogSeverity.Information },
+                _ when group.Is(LogSeverity.Debug) => new[] { LogSeverity.Debug, LogSeverity.Trace },
                 _ => new[] { group }
             };
         }
@@ -173,7 +173,7 @@ namespace OutWit.Common.Blazor.Logging.Model
                 .ToList();
         }
 
-        private IReadOnlyList<NewRelicLogFilter> BuildSourceFilters()
+        private IReadOnlyList<LogFilter> BuildSourceFilters()
         {
             string[] selectedSources = Sources.Values
                 .Where(value => value.IsSelected)
@@ -181,7 +181,7 @@ namespace OutWit.Common.Blazor.Logging.Model
                 .ToArray();
 
             if (selectedSources.Length > 0)
-                return [NewRelicLogFilters.SourceContextIn(selectedSources)];
+                return [LogFilters.SourceContextIn(selectedSources)];
 
             return [];
         }
@@ -255,16 +255,16 @@ namespace OutWit.Common.Blazor.Logging.Model
         #region Functions
 
         /// <summary>
-        /// Builds a <see cref="NewRelicLogQuery"/> from the current conditions and the specified filter node.
+        /// Builds a <see cref="LogQuery"/> from the current conditions and the specified filter node.
         /// </summary>
-        public NewRelicLogQuery Query(LogFilterNode? node)
+        public LogQuery Query(LogFilterNode? node)
         {
-            List<NewRelicLogFilter> filters = Build(node);
+            List<LogFilter> filters = Build(node);
 
             filters.AddRange(BuildLevelsFilters());
             filters.AddRange(BuildSourceFilters());
 
-            return new NewRelicLogQuery
+            return new LogQuery
             {
                 From = SelectedDate.ToDateTime(MinTime ?? TimeOnly.MinValue, DateTimeKind.Local).ToUniversalTime(),
                 To = SelectedDate.ToDateTime(MaxTime ?? TimeOnly.MaxValue, DateTimeKind.Local).ToUniversalTime(),
@@ -274,9 +274,9 @@ namespace OutWit.Common.Blazor.Logging.Model
             };
         }
 
-        private List<NewRelicLogFilter> Build(LogFilterNode? root)
+        private List<LogFilter> Build(LogFilterNode? root)
         {
-            List<NewRelicLogFilter> filters = new();
+            List<LogFilter> filters = new();
 
             if (root == null)
                 return filters;
@@ -295,8 +295,8 @@ namespace OutWit.Common.Blazor.Logging.Model
                     continue;
 
                 filters.Add(node.IsExclusion
-                    ? NewRelicLogFilters.MessageNotContains(node.FullTextSearch)
-                    : NewRelicLogFilters.MessageContains(node.FullTextSearch));
+                    ? LogFilters.MessageNotContains(node.FullTextSearch)
+                    : LogFilters.MessageContains(node.FullTextSearch));
             }
 
             return filters;
@@ -329,7 +329,7 @@ namespace OutWit.Common.Blazor.Logging.Model
         /// <summary>
         /// The set of currently active severity levels.
         /// </summary>
-        public IReadOnlyDictionary<NewRelicLogSeverity, SelectableValue<NewRelicLogSeverity>> Levels { get; private set; } = null!;
+        public IReadOnlyDictionary<LogSeverity, SelectableValue<LogSeverity>> Levels { get; private set; } = null!;
 
         /// <summary>
         /// The set of log sources being filtered.

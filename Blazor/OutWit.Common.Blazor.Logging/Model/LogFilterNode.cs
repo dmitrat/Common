@@ -1,5 +1,5 @@
 using OutWit.Common.Abstract;
-using OutWit.Common.NewRelic.Model;
+using OutWit.Common.Logging.Query.Model;
 using OutWit.Common.Values;
 using OutWit.Common.Collections;
 
@@ -179,7 +179,7 @@ namespace OutWit.Common.Blazor.Logging.Model
         /// <summary>
         /// Structured filters for NewRelic (field-based conditions).
         /// </summary>
-        public List<NewRelicLogFilter> Filters { get; } = new();
+        public List<LogFilter> Filters { get; } = new();
 
         /// <summary>
         /// Indicates whether this node is temporarily disabled.

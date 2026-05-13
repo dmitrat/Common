@@ -1,10 +1,10 @@
 @using OutWit.Common.Blazor.Logging.ViewModels.Components
-@using OutWit.Common.NewRelic.Model
+@using OutWit.Common.Logging.Query.Model
 @inherits LogsTableViewModel
 
 <div class="m3-logs-table-wrapper">
 
-    <MudTable T="NewRelicLogEntry"
+    <MudTable T="LogEntry"
               @ref="Table"
               Items="@Entries"
               Hover="true"

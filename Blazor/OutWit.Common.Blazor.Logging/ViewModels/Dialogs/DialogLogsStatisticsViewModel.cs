@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using OutWit.Common.Logging.NewRelic.Model;
 using OutWit.Common.MVVM.Blazor.ViewModels;
-using OutWit.Common.NewRelic.Model;
+using OutWit.Common.Logging.Query.Model;
 
 namespace OutWit.Common.Blazor.Logging.ViewModels.Dialogs
 {
@@ -55,7 +56,7 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Dialogs
         public DateTime To { get; set; }
 
         [Parameter]
-        public NewRelicLogStatistics? Statistics { get; set; }
+        public LogStatistics? Statistics { get; set; }
 
         [Parameter]
         public NewRelicDataConsumption? Consumption { get; set; }

@@ -2,6 +2,8 @@
 
 # OutWit.Common.Plugins
 
+> **See also**: [`PLUGINS_GUIDE.md`](../PLUGINS_GUIDE.md) — end-to-end author & host guide covering NuGet packaging conventions (nuspec, `build/*.targets`), module-folder layout, per-plugin config, and known issues. The README below documents the **API surface** only.
+
 `OutWit.Common.Plugins` is a powerful and lightweight library for building extensible .NET applications. It provides a complete infrastructure for discovering, loading, and managing plugins with a strong focus on dependency resolution and lifecycle management.
 
 The system allows for loading plugins into isolated `AssemblyLoadContext`s, which enables advanced features like unloading assemblies and hot-reloading plugins without restarting the main application.

@@ -12,6 +12,7 @@ on:
           - OutWit.Common.Aspects
           - OutWit.Common.CommandLine
           - OutWit.Common.Logging
+          - OutWit.Common.Logging.Abstractions
           - OutWit.Common.Rest
           - OutWit.Common.Reflection
           - OutWit.Common.Proxy
@@ -32,9 +33,11 @@ on:
           - OutWit.Common.Settings.Csv
           - OutWit.Common.Settings.Database
           - OutWit.Common.Configuration
-          - OutWit.Common.NewRelic
+          - OutWit.Common.Email
+          - OutWit.Common.Logging.Query
+          - OutWit.Common.Logging.NewRelic
+          - OutWit.Common.Logging.Loki
           - OutWit.Common.Blazor.Logging
-          - OutWit.Common.Blazor.WitRPC
       configuration:
         description: 'Build configuration'
         required: false

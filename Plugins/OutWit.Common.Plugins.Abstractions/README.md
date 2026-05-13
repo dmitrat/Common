@@ -1,5 +1,7 @@
 ﻿# OutWit.Common.Plugins.Abstractions
 
+> **Writing a plugin? Read [`PLUGINS_GUIDE.md`](../PLUGINS_GUIDE.md) first.** It covers the full author workflow: csproj setup, nuspec packaging, `build/*.targets` for consumer-side file copy, per-plugin configuration, module folder conventions, and known gotchas. This README documents just the abstractions surface.
+
 This package contains the minimal set of shared interfaces, base classes, and attributes required to build plugins compatible with the `OutWit.Common.Plugins` system. It is intentionally lightweight to ensure your plugins do not depend on the main loader logic.
 
 ## Key Components

@@ -3,7 +3,7 @@ using MudBlazor;
 using OutWit.Common.Blazor.Logging.Model;
 using OutWit.Common.Blazor.Logging.Utils;
 using OutWit.Common.MVVM.Blazor.ViewModels;
-using OutWit.Common.NewRelic.Model;
+using OutWit.Common.Logging.Query.Model;
 
 namespace OutWit.Common.Blazor.Logging.ViewModels.Components
 {
@@ -30,7 +30,7 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
 
         #region Event Handlers
 
-        public Task OnToggleLevelAsync(NewRelicLogSeverity mainLevel)
+        public Task OnToggleLevelAsync(LogSeverity mainLevel)
         {
             if (IsLoading || Conditions == null || !Conditions.Levels.ContainsKey(mainLevel))
                 return Task.CompletedTask;
@@ -162,10 +162,10 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
         protected TimeSpan? SelectedMinTime => Conditions?.MinTime.AsTimeSpan();
         protected TimeSpan? SelectedMaxTime => Conditions?.MaxTime.AsTimeSpan();
 
-        protected bool ShowError => Conditions?.IsActiveLevel(NewRelicLogSeverity.Error) ?? false;
-        protected bool ShowWarning => Conditions?.IsActiveLevel(NewRelicLogSeverity.Warning) ?? false;
-        protected bool ShowInfo => Conditions?.IsActiveLevel(NewRelicLogSeverity.Information) ?? false;
-        protected bool ShowDebug => Conditions?.IsActiveLevel(NewRelicLogSeverity.Debug) ?? false;
+        protected bool ShowError => Conditions?.IsActiveLevel(LogSeverity.Error) ?? false;
+        protected bool ShowWarning => Conditions?.IsActiveLevel(LogSeverity.Warning) ?? false;
+        protected bool ShowInfo => Conditions?.IsActiveLevel(LogSeverity.Information) ?? false;
+        protected bool ShowDebug => Conditions?.IsActiveLevel(LogSeverity.Debug) ?? false;
 
         protected IReadOnlyCollection<string> AvailableSources => Conditions?.GetAvailableSources() ?? [];
         protected IReadOnlyCollection<string> SelectedSources => Conditions?.GetSelectedSources() ?? [];

@@ -77,3 +77,10 @@ Migrations/
 # JetBrains Rider
 .idea/
 .idea_modules/
+
+# Local agent / AI tool config (not shared)
+.claude/
+CLAUDE.md
+.github/copilot-instructions.md
+# Local NuGet config (credentials, dev-only sources). Use ~/AppData/Roaming/NuGet/NuGet.Config for credentials.
+nuget.config

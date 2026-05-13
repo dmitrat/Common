@@ -23,7 +23,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\MVVM\OutWit.Common.MVVM.Blazor\OutWit.Common.MVVM.Blazor.csproj" />
-    <ProjectReference Include="..\..\NewRelic\OutWit.Common.NewRelic\OutWit.Common.NewRelic.csproj" />
+    <ProjectReference Include="..\..\Logging\OutWit.Common.Logging.Query\OutWit.Common.Logging.Query.csproj" />
+    <ProjectReference Include="..\..\Logging\OutWit.Common.Logging.NewRelic\OutWit.Common.Logging.NewRelic.csproj" />
   </ItemGroup>
 
   <ItemGroup>

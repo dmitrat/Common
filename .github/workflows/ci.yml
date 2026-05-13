@@ -35,8 +35,12 @@ jobs:
             OutWit.Common.CommandLine:
               - 'CommandLine/**'
             OutWit.Common.Logging:
-              - 'Logging/**'
+              - 'Logging/OutWit.Common.Logging/**'
+              - 'Logging/OutWit.Common.Logging.Tests/**'
+              - 'Logging/OutWit.Common.Logging.Abstractions/**'
               - 'Aspects/**'
+            OutWit.Common.Logging.Abstractions:
+              - 'Logging/OutWit.Common.Logging.Abstractions/**'
             OutWit.Common.Rest:
               - 'Rest/**'
               - 'Common/**'
@@ -107,16 +111,26 @@ jobs:
               - 'Settings/OutWit.Common.Settings/**'
             OutWit.Common.Configuration:
               - 'Configuration/**'
-            OutWit.Common.NewRelic:
-              - 'NewRelic/**'
+            OutWit.Common.Email:
+              - 'Email/**'
+            OutWit.Common.Logging.Query:
+              - 'Logging/OutWit.Common.Logging.Query/**'
+              - 'Logging/OutWit.Common.Logging.Query.Tests/**'
+              - 'Serialization/MemoryPack/**'
+            OutWit.Common.Logging.NewRelic:
+              - 'Logging/OutWit.Common.Logging.NewRelic/**'
+              - 'Logging/OutWit.Common.Logging.NewRelic.Tests/**'
+              - 'Logging/OutWit.Common.Logging.Query/**'
               - 'Rest/**'
               - 'Serialization/MemoryPack/**'
+            OutWit.Common.Logging.Loki:
+              - 'Logging/OutWit.Common.Logging.Loki/**'
+              - 'Logging/OutWit.Common.Logging.Loki.Tests/**'
+              - 'Logging/OutWit.Common.Logging.Query/**'
             OutWit.Common.Blazor.Logging:
               - 'Blazor/OutWit.Common.Blazor.Logging/**'
-              - 'NewRelic/**'
+              - 'Logging/OutWit.Common.Logging.Query/**'
               - 'MVVM/OutWit.Common.MVVM.Blazor/**'
-            OutWit.Common.Blazor.WitRPC:
-              - 'Blazor/OutWit.Common.Blazor.WitRPC/**'
 
   run-tests:
     name: Test ${{ matrix.project }}
@@ -158,7 +172,7 @@ jobs:
           $projName = '${{ matrix.project }}'
           $test = Get-ChildItem -Recurse -Filter "$projName.Tests.csproj" | Select-Object -Expand FullName -First 1
           if (!$test) {
-            Write-Host "No test project for $projName — skipping tests."
+            Write-Host "No test project for $projName ï¿½ skipping tests."
             "hasTests=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
             "hasTests=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append

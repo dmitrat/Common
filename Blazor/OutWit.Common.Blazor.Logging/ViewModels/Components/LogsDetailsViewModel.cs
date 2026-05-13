@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using OutWit.Common.MVVM.Blazor.ViewModels;
-using OutWit.Common.NewRelic.Model;
+using OutWit.Common.Logging.Query.Model;
 
 namespace OutWit.Common.Blazor.Logging.ViewModels.Components
 {
@@ -45,7 +45,7 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
         #region Properties
 
         [Parameter]
-        public NewRelicLogEntry? Entry { get; set; }
+        public LogEntry? Entry { get; set; }
 
         public Color SeverityColor
         {
@@ -53,11 +53,11 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
             {
                 return Entry?.Level switch
                 {
-                    var _ when Entry?.Level == NewRelicLogSeverity.Critical => Color.Error,
-                    var _ when Entry?.Level == NewRelicLogSeverity.Fatal => Color.Error,
-                    var _ when Entry?.Level == NewRelicLogSeverity.Error => Color.Error,
-                    var _ when Entry?.Level == NewRelicLogSeverity.Warning => Color.Warning,
-                    var _ when Entry?.Level == NewRelicLogSeverity.Information => Color.Info,
+                    var _ when Entry?.Level == LogSeverity.Critical => Color.Error,
+                    var _ when Entry?.Level == LogSeverity.Fatal => Color.Error,
+                    var _ when Entry?.Level == LogSeverity.Error => Color.Error,
+                    var _ when Entry?.Level == LogSeverity.Warning => Color.Warning,
+                    var _ when Entry?.Level == LogSeverity.Information => Color.Info,
                     _ => Color.Default
                 };
             }

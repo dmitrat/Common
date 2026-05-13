@@ -1,5 +1,5 @@
 @using OutWit.Common.Blazor.Logging.ViewModels.Components
-@using OutWit.Common.NewRelic.Model
+@using OutWit.Common.Logging.Query.Model
 @inherits LogsToolbarViewModel
 
 <MudPaper Elevation="0" Class="m3-logs-toolbar">
@@ -106,7 +106,7 @@
 
             <MudTooltip Text="Toggle Errors & Critical">
                 <MudToggleIconButton Toggled="@ShowError"
-                                     ToggledChanged="@(_ => OnToggleLevelAsync(NewRelicLogSeverity.Error))"
+                                     ToggledChanged="@(_ => OnToggleLevelAsync(LogSeverity.Error))"
                                      Icon="@Icons.Material.Outlined.ErrorOutline"
                                      Color="Color.Error"
                                      ToggledIcon="@Icons.Material.Filled.Error"
@@ -116,7 +116,7 @@
 
             <MudTooltip Text="Toggle Warnings">
                 <MudToggleIconButton Toggled="@ShowWarning"
-                                     ToggledChanged="@(_ => OnToggleLevelAsync(NewRelicLogSeverity.Warning))"
+                                     ToggledChanged="@(_ => OnToggleLevelAsync(LogSeverity.Warning))"
                                      Icon="@Icons.Material.Outlined.WarningAmber"
                                      Color="Color.Warning"
                                      ToggledIcon="@Icons.Material.Filled.Warning"
@@ -126,7 +126,7 @@
 
             <MudTooltip Text="Toggle Information">
                 <MudToggleIconButton Toggled="@ShowInfo"
-                                     ToggledChanged="@(_ => OnToggleLevelAsync(NewRelicLogSeverity.Information))"
+                                     ToggledChanged="@(_ => OnToggleLevelAsync(LogSeverity.Information))"
                                      Icon="@Icons.Material.Outlined.Info"
                                      Color="Color.Info"
                                      ToggledIcon="@Icons.Material.Filled.Info"
@@ -136,7 +136,7 @@
 
             <MudTooltip Text="Toggle Debug & Trace">
                 <MudToggleIconButton Toggled="@ShowDebug"
-                                     ToggledChanged="@(_ => OnToggleLevelAsync(NewRelicLogSeverity.Debug))"
+                                     ToggledChanged="@(_ => OnToggleLevelAsync(LogSeverity.Debug))"
                                      Icon="@Icons.Material.Outlined.BugReport"
                                      Color="Color.Default"
                                      ToggledIcon="@Icons.Material.Filled.BugReport"

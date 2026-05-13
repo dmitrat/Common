@@ -10,6 +10,18 @@ or
 > dotnet add package OutWit.Common.Logging
 ```
 
+## Companion packages
+
+`OutWit.Common.Logging` is now part of a small family of packages — install only what you need:
+
+| Package | Use when |
+|---|---|
+| **`OutWit.Common.Logging.Abstractions`** | You need just `ILogManager` / `LogUtils` extensions, without Serilog and aspect dependencies (e.g. designing a library against the logging contract). |
+| **`OutWit.Common.Logging`** (this package) | You want the `Log` / `NoLog` / `Measure` aspects + `SimpleLogger` (observable-collection logger for desktop UI live log views). Transitively brings in Serilog. |
+| [`OutWit.Common.Logging.Query`](../OutWit.Common.Logging.Query/) | You need to **read** logs from a backend (NerdGraph, Loki, file) through a vendor-neutral `ILogQueryProvider`. |
+| [`OutWit.Common.Logging.NewRelic`](../OutWit.Common.Logging.NewRelic/) | Concrete `ILogQueryProvider` over NerdGraph (NRQL). |
+| [`OutWit.Common.Logging.Loki`](../OutWit.Common.Logging.Loki/) | Concrete `ILogQueryProvider` over Grafana Loki (LogQL HTTP API). |
+
 ## Streamlining Logging with the `Log` Aspect
 
 Maintaining logs is critical for debugging and supporting complex applications. Manually adding logging calls everywhere can be tedious and error-prone. The `OutWit.Common.Logging` package simplifies this process with three powerful aspects: `Log`, `NoLog`, and `Measure`. The source code is available [here](https://github.com/dmitrat/OutWit/tree/main/Sources/Common/OutWit.Common.Logging).

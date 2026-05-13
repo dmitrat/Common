@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using OutWit.Common.MVVM.Blazor.ViewModels;
-using OutWit.Common.NewRelic.Model;
+using OutWit.Common.Logging.Query.Model;
 
 namespace OutWit.Common.Blazor.Logging.ViewModels.Components
 {
@@ -13,7 +13,7 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
     {
         #region Event Handlers
 
-        protected Task OnRowClickedAsync(TableRowClickEventArgs<NewRelicLogEntry> args)
+        protected Task OnRowClickedAsync(TableRowClickEventArgs<LogEntry> args)
         {
             if (Busy || args.Item == null)
                 return Task.CompletedTask;
@@ -22,7 +22,7 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
             return SelectedEntryChanged.InvokeAsync(args.Item);
         }
 
-        protected async Task OnRowDoubleClickedAsync(TableRowClickEventArgs<NewRelicLogEntry> args)
+        protected async Task OnRowDoubleClickedAsync(TableRowClickEventArgs<LogEntry> args)
         {
             if (Busy || args.Item == null)
                 return;
@@ -52,17 +52,17 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
 
         #region Helper Methods
 
-        public string GetRowCss(NewRelicLogEntry entry, int index)
+        public string GetRowCss(LogEntry entry, int index)
         {
             var cssClass = entry.Level switch
             {
-                var _ when entry.Level == NewRelicLogSeverity.Critical => "log-row-fatal",
-                var _ when entry.Level == NewRelicLogSeverity.Fatal => "log-row-fatal",
-                var _ when entry.Level == NewRelicLogSeverity.Error => "log-row-error",
-                var _ when entry.Level == NewRelicLogSeverity.Warning => "log-row-warn",
-                var _ when entry.Level == NewRelicLogSeverity.Information => "log-row-info",
-                var _ when entry.Level == NewRelicLogSeverity.Debug => "log-row-debug",
-                var _ when entry.Level == NewRelicLogSeverity.Trace => "log-row-trace",
+                var _ when entry.Level == LogSeverity.Critical => "log-row-fatal",
+                var _ when entry.Level == LogSeverity.Fatal => "log-row-fatal",
+                var _ when entry.Level == LogSeverity.Error => "log-row-error",
+                var _ when entry.Level == LogSeverity.Warning => "log-row-warn",
+                var _ when entry.Level == LogSeverity.Information => "log-row-info",
+                var _ when entry.Level == LogSeverity.Debug => "log-row-debug",
+                var _ when entry.Level == LogSeverity.Trace => "log-row-trace",
                 _ => "log-row-default"
             };
 
@@ -87,25 +87,25 @@ namespace OutWit.Common.Blazor.Logging.ViewModels.Components
         #region Parameters
 
         [Parameter]
-        public IReadOnlyList<NewRelicLogEntry> Entries { get; set; } = Array.Empty<NewRelicLogEntry>();
+        public IReadOnlyList<LogEntry> Entries { get; set; } = Array.Empty<LogEntry>();
 
         [Parameter]
-        public NewRelicLogEntry? SelectedEntry { get; set; }
+        public LogEntry? SelectedEntry { get; set; }
 
         [Parameter]
-        public EventCallback<NewRelicLogEntry?> SelectedEntryChanged { get; set; }
+        public EventCallback<LogEntry?> SelectedEntryChanged { get; set; }
 
         [Parameter]
         public Func<string?, string>? HighlightFunc { get; set; }
 
         [Parameter]
-        public EventCallback<NewRelicLogEntry> RowDoubleClick { get; set; }
+        public EventCallback<LogEntry> RowDoubleClick { get; set; }
 
         [Parameter]
         public new bool Busy { get; set; }
 
         [CascadingParameter]
-        protected MudTable<NewRelicLogEntry> Table { get; set; } = null!;
+        protected MudTable<LogEntry> Table { get; set; } = null!;
 
         #endregion
     }
