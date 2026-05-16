@@ -40,7 +40,7 @@ namespace OutWit.Common.Logging.NewRelic.Tests
             };
 
             var client = new NewRelicHttpClient(options);
-            Provider = new NewRelicProvider(client);
+            Provider = new NewRelicProvider(client, options);
         }
 
         #endregion
@@ -494,7 +494,7 @@ namespace OutWit.Common.Logging.NewRelic.Tests
                 AccountId = AccountId
             };
             var client = new NewRelicHttpClient(options);
-            var provider = new NewRelicProvider(client);
+            var provider = new NewRelicProvider(client, options);
 
             // Act & Assert
             // We expect a RestClientException (likely 401 or 403)

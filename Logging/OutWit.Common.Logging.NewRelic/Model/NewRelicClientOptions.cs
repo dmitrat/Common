@@ -1,5 +1,8 @@
 using System;
+using System.Linq;
 using OutWit.Common.Abstract;
+using OutWit.Common.Collections;
+using OutWit.Common.Logging.Query.Model;
 using OutWit.Common.Values;
 
 namespace OutWit.Common.Logging.NewRelic.Model
@@ -27,7 +30,8 @@ namespace OutWit.Common.Logging.NewRelic.Model
                 && AccountId.Is(options.AccountId)
                 && Endpoint.Is(options.Endpoint)
                 && DefaultPageSize.Is(options.DefaultPageSize)
-                && MaxPageSize.Is(options.MaxPageSize);
+                && MaxPageSize.Is(options.MaxPageSize)
+                && BaseFilters.Is(options.BaseFilters);
         }
 
         public override NewRelicClientOptions Clone()
@@ -38,7 +42,8 @@ namespace OutWit.Common.Logging.NewRelic.Model
                 AccountId = AccountId,
                 Endpoint = Endpoint,
                 DefaultPageSize = DefaultPageSize,
-                MaxPageSize = MaxPageSize
+                MaxPageSize = MaxPageSize,
+                BaseFilters = BaseFilters.Select(f => f.Clone()).ToArray()
             };
         }
 
@@ -79,6 +84,15 @@ namespace OutWit.Common.Logging.NewRelic.Model
         /// Gets or sets the maximum number of items to include in a single page of results.
         /// </summary>
         public int MaxPageSize { get; set; } = DEFAULT_MAX_PAGE_SIZE;
+
+        /// <summary>
+        /// Filters applied to every NRQL query before user filters. Used to
+        /// scope queries when the NewRelic account hosts logs from multiple
+        /// services or instances (e.g. <c>service.name = 'WitIdentity'</c>).
+        /// Empty (default) = no scoping; the provider returns everything in
+        /// the account.
+        /// </summary>
+        public LogFilter[] BaseFilters { get; set; } = [];
 
         #endregion
     }

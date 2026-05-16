@@ -4,7 +4,7 @@
 		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 
-		<Version>2.0.0</Version>
+		<Version>2.1.0</Version>
 
 		<Description>NewRelic NerdGraph log query backend for OutWit.Common.Logging.Query. Implements ILogQueryProvider over NRQL (search, statistics, distinct values, scroll-to-timestamp) and adds NewRelic-specific billing data via INewRelicProvider.</Description>
 		<PackageTags>OutWit;Common;Logging;NewRelic;NerdGraph;NRQL;Monitoring</PackageTags>

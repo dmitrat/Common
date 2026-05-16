@@ -1,4 +1,5 @@
 using OutWit.Common.Logging.NewRelic.Model;
+using OutWit.Common.Logging.Query.Model;
 using OutWit.Common.NUnit;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace OutWit.Common.Logging.NewRelic.Tests.Model
             Assert.That(options.Endpoint, Is.EqualTo("https://api.newrelic.com/graphql"));
             Assert.That(options.DefaultPageSize, Is.EqualTo(100));
             Assert.That(options.MaxPageSize, Is.EqualTo(1000));
+            Assert.That(options.BaseFilters, Is.Empty);
         }
 
         [Test]
@@ -61,7 +63,8 @@ namespace OutWit.Common.Logging.NewRelic.Tests.Model
                 AccountId = 1,
                 Endpoint = "endpoint",
                 DefaultPageSize = 50,
-                MaxPageSize = 500
+                MaxPageSize = 500,
+                BaseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") }
             };
 
             // Act
@@ -75,6 +78,39 @@ namespace OutWit.Common.Logging.NewRelic.Tests.Model
             Assert.That(clone.Endpoint, Is.EqualTo(options.Endpoint));
             Assert.That(clone.DefaultPageSize, Is.EqualTo(options.DefaultPageSize));
             Assert.That(clone.MaxPageSize, Is.EqualTo(options.MaxPageSize));
+            // BaseFilters cloned by value, not by reference.
+            Assert.That(clone.BaseFilters, Is.Not.SameAs(options.BaseFilters));
+            Assert.That(clone.BaseFilters.Length, Is.EqualTo(1));
+            Assert.That(clone.BaseFilters[0].Attribute, Is.EqualTo("service.name"));
+            Assert.That(clone.BaseFilters[0].Values, Is.EqualTo(new[] { "WitIdentity" }));
+        }
+
+        [Test]
+        public void IsTreatsBaseFiltersAsValueTest()
+        {
+            // Arrange
+            var a = new NewRelicClientOptions
+            {
+                ApiKey = "key",
+                AccountId = 1,
+                BaseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") }
+            };
+            var sameContent = new NewRelicClientOptions
+            {
+                ApiKey = "key",
+                AccountId = 1,
+                BaseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") }
+            };
+            var differentContent = new NewRelicClientOptions
+            {
+                ApiKey = "key",
+                AccountId = 1,
+                BaseFilters = new[] { LogFilter.Eq("service.name", "WitCloud") }
+            };
+
+            // Assert
+            Assert.That(a, Was.EqualTo(sameContent));
+            Assert.That(a, Was.Not.EqualTo(differentContent));
         }
     }
 }

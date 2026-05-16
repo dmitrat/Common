@@ -27,13 +27,18 @@ namespace OutWit.Common.Logging.NewRelic.Nrql
         /// Builds a NRQL query string from the specified log query parameters.
         /// </summary>
         /// <param name="me">The log query containing filters, time range, pagination and sort order.</param>
+        /// <param name="baseFilters">
+        /// Provider-level filters prepended to every WHERE clause. Used to scope
+        /// queries to a specific service / tenant when the NewRelic account
+        /// hosts logs from multiple services. <c>null</c> or empty = no scoping.
+        /// </param>
         /// <returns>A NRQL query string ready to be sent to the NerdGraph API.</returns>
-        public static string BuildNrql(this LogQuery me)
+        public static string BuildNrql(this LogQuery me, IReadOnlyList<LogFilter>? baseFilters = null)
         {
             var sb = new StringBuilder();
              sb.Append("SELECT * FROM Log");
 
-            var where = BuildWhereClause(me);
+            var where = BuildWhereClause(me, baseFilters);
             if (!string.IsNullOrWhiteSpace(where))
             {
                 sb.Append(" WHERE ");
@@ -70,18 +75,13 @@ namespace OutWit.Common.Logging.NewRelic.Nrql
         /// Builds a NRQL query for fetching distinct values (uniques).
         /// Example: SELECT uniques(SourceContext) FROM Log SINCE ... UNTIL ... WHERE ... LIMIT 1000
         /// </summary>
-        public static string BuildDistinctNrql(LogAttribute attribute, DateTime from, DateTime to, IEnumerable<LogFilter>? filters, int limit)
+        public static string BuildDistinctNrql(LogAttribute attribute, DateTime from, DateTime to, IEnumerable<LogFilter>? filters, int limit,
+            IReadOnlyList<LogFilter>? baseFilters = null)
         {
             var sb = new StringBuilder();
 
-            // Construct SELECT uniques(Attr)
             sb.Append($"SELECT uniques({attribute}) FROM Log");
 
-            // Build WHERE clause (reuse existing logic if possible, or build manually using existing helpers)
-            // Need to wrap filters in a temporary Query object or extract BuildWhereClause logic.
-            // Let's refactor BuildWhereClause to be static and accept filters/search directly or create a dummy query object.
-
-            // Reusing existing logic by creating a lightweight DTO:
             var dummyQuery = new LogQuery
             {
                 Filters = filters?.ToArray(),
@@ -89,7 +89,7 @@ namespace OutWit.Common.Logging.NewRelic.Nrql
                 To = to
             };
 
-            var where = BuildWhereClause(dummyQuery);
+            var where = BuildWhereClause(dummyQuery, baseFilters);
             if (!string.IsNullOrWhiteSpace(where))
             {
                 sb.Append(" WHERE ");
@@ -114,12 +114,13 @@ namespace OutWit.Common.Logging.NewRelic.Nrql
             return sb.ToString();
         }
 
-        public static string BuildCountNrql(LogQuery me, DateTime targetTimestamp)
+        public static string BuildCountNrql(LogQuery me, DateTime targetTimestamp,
+            IReadOnlyList<LogFilter>? baseFilters = null)
         {
             var sb = new StringBuilder();
             sb.Append("SELECT count(*) AS 'count' FROM Log");
 
-            var where = BuildWhereClause(me);
+            var where = BuildWhereClause(me, baseFilters);
 
             sb.Append(" WHERE ");
             if (!string.IsNullOrWhiteSpace(where))
@@ -152,7 +153,8 @@ namespace OutWit.Common.Logging.NewRelic.Nrql
         /// Builds NRQL query for collecting log statistics.
         /// Returns counts by severity level (no size estimation - use GetDataConsumptionAsync for storage metrics).
         /// </summary>
-        public static string BuildStatisticsNrql(DateTime from, DateTime to, IEnumerable<LogFilter>? filters = null)
+        public static string BuildStatisticsNrql(DateTime from, DateTime to, IEnumerable<LogFilter>? filters = null,
+            IReadOnlyList<LogFilter>? baseFilters = null)
         {
             var sb = new StringBuilder();
 
@@ -176,7 +178,7 @@ namespace OutWit.Common.Logging.NewRelic.Nrql
                 To = to
             };
 
-            var where = BuildWhereClause(dummyQuery);
+            var where = BuildWhereClause(dummyQuery, baseFilters);
             if (!string.IsNullOrWhiteSpace(where))
             {
                 sb.Append(" WHERE ");
@@ -211,9 +213,19 @@ namespace OutWit.Common.Logging.NewRelic.Nrql
             return $"FROM NrConsumption SELECT sum(GigabytesIngested) SINCE '{fromStr}' UNTIL '{toStr}' FACET productLine LIMIT 100";
         }
 
-        private static string BuildWhereClause(LogQuery request)
+        private static string BuildWhereClause(LogQuery request, IReadOnlyList<LogFilter>? baseFilters = null)
         {
             var parts = new List<string>();
+
+            // Base filters first — they are the provider-level scope and must
+            // appear before user search/filters, both for readability of the
+            // generated NRQL and so a NewRelic query log is self-explanatory.
+            if (baseFilters is { Count: > 0 })
+            {
+                foreach (var f in baseFilters)
+                    parts.Add(BuildFilterClause(f));
+            }
+
             if (!string.IsNullOrWhiteSpace(request.FullTextSearch))
             {
                 var value = NrqlStringUtils.EscapeSingleQuoted(request.FullTextSearch);

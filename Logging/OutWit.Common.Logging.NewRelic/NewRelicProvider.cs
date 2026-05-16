@@ -16,9 +16,10 @@ namespace OutWit.Common.Logging.NewRelic
     {
         #region Constructors
 
-        public NewRelicProvider(NewRelicHttpClient client)
+        public NewRelicProvider(NewRelicHttpClient client, NewRelicClientOptions options)
         {
             Client = client ?? throw new ArgumentNullException(nameof(client));
+            Options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         #endregion
@@ -31,7 +32,7 @@ namespace OutWit.Common.Logging.NewRelic
                 throw new ArgumentNullException(nameof(query));
 
             query = Client.Validate(query);
-            var nrql = query.BuildNrql();
+            var nrql = query.BuildNrql(Options.BaseFilters);
             var result = await Client.PostNrqlAsync(nrql, cancellationToken);
 
             LogEntry[] entries = result.ToLogEntries();
@@ -95,7 +96,7 @@ namespace OutWit.Common.Logging.NewRelic
         public async Task<IReadOnlyList<string>> GetDistinctValuesAsync(DateTime from, DateTime to, LogAttribute attribute, IReadOnlyList<LogFilter>? filters = null,
             int limit = 1000, CancellationToken cancellationToken = default)
         {
-            var nrql = NrqlQueryBuilder.BuildDistinctNrql(attribute, from, to, filters, limit);
+            var nrql = NrqlQueryBuilder.BuildDistinctNrql(attribute, from, to, filters, limit, Options.BaseFilters);
 
             var result = await Client.PostNrqlAsync(nrql, cancellationToken);
 
@@ -104,7 +105,7 @@ namespace OutWit.Common.Logging.NewRelic
 
         public async Task<long> FindOffsetAsync(LogQuery query, DateTime timestamp, CancellationToken cancellationToken = default)
         {
-            var nrql = NrqlQueryBuilder.BuildCountNrql(query, timestamp);
+            var nrql = NrqlQueryBuilder.BuildCountNrql(query, timestamp, Options.BaseFilters);
 
             var result = await Client.PostNrqlAsync(nrql, cancellationToken);
 
@@ -117,7 +118,7 @@ namespace OutWit.Common.Logging.NewRelic
             CancellationToken cancellationToken = default)
         {
             // Execute statistics query (counts by severity level)
-            var statsNrql = NrqlQueryBuilder.BuildStatisticsNrql(from, to, filters);
+            var statsNrql = NrqlQueryBuilder.BuildStatisticsNrql(from, to, filters, Options.BaseFilters);
             var statsResult = await Client.PostNrqlAsync(statsNrql, cancellationToken);
 
             return statsResult.ToStatistics(from, to);
@@ -169,6 +170,8 @@ namespace OutWit.Common.Logging.NewRelic
         #region Properties
 
         private NewRelicHttpClient Client { get; }
+
+        private NewRelicClientOptions Options { get; }
 
         #endregion
     }

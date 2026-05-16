@@ -200,6 +200,130 @@ namespace OutWit.Common.Logging.NewRelic.Tests.Nrql
             Assert.That(result, Is.EqualTo(expected));
         }
 
+        #region BaseFilters
+
+        [Test]
+        public void BuildNrqlWithBaseFilterTest()
+        {
+            // Arrange — provider-level scope only, no user filters.
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
+            var expected = "SELECT * FROM Log WHERE service.name = 'WitIdentity' ORDER BY timestamp DESC LIMIT 100";
+
+            // Act
+            var result = BaseQuery.BuildNrql(baseFilters);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void BuildNrqlBaseFilterPrependsUserFiltersTest()
+        {
+            // Arrange — base filter must come first, before search and user filters.
+            BaseQuery.FullTextSearch = "boom";
+            BaseQuery.Filters = new[] { LogFilter.Eq("level", "Error") };
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
+            var expected = "SELECT * FROM Log WHERE service.name = 'WitIdentity' AND message LIKE '%boom%' AND level = 'Error' ORDER BY timestamp DESC LIMIT 100";
+
+            // Act
+            var result = BaseQuery.BuildNrql(baseFilters);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void BuildNrqlWithMultipleBaseFiltersTest()
+        {
+            // Arrange — composite scope (e.g. service + host).
+            var baseFilters = new[]
+            {
+                LogFilter.Eq("service.name", "WitIdentity"),
+                LogFilter.In("host", "auth-1", "auth-2")
+            };
+            var expected = "SELECT * FROM Log WHERE service.name = 'WitIdentity' AND host IN ('auth-1', 'auth-2') ORDER BY timestamp DESC LIMIT 100";
+
+            // Act
+            var result = BaseQuery.BuildNrql(baseFilters);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void BuildNrqlWithEmptyBaseFiltersBackCompatTest()
+        {
+            // Arrange — empty list must behave identically to no filtering.
+            var expected = "SELECT * FROM Log ORDER BY timestamp DESC LIMIT 100";
+
+            // Act
+            var withNull = BaseQuery.BuildNrql(null);
+            var withEmpty = BaseQuery.BuildNrql(Array.Empty<LogFilter>());
+
+            // Assert
+            Assert.That(withNull, Is.EqualTo(expected));
+            Assert.That(withEmpty, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void BuildDistinctNrqlWithBaseFiltersTest()
+        {
+            // Arrange
+            var from = new DateTime(2025, 1, 1, 0, 0, 0);
+            var to = new DateTime(2025, 1, 2, 0, 0, 0);
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
+            var userFilters = new[] { LogFilter.Eq("level", "Error") };
+            var expected = "SELECT uniques(Message.Properties.SourceContext) FROM Log WHERE service.name = 'WitIdentity' AND level = 'Error' SINCE '2025-01-01 00:00:00 +0000' UNTIL '2025-01-02 00:00:00 +0000' LIMIT 1000";
+
+            // Act
+            var result = NrqlQueryBuilder.BuildDistinctNrql(LogAttribute.SourceContext, from, to, userFilters, 1000, baseFilters);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void BuildCountNrqlWithBaseFiltersTest()
+        {
+            // Arrange
+            BaseQuery.Filters = new[] { LogFilter.Eq("level", "Error") };
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
+            var target = new DateTime(2025, 1, 1, 10, 0, 0, DateTimeKind.Utc);
+            var expected = "SELECT count(*) AS 'count' FROM Log WHERE service.name = 'WitIdentity' AND level = 'Error' AND timestamp > 1735725600000";
+
+            // Act
+            var result = NrqlQueryBuilder.BuildCountNrql(BaseQuery, target, baseFilters);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void BuildStatisticsNrqlWithBaseFiltersTest()
+        {
+            // Arrange
+            var from = new DateTime(2025, 1, 1);
+            var to = new DateTime(2025, 1, 2);
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
+            var expected = "SELECT count(*) AS 'totalCount', " +
+                          "filter(count(*), WHERE level IN ('Error', 'Critical', 'Fatal')) AS 'errorCount', " +
+                          "filter(count(*), WHERE level = 'Warning') AS 'warningCount', " +
+                          "filter(count(*), WHERE level = 'Information') AS 'infoCount', " +
+                          "filter(count(*), WHERE level IN ('Debug', 'Trace')) AS 'debugCount' " +
+                          "FROM Log " +
+                          "WHERE service.name = 'WitIdentity' " +
+                          "SINCE '2025-01-01 00:00:00 +0000' " +
+                          "UNTIL '2025-01-02 00:00:00 +0000'";
+
+            // Act
+            var result = NrqlQueryBuilder.BuildStatisticsNrql(from, to, filters: null, baseFilters: baseFilters);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(expected));
+        }
+
+        #endregion
+
         private LogQuery BaseQuery { get; set; }
     }
 }
