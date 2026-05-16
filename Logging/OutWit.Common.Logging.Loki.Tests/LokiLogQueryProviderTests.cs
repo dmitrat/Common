@@ -73,7 +73,7 @@ namespace OutWit.Common.Logging.Loki.Tests
             m_client = new LokiHttpClient(m_http, new LokiOptions
             {
                 BaseUrl = "http://loki:3100",
-                DefaultLabels = new Dictionary<string, string> { ["service_name"] = "WitIdentity" },
+                BaseFilters = [LogFilter.Eq("service.name", "WitIdentity")],
                 MaxRange = TimeSpan.FromDays(30)
             });
             m_provider = new LokiLogQueryProvider(m_client);

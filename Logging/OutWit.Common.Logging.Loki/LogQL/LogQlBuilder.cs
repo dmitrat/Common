@@ -34,43 +34,18 @@ namespace OutWit.Common.Logging.Loki.LogQL
 
         /// <summary>
         /// Builds the <c>query_range</c> LogQL expression for the given query plus
-        /// default labels from <see cref="LokiOptions.DefaultLabels"/>.
+        /// provider-level base filters from <see cref="LokiOptions.BaseFilters"/>.
+        /// Base filters are applied before user filters; both go through the
+        /// same stream-selector vs json-pipeline routing.
         /// </summary>
         public static string BuildRangeQuery(LogQuery query,
-            IReadOnlyDictionary<string, string>? defaultLabels)
+            IReadOnlyList<LogFilter>? baseFilters)
         {
             var labelSelectors = new List<(string Key, string Op, string Value)>();
             var jsonFilters = new List<(string Key, string Op, string Value)>();
 
-            if (defaultLabels != null)
-            {
-                foreach (var kvp in defaultLabels)
-                    labelSelectors.Add((NormalizeLabel(kvp.Key), "=", kvp.Value));
-            }
-
-            if (query.Filters != null)
-            {
-                foreach (var f in query.Filters)
-                {
-                    var bucket = STREAM_LABELS.Contains(f.Attribute) ? labelSelectors : jsonFilters;
-                    var op = TranslateOp(f.Operator);
-                    foreach (var v in f.Values)
-                    {
-                        if (f.Operator == LogFilterOperator.In)
-                        {
-                            // OR-style "in" — model each value separately. Loki's
-                            // stream selector supports regex with "=~", which we use here.
-                            bucket = STREAM_LABELS.Contains(f.Attribute) ? labelSelectors : jsonFilters;
-                            // fall through to the loop body for simple equality on each value
-                            bucket.Add((NormalizeLabel(f.Attribute), "=", v));
-                        }
-                        else
-                        {
-                            bucket.Add((NormalizeLabel(f.Attribute), op, v));
-                        }
-                    }
-                }
-            }
+            AppendFilters(baseFilters, labelSelectors, jsonFilters);
+            AppendFilters(query.Filters, labelSelectors, jsonFilters);
 
             var sb = new StringBuilder();
             AppendStreamSelector(sb, labelSelectors);
@@ -89,28 +64,17 @@ namespace OutWit.Common.Logging.Loki.LogQL
 
         /// <summary>
         /// Builds a <c>sum by (level) (count_over_time({selectors} | json [range]))</c>
-        /// expression. Used by <c>GetStatisticsAsync</c>.
+        /// expression. Used by <c>GetStatisticsAsync</c>. Base filters and user
+        /// filters are both honoured; only their stream-label-compatible parts
+        /// participate in the histogram selector.
         /// </summary>
         public static string BuildLevelHistogram(IReadOnlyList<LogFilter>? filters,
-            IReadOnlyDictionary<string, string>? defaultLabels,
+            IReadOnlyList<LogFilter>? baseFilters,
             System.TimeSpan range)
         {
             var labelSelectors = new List<(string Key, string Op, string Value)>();
-            if (defaultLabels != null)
-            {
-                foreach (var kvp in defaultLabels)
-                    labelSelectors.Add((NormalizeLabel(kvp.Key), "=", kvp.Value));
-            }
-
-            if (filters != null)
-            {
-                foreach (var f in filters)
-                {
-                    if (!STREAM_LABELS.Contains(f.Attribute)) continue;
-                    foreach (var v in f.Values)
-                        labelSelectors.Add((NormalizeLabel(f.Attribute), "=", v));
-                }
-            }
+            AppendStreamSelectorsOnly(baseFilters, labelSelectors);
+            AppendStreamSelectorsOnly(filters, labelSelectors);
 
             var sb = new StringBuilder("sum by (level) (count_over_time(");
             AppendStreamSelector(sb, labelSelectors);
@@ -121,6 +85,47 @@ namespace OutWit.Common.Logging.Loki.LogQL
         #endregion
 
         #region Tools
+
+        private static void AppendFilters(IReadOnlyList<LogFilter>? filters,
+            List<(string Key, string Op, string Value)> labelSelectors,
+            List<(string Key, string Op, string Value)> jsonFilters)
+        {
+            if (filters is null) return;
+
+            foreach (var f in filters)
+            {
+                var bucket = STREAM_LABELS.Contains(f.Attribute) ? labelSelectors : jsonFilters;
+                var op = TranslateOp(f.Operator);
+                foreach (var v in f.Values)
+                {
+                    if (f.Operator == LogFilterOperator.In)
+                    {
+                        // OR-style "in" — model each value separately. The stream
+                        // selector supports regex with "=~", which we'd use for
+                        // wildcards; for a flat set of literals, multiple "=" rows
+                        // is what Loki expects (any of them matches).
+                        bucket.Add((NormalizeLabel(f.Attribute), "=", v));
+                    }
+                    else
+                    {
+                        bucket.Add((NormalizeLabel(f.Attribute), op, v));
+                    }
+                }
+            }
+        }
+
+        private static void AppendStreamSelectorsOnly(IReadOnlyList<LogFilter>? filters,
+            List<(string Key, string Op, string Value)> labelSelectors)
+        {
+            if (filters is null) return;
+
+            foreach (var f in filters)
+            {
+                if (!STREAM_LABELS.Contains(f.Attribute)) continue;
+                foreach (var v in f.Values)
+                    labelSelectors.Add((NormalizeLabel(f.Attribute), "=", v));
+            }
+        }
 
         private static void AppendStreamSelector(StringBuilder sb,
             List<(string Key, string Op, string Value)> selectors)

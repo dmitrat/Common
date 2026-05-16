@@ -47,7 +47,7 @@ namespace OutWit.Common.Logging.Loki
             var (start, end) = ResolveRange(query);
             EnforceRangeCap(start, end);
 
-            var logql = LogQlBuilder.BuildRangeQuery(query, m_client.Options.DefaultLabels);
+            var logql = LogQlBuilder.BuildRangeQuery(query, m_client.Options.BaseFilters);
             var limit = ClampLimit(query.PageSize ?? DEFAULT_PAGE_SIZE);
 
             var response = await m_client.QueryRangeAsync(logql, start, end, limit,
@@ -150,7 +150,7 @@ namespace OutWit.Common.Logging.Loki
             if (range <= TimeSpan.Zero)
                 return new LogStatistics { From = from, To = to };
 
-            var logql = LogQlBuilder.BuildLevelHistogram(filters, m_client.Options.DefaultLabels, range);
+            var logql = LogQlBuilder.BuildLevelHistogram(filters, m_client.Options.BaseFilters, range);
             var response = await m_client.QueryRangeAsync(logql, from, to,
                 limit: ClampLimit(DEFAULT_PAGE_SIZE),
                 ascending: true,

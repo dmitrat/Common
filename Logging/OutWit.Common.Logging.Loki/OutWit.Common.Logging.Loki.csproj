@@ -4,7 +4,7 @@
 		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 
-		<Version>1.0.0</Version>
+		<Version>2.0.0</Version>
 
 		<Description>Grafana Loki log query backend for OutWit.Common.Logging.Query. Implements ILogQueryProvider via LogQL over the /loki/api/v1 HTTP endpoints (query_range, count_over_time, label values). Supports basic auth and X-Scope-OrgID multi-tenancy.</Description>
 		<PackageTags>OutWit;Common;Logging;Loki;Grafana;LogQL</PackageTags>

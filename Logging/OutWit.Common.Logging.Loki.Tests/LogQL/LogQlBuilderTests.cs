@@ -10,12 +10,12 @@ namespace OutWit.Common.Logging.Loki.Tests.LogQL
         #region Range Query Tests
 
         [Test]
-        public void BuildRangeQueryWithDefaultLabelsProducesStreamSelectorTest()
+        public void BuildRangeQueryWithBaseFiltersProducesStreamSelectorTest()
         {
             var query = new LogQuery();
-            var labels = new Dictionary<string, string> { ["service_name"] = "WitIdentity" };
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
 
-            var logql = LogQlBuilder.BuildRangeQuery(query, labels);
+            var logql = LogQlBuilder.BuildRangeQuery(query, baseFilters);
 
             Assert.That(logql, Is.EqualTo("{service_name=\"WitIdentity\"}"));
         }
@@ -27,9 +27,9 @@ namespace OutWit.Common.Logging.Loki.Tests.LogQL
             {
                 Filters = [LogFilter.Eq("level", "Error")]
             };
-            var labels = new Dictionary<string, string> { ["service_name"] = "WitIdentity" };
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
 
-            var logql = LogQlBuilder.BuildRangeQuery(query, labels);
+            var logql = LogQlBuilder.BuildRangeQuery(query, baseFilters);
 
             Assert.That(logql, Is.EqualTo("{service_name=\"WitIdentity\", level=\"Error\"}"));
         }
@@ -41,9 +41,9 @@ namespace OutWit.Common.Logging.Loki.Tests.LogQL
             {
                 Filters = [LogFilter.Eq("user_id", "u-42")]
             };
-            var labels = new Dictionary<string, string> { ["service_name"] = "WitIdentity" };
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
 
-            var logql = LogQlBuilder.BuildRangeQuery(query, labels);
+            var logql = LogQlBuilder.BuildRangeQuery(query, baseFilters);
 
             Assert.That(logql, Is.EqualTo("{service_name=\"WitIdentity\"} | json | user_id = \"u-42\""));
         }
@@ -52,9 +52,9 @@ namespace OutWit.Common.Logging.Loki.Tests.LogQL
         public void BuildRangeQueryWithFullTextSearchAppendsRegexMatchTest()
         {
             var query = new LogQuery { FullTextSearch = "passkey" };
-            var labels = new Dictionary<string, string> { ["service_name"] = "WitIdentity" };
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
 
-            var logql = LogQlBuilder.BuildRangeQuery(query, labels);
+            var logql = LogQlBuilder.BuildRangeQuery(query, baseFilters);
 
             Assert.That(logql, Does.Contain("|~ \"passkey\""));
         }
@@ -86,6 +86,52 @@ namespace OutWit.Common.Logging.Loki.Tests.LogQL
             Assert.That(logql, Is.EqualTo("{level=\"say \\\"hi\\\"\"}"));
         }
 
+        [Test]
+        public void BuildRangeQueryEmptyBaseFiltersBackCompatTest()
+        {
+            // Same output as no base filters at all — null and [] are equivalent.
+            var query = new LogQuery
+            {
+                Filters = [LogFilter.Eq("level", "Error")]
+            };
+
+            var withNull = LogQlBuilder.BuildRangeQuery(query, null);
+            var withEmpty = LogQlBuilder.BuildRangeQuery(query, System.Array.Empty<LogFilter>());
+
+            Assert.That(withNull, Is.EqualTo("{level=\"Error\"}"));
+            Assert.That(withEmpty, Is.EqualTo("{level=\"Error\"}"));
+        }
+
+        [Test]
+        public void BuildRangeQueryBaseFilterAndUserFilterCombineInSelectorTest()
+        {
+            var query = new LogQuery
+            {
+                Filters = [LogFilter.Eq("level", "Error")]
+            };
+            var baseFilters = new[]
+            {
+                LogFilter.Eq("service.name", "WitIdentity"),
+                LogFilter.Eq("env", "prod")
+            };
+
+            var logql = LogQlBuilder.BuildRangeQuery(query, baseFilters);
+
+            Assert.That(logql, Is.EqualTo("{service_name=\"WitIdentity\", env=\"prod\", level=\"Error\"}"));
+        }
+
+        [Test]
+        public void BuildRangeQueryBaseFilterOnCustomAttributeGoesToJsonPipelineTest()
+        {
+            // Non-stream label — base filter still applies but lands behind `| json`.
+            var query = new LogQuery();
+            var baseFilters = new[] { LogFilter.Eq("tenant.id", "omnibus") };
+
+            var logql = LogQlBuilder.BuildRangeQuery(query, baseFilters);
+
+            Assert.That(logql, Is.EqualTo("{} | json | tenant_id = \"omnibus\""));
+        }
+
         #endregion
 
         #region Level Histogram Tests
@@ -93,9 +139,9 @@ namespace OutWit.Common.Logging.Loki.Tests.LogQL
         [Test]
         public void BuildLevelHistogramProducesSumByLevelCountOverTimeTest()
         {
-            var labels = new Dictionary<string, string> { ["service_name"] = "WitIdentity" };
+            var baseFilters = new[] { LogFilter.Eq("service.name", "WitIdentity") };
 
-            var logql = LogQlBuilder.BuildLevelHistogram(null, labels, System.TimeSpan.FromHours(1));
+            var logql = LogQlBuilder.BuildLevelHistogram(null, baseFilters, System.TimeSpan.FromHours(1));
 
             Assert.That(logql, Is.EqualTo("sum by (level) (count_over_time({service_name=\"WitIdentity\"} | json [1h]))"));
         }

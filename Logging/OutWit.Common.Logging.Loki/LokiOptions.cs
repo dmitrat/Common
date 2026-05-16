@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OutWit.Common.Logging.Query.Model;
 
 namespace OutWit.Common.Logging.Loki
 {
@@ -37,10 +38,20 @@ namespace OutWit.Common.Logging.Loki
         public string? Password { get; set; }
 
         /// <summary>
-        /// Stream selectors that are added to every query, e.g.
-        /// <c>{ "service_name" = "WitIdentity" }</c>.
+        /// Filters applied to every LogQL query before user filters. Used to
+        /// scope queries when one Loki instance hosts logs from multiple
+        /// services or tenants. Mirrors <c>NewRelicClientOptions.BaseFilters</c>
+        /// so operators configure both providers the same way.
+        ///
+        /// <para>
+        /// Loki resolves each base filter the same way it resolves a user
+        /// filter: equality on a known stream label (<c>service.name</c>,
+        /// <c>level</c>, <c>host</c>, …) folds into the cheap stream selector;
+        /// anything else lands behind <c>| json</c> as a label filter. Empty
+        /// array = no scoping (single-service Loki).
+        /// </para>
         /// </summary>
-        public IReadOnlyDictionary<string, string>? DefaultLabels { get; set; }
+        public LogFilter[] BaseFilters { get; set; } = [];
 
         /// <summary>Maximum entries per query; Loki rejects requests beyond its server-side cap.</summary>
         public int MaxResultLimit { get; set; } = DEFAULT_MAX_RESULT_LIMIT;
