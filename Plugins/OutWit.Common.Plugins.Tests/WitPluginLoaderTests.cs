@@ -439,5 +439,49 @@ namespace OutWit.Common.Plugins.Tests
             Assert.That(loader.Select(plugin => plugin.GetName()), Is.EquivalentTo(new[] { "PluginA" }));
         }
 
+        [Test]
+        public void LoadInSharedContextReusesAlreadyLoadedAssemblyTest()
+        {
+            // Regression for the WitEngineSdk + WitEngineNodeSdk scenario: a
+            // second plugin loader (with useIsolatedContexts=false) scans a
+            // different folder containing the same-named plugin assembly that
+            // a prior loader had already loaded into the default context.
+            //
+            // Without the "look up already-loaded assembly first" guard in
+            // LoadSinglePlugin, the second loader's LoadFromAssemblyPath
+            // call throws FileLoadException ("Assembly with same name is
+            // already loaded"). Same scenario as the Host+Node plugin
+            // loaders in SDK Grid tests: both scan @Controllers/ folders
+            // that resolve to different physical paths (e.g. one finds the
+            // ProjectReference-copied dll in test bin, the other walks
+            // @Controllers/.../matrices.module/).
+            StagePlugin(typeof(PluginA));
+
+            using var firstLoader = new WitPluginLoader<ITestPlugin>(_pluginDir, useIsolatedContexts: false);
+            firstLoader.Load();
+            Assert.That(firstLoader.Count(), Is.EqualTo(1));
+
+            // Stage the same plugin assembly into a DIFFERENT directory —
+            // this mimics the SDK scenario where two plugin search paths
+            // resolve to different copies of the same dll.
+            var secondPluginDir = Path.Combine(_testRoot, "second-modules");
+            Directory.CreateDirectory(secondPluginDir);
+            var src = typeof(PluginA).Assembly.Location;
+            File.Copy(src, Path.Combine(secondPluginDir, Path.GetFileName(src)), true);
+            var depsPath = src.Replace(".dll", ".deps.json");
+            if (File.Exists(depsPath))
+                File.Copy(depsPath, Path.Combine(secondPluginDir, Path.GetFileName(depsPath)), true);
+
+            using var secondLoader = new WitPluginLoader<ITestPlugin>(secondPluginDir, useIsolatedContexts: false);
+
+            Assert.DoesNotThrow(() => secondLoader.Load(),
+                "Second loader in shared context must reuse the already-loaded assembly, not throw FileLoadException.");
+            Assert.That(secondLoader.Count(), Is.EqualTo(1));
+
+            // Both loaders observe the same plugin type identity — proves the
+            // assembly was reused rather than loaded from the different path.
+            Assert.That(secondLoader.Single().GetType(), Is.SameAs(firstLoader.Single().GetType()));
+        }
+
     }
 }

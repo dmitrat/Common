@@ -180,7 +180,23 @@ namespace OutWit.Common.Plugins
             }
             else
             {
-                assembly = loadContext.LoadFromAssemblyPath(metadata.FilePath);
+                // Defense-in-depth for shared-context scenarios where the same
+                // plugin assembly may already be present in the default load
+                // context (e.g. SDK tests with two plugin loaders — Host + Node —
+                // scanning overlapping module folders, or a host that
+                // ProjectReferences a controller it later discovers as a plugin).
+                //
+                // On older .NET runtimes / obfuscated assemblies, calling
+                // LoadFromAssemblyPath on a path with the same assembly name
+                // already loaded throws FileLoadException. Modern .NET 10 is
+                // more lenient (silently reuses), but the regression test
+                // LoadInSharedContextReusesAlreadyLoadedAssemblyTest pins the
+                // contract: same-name plugin from a second loader must reuse,
+                // never throw, regardless of runtime version.
+                var assemblyName = Path.GetFileNameWithoutExtension(metadata.FilePath);
+                var existing = AssemblyLoadContext.Default.Assemblies
+                    .FirstOrDefault(a => string.Equals(a.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase));
+                assembly = existing ?? loadContext.LoadFromAssemblyPath(metadata.FilePath);
             }
 
             TPlugin? instance = null;
