@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<OutputType>Library</OutputType>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+		<IsRoslynComponent>true</IsRoslynComponent>
+		<IsAnalyzer>true</IsAnalyzer>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+		<Version>1.1.0</Version>
+
+		<Description>Roslyn source generator for OutWit.Common.DependencyInjection. Emits the IServiceProvider constructor and Services property required by [Inject] field auto-discovery on classes marked [InjectableHost]. This package is automatically included with OutWit.Common.DependencyInjection.</Description>
+		<PackageTags>OutWit;Common;DependencyInjection;DI;Inject;SourceGenerator;Roslyn</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/DependencyInjection/OutWit.Common.DependencyInjection.Generator</RepositoryUrl>
+
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<NoPackageAnalysis>true</NoPackageAnalysis>
+		<IncludeSymbols>false</IncludeSymbols>
+		<SymbolPackageFormat></SymbolPackageFormat>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<!-- Package the generator as an analyzer -->
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(OutputPath)\$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" Condition="'$(Configuration)' == 'Debug' and Exists('$(OutputPath)\$(AssemblyName).pdb')" />
+		<None Include="build\**\*" Pack="true" PackagePath="build" />
+		<None Include="buildTransitive\**\*" Pack="true" PackagePath="buildTransitive" />
+	</ItemGroup>
+
+</Project>

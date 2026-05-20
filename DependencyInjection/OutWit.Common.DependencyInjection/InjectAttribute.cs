@@ -59,10 +59,15 @@ namespace OutWit.Common.DependencyInjection
     /// <c>GetRequiredService</c>, nullable properties use <c>GetService</c>. Override with
     /// <see cref="Requirement"/>. Override the resolution lifetime with <see cref="Mode"/>.
     /// </para>
+    /// <para>
+    /// Aliases for common combinations: <see cref="InjectScopedAttribute"/>,
+    /// <see cref="InjectTransientAttribute"/>, <see cref="InjectOptionalAttribute"/>,
+    /// <see cref="InjectRequiredAttribute"/>.
+    /// </para>
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property, Inherited = true)]
     [Injection(typeof(InjectAspect))]
-    public sealed class InjectAttribute : Attribute
+    public class InjectAttribute : Attribute
     {
         /// <summary>
         /// Overrides the nullability-based required/optional detection.
@@ -75,5 +80,76 @@ namespace OutWit.Common.DependencyInjection
         /// Default: <see cref="InjectMode.Cached"/>.
         /// </summary>
         public InjectMode Mode { get; set; } = InjectMode.Cached;
+    }
+
+    /// <summary>
+    /// Shorthand for <c>[Inject(Mode = InjectMode.Scoped)]</c>. Each scoped property
+    /// opens its own child <c>IServiceScope</c> on first access; the scope is disposed
+    /// with the owner. Canonical use case: injecting a scoped DbContext into a
+    /// singleton service.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, Inherited = true)]
+    [Injection(typeof(InjectAspect))]
+    public sealed class InjectScopedAttribute : InjectAttribute
+    {
+        /// <summary>
+        /// Creates the alias with <see cref="InjectMode.Scoped"/> preset.
+        /// </summary>
+        public InjectScopedAttribute()
+        {
+            Mode = InjectMode.Scoped;
+        }
+    }
+
+    /// <summary>
+    /// Shorthand for <c>[Inject(Mode = InjectMode.Transient)]</c>. The property is
+    /// resolved from the service provider on every access and never cached.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, Inherited = true)]
+    [Injection(typeof(InjectAspect))]
+    public sealed class InjectTransientAttribute : InjectAttribute
+    {
+        /// <summary>
+        /// Creates the alias with <see cref="InjectMode.Transient"/> preset.
+        /// </summary>
+        public InjectTransientAttribute()
+        {
+            Mode = InjectMode.Transient;
+        }
+    }
+
+    /// <summary>
+    /// Shorthand for <c>[Inject(Requirement = InjectRequirement.Optional)]</c>. Forces
+    /// optional resolution regardless of the property's nullability annotation.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, Inherited = true)]
+    [Injection(typeof(InjectAspect))]
+    public sealed class InjectOptionalAttribute : InjectAttribute
+    {
+        /// <summary>
+        /// Creates the alias with <see cref="InjectRequirement.Optional"/> preset.
+        /// </summary>
+        public InjectOptionalAttribute()
+        {
+            Requirement = InjectRequirement.Optional;
+        }
+    }
+
+    /// <summary>
+    /// Shorthand for <c>[Inject(Requirement = InjectRequirement.Required)]</c>. Forces
+    /// required resolution regardless of the property's nullability annotation —
+    /// throws if the service is not registered.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, Inherited = true)]
+    [Injection(typeof(InjectAspect))]
+    public sealed class InjectRequiredAttribute : InjectAttribute
+    {
+        /// <summary>
+        /// Creates the alias with <see cref="InjectRequirement.Required"/> preset.
+        /// </summary>
+        public InjectRequiredAttribute()
+        {
+            Requirement = InjectRequirement.Required;
+        }
     }
 }

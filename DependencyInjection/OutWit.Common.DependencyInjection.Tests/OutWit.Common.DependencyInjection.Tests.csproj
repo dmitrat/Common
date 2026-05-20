@@ -40,6 +40,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\OutWit.Common.DependencyInjection\OutWit.Common.DependencyInjection.csproj" />
+		<ProjectReference Include="..\OutWit.Common.DependencyInjection.Generator\OutWit.Common.DependencyInjection.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<ItemGroup>

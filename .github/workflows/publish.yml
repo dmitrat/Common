@@ -37,6 +37,7 @@ on:
           - OutWit.Common.Settings.Database
           - OutWit.Common.Configuration
           - OutWit.Common.DependencyInjection
+          - OutWit.Common.DependencyInjection.Generator
           - OutWit.Common.Email
           - OutWit.Common.Logging.Query
           - OutWit.Common.Logging.NewRelic
@@ -94,17 +95,20 @@ jobs:
           Write-Host "Resolved: $lib"
           
           # Check if this project embeds a generator and needs it built first
-          # Projects that embed generators: OutWit.Common.Proxy, OutWit.Common.MVVM.WPF, OutWit.Common.MVVM.Avalonia
+          # Projects that embed generators: OutWit.Common.Proxy, OutWit.Common.MVVM.WPF, OutWit.Common.MVVM.Avalonia, OutWit.Common.DependencyInjection
           $generatorProject = ""
           switch ($name) {
-            "OutWit.Common.Proxy" { 
+            "OutWit.Common.Proxy" {
               $generatorProject = Get-ChildItem -Recurse -Filter "OutWit.Common.Proxy.Generator.csproj" | Select-Object -Expand FullName -First 1
             }
-            "OutWit.Common.MVVM.WPF" { 
+            "OutWit.Common.MVVM.WPF" {
               $generatorProject = Get-ChildItem -Recurse -Filter "OutWit.Common.MVVM.WPF.Generator.csproj" | Select-Object -Expand FullName -First 1
             }
-            "OutWit.Common.MVVM.Avalonia" { 
+            "OutWit.Common.MVVM.Avalonia" {
               $generatorProject = Get-ChildItem -Recurse -Filter "OutWit.Common.MVVM.Avalonia.Generator.csproj" | Select-Object -Expand FullName -First 1
+            }
+            "OutWit.Common.DependencyInjection" {
+              $generatorProject = Get-ChildItem -Recurse -Filter "OutWit.Common.DependencyInjection.Generator.csproj" | Select-Object -Expand FullName -First 1
             }
           }
           

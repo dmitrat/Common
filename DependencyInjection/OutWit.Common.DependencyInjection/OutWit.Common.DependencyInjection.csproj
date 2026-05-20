@@ -4,10 +4,10 @@
 		<TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 
-		<Version>1.0.0</Version>
+		<Version>1.1.0</Version>
 
-		<Description>Property-based dependency injection via [Inject] attribute. Replaces large constructor parameter lists with declarative, lazily-resolved properties powered by AspectInjector IL weaving.</Description>
-		<PackageTags>OutWit;Common;DependencyInjection;DI;Inject;Aspect</PackageTags>
+		<Description>Property-based dependency injection via [Inject] attribute. Replaces large constructor parameter lists with declarative, lazily-resolved properties powered by AspectInjector IL weaving. Includes a Roslyn source generator that emits the IServiceProvider constructor for classes marked [InjectableHost].</Description>
+		<PackageTags>OutWit;Common;DependencyInjection;DI;Inject;Aspect;SourceGenerator</PackageTags>
 
 		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/DependencyInjection/OutWit.Common.DependencyInjection</RepositoryUrl>
 	</PropertyGroup>
@@ -26,6 +26,18 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'netstandard2.0'">
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+	</ItemGroup>
+
+	<!-- Include the generator dll as an analyzer in the NuGet package -->
+	<!-- Note: Generator must be built before packing this project -->
+	<ItemGroup>
+		<None Include="..\OutWit.Common.DependencyInjection.Generator\bin\$(Configuration)\netstandard2.0\OutWit.Common.DependencyInjection.Generator.dll"
+			  Pack="true"
+			  PackagePath="analyzers/dotnet/cs"
+			  Visible="false" />
+		<!-- Include build props for transitive analyzer reference -->
+		<None Include="build\**\*" Pack="true" PackagePath="build" />
+		<None Include="buildTransitive\**\*" Pack="true" PackagePath="buildTransitive" />
 	</ItemGroup>
 
 </Project>

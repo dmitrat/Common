@@ -34,6 +34,7 @@
     <Project Path="Configuration/OutWit.Common.Configuration/OutWit.Common.Configuration.csproj" />
   </Folder>
   <Folder Name="/DependencyInjection/">
+    <Project Path="DependencyInjection/OutWit.Common.DependencyInjection.Generator/OutWit.Common.DependencyInjection.Generator.csproj" />
     <Project Path="DependencyInjection/OutWit.Common.DependencyInjection.Tests/OutWit.Common.DependencyInjection.Tests.csproj" />
     <Project Path="DependencyInjection/OutWit.Common.DependencyInjection/OutWit.Common.DependencyInjection.csproj" />
   </Folder>

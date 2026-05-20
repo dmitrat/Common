@@ -112,7 +112,11 @@ jobs:
             OutWit.Common.Configuration:
               - 'Configuration/**'
             OutWit.Common.DependencyInjection:
-              - 'DependencyInjection/**'
+              - 'DependencyInjection/OutWit.Common.DependencyInjection/**'
+              - 'DependencyInjection/OutWit.Common.DependencyInjection.Tests/**'
+              - 'DependencyInjection/OutWit.Common.DependencyInjection.Generator/**'
+            OutWit.Common.DependencyInjection.Generator:
+              - 'DependencyInjection/OutWit.Common.DependencyInjection.Generator/**'
             OutWit.Common.Email:
               - 'Email/**'
             OutWit.Common.Logging.Query:

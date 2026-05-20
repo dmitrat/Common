@@ -1,0 +1,5 @@
+<Project>
+	<ItemGroup>
+		<CompilerVisibleProperty Include="OutWit_Common_DependencyInjection_Generator" />
+	</ItemGroup>
+</Project>
