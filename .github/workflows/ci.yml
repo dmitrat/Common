@@ -89,6 +89,8 @@ jobs:
               - 'MVVM/OutWit.Common.MVVM/**'
             OutWit.Common.NUnit:
               - 'NUnit/OutWit.Common.NUnit/**'
+            OutWit.Common.Platform:
+              - 'Platform/**'
             OutWit.Common.Plugins:
               - 'Plugins/OutWit.Common.Plugins/**'
               - 'Plugins/OutWit.Common.Plugins.Tests/**'

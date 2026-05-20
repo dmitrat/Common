@@ -66,6 +66,10 @@
   <Folder Name="/NUnit/">
     <Project Path="NUnit/OutWit.Common.NUnit/OutWit.Common.NUnit.csproj" />
   </Folder>
+  <Folder Name="/Platform/">
+    <Project Path="Platform/OutWit.Common.Platform.Tests/OutWit.Common.Platform.Tests.csproj" />
+    <Project Path="Platform/OutWit.Common.Platform/OutWit.Common.Platform.csproj" />
+  </Folder>
   <Folder Name="/Plugins/">
     <File Path="Plugins/PLUGINS_GUIDE.md" />
     <Project Path="Plugins/OutWit.Common.Plugins.Abstractions/OutWit.Common.Plugins.Abstractions.csproj" />
