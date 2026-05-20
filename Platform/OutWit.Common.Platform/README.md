@@ -79,6 +79,19 @@ Benefits:
 - **The wire shape (`SystemProfile`, `SystemHealthSnapshot`) is stable.**
   Probes can change without breaking serialization.
 
+## Continuous integration
+
+The Platform suite is the only one in the OutWit.Common monorepo whose
+behaviour varies per host OS, so its CI also varies: in addition to the
+default `windows-latest` test run shared with every other package, the
+test suite is also executed on `ubuntu-latest` and `macos-latest`
+runners on every change under `Platform/**`. The Linux and macOS code
+paths in the bundled probes are therefore validated end-to-end against
+real OS facilities (`/proc`, `sysctl`, `vm_stat`, `diskutil`, …) on
+every commit, not just unit-tested via fakes. See
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+(`run-platform-multi-os` job).
+
 ## Coverage matrix
 
 What each bundled probe currently reports. **Empty / `Unknown` is a valid
