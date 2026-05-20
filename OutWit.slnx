@@ -33,6 +33,10 @@
     <Project Path="Configuration/OutWit.Common.Configuration.Tests/OutWit.Common.Configuration.Tests.csproj" />
     <Project Path="Configuration/OutWit.Common.Configuration/OutWit.Common.Configuration.csproj" />
   </Folder>
+  <Folder Name="/DependencyInjection/">
+    <Project Path="DependencyInjection/OutWit.Common.DependencyInjection.Tests/OutWit.Common.DependencyInjection.Tests.csproj" />
+    <Project Path="DependencyInjection/OutWit.Common.DependencyInjection/OutWit.Common.DependencyInjection.csproj" />
+  </Folder>
   <Folder Name="/Logging/">
     <Project Path="Logging/OutWit.Common.Logging.Abstractions/OutWit.Common.Logging.Abstractions.csproj" />
     <Project Path="Logging/OutWit.Common.Logging.Loki.Tests/OutWit.Common.Logging.Loki.Tests.csproj" />

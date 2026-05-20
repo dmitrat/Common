@@ -111,6 +111,8 @@ jobs:
               - 'Settings/OutWit.Common.Settings/**'
             OutWit.Common.Configuration:
               - 'Configuration/**'
+            OutWit.Common.DependencyInjection:
+              - 'DependencyInjection/**'
             OutWit.Common.Email:
               - 'Email/**'
             OutWit.Common.Logging.Query:

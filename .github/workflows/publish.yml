@@ -36,6 +36,7 @@ on:
           - OutWit.Common.Settings.Csv
           - OutWit.Common.Settings.Database
           - OutWit.Common.Configuration
+          - OutWit.Common.DependencyInjection
           - OutWit.Common.Email
           - OutWit.Common.Logging.Query
           - OutWit.Common.Logging.NewRelic
