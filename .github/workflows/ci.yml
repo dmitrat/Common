@@ -186,3 +186,44 @@ jobs:
       - name: Run tests
         if: steps.paths.outputs.hasTests == 'true'
         run: dotnet test "${{ steps.paths.outputs.testCsproj }}" --configuration Release --no-restore
+
+  # Cross-OS coverage for OutWit.Common.Platform. The package's whole point is
+  # to expose per-OS probes (Windows / Linux / macOS / Android); the only way
+  # to know the Linux and macOS code paths are still healthy is to actually
+  # run them on Linux and macOS runners. Windows is already covered by
+  # `run-tests` above, so this matrix just adds the other two.
+  run-platform-multi-os:
+    name: Platform on ${{ matrix.os }}
+    needs: discover-changes
+    if: contains(fromJson(needs.discover-changes.outputs.projects), 'OutWit.Common.Platform')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDKs (6/7/8/9/10)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Platform/**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore Platform/OutWit.Common.Platform.Tests/OutWit.Common.Platform.Tests.csproj
+
+      - name: Run tests
+        run: dotnet test Platform/OutWit.Common.Platform.Tests/OutWit.Common.Platform.Tests.csproj --configuration Release --no-restore
