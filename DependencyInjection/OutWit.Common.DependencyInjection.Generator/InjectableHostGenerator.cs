@@ -12,6 +12,16 @@ namespace OutWit.Common.DependencyInjection.Generator
     /// <c>[InjectableHost]</c>. The emitted <c>Services</c> property is the field
     /// that <c>InjectAspect</c>'s field auto-discovery looks for, so the host
     /// class only needs to declare its <c>[Inject]</c> properties.
+    /// <para>
+    /// The generated constructor is always <c>public</c>, regardless of the host
+    /// class's accessibility. This is intentional: the host class's own
+    /// accessibility still controls whether external code can name the type to
+    /// call <c>new T(sp)</c>, but the public ctor lets MS.DI's default
+    /// <c>ActivatorUtilities</c> activate the type via plain
+    /// <c>services.AddSingleton&lt;T&gt;()</c>. Without that, an
+    /// <c>internal</c> host type would silently fail at resolve time with
+    /// "A suitable constructor for type 'T' could not be located".
+    /// </para>
     /// </summary>
     [Generator(LanguageNames.CSharp)]
     public sealed class InjectableHostGenerator : IIncrementalGenerator
@@ -98,7 +108,6 @@ namespace OutWit.Common.DependencyInjection.Generator
                 Namespace = ns,
                 IsPartial = isPartial,
                 HasExplicitConstructor = hasExplicitCtor,
-                Accessibility = typeSymbol.DeclaredAccessibility,
                 FileName = $"{typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted))}.InjectableHost.g.cs"
                     .Replace('<', '{').Replace('>', '}'),
                 Location = declaration.Identifier.GetLocation()
@@ -129,17 +138,31 @@ namespace OutWit.Common.DependencyInjection.Generator
             sb.Append(indent).AppendLine("    #region InjectableHost (generated)");
             sb.AppendLine();
 
-            var ctorAccess = info.Accessibility switch
-            {
-                Accessibility.Public => "public",
-                Accessibility.Internal => "internal",
-                Accessibility.Protected => "protected",
-                Accessibility.ProtectedOrInternal => "protected internal",
-                Accessibility.ProtectedAndInternal => "private protected",
-                _ => "public",
-            };
+            // Always emit a `public` constructor regardless of the host class's
+            // accessibility.
+            //
+            // Why public on an internal class is correct:
+            //   - The class's own accessibility still gates whether an external
+            //     caller can name `T` to call `new T(sp)`. A public ctor on an
+            //     internal class is effectively still unreachable from outside
+            //     the assembly, so there is no widening of the type's contract.
+            //   - Microsoft.Extensions.DependencyInjection's default activator
+            //     (`ActivatorUtilities`) only considers PUBLIC constructors,
+            //     even when registering a type from within its own assembly via
+            //     `services.AddSingleton<T>()`. With an internal ctor the
+            //     registration silently fails at resolve time with
+            //     "A suitable constructor for type 'T' could not be located".
+            //   - `[InjectableHost]`'s intent is "make this class DI-resolvable
+            //     with zero ceremony". Matching ctor accessibility to class
+            //     accessibility breaks that intent for non-public hosts.
+            //
+            // For nested types where the class is `protected` / `protected
+            // internal` / `private protected`: the same reasoning applies —
+            // the type-level accessibility still gates `new T(sp)` from
+            // outside the enclosing scope, so a public ctor is the most
+            // permissive choice within that scope and a no-op outside it.
 
-            sb.Append(indent).Append("    ").Append(ctorAccess).Append(' ').Append(info.TypeName).AppendLine("(global::System.IServiceProvider services)");
+            sb.Append(indent).Append("    public ").Append(info.TypeName).AppendLine("(global::System.IServiceProvider services)");
             sb.Append(indent).AppendLine("    {");
             sb.Append(indent).AppendLine("        Services = services;");
             sb.Append(indent).AppendLine("    }");
@@ -166,7 +189,6 @@ namespace OutWit.Common.DependencyInjection.Generator
             public string? Namespace { get; set; }
             public bool IsPartial { get; set; }
             public bool HasExplicitConstructor { get; set; }
-            public Accessibility Accessibility { get; set; }
             public string FileName { get; set; }
             public Location Location { get; set; }
         }

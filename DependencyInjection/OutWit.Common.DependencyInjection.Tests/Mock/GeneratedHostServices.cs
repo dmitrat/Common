@@ -49,7 +49,11 @@ namespace OutWit.Common.DependencyInjection.Tests.Mock
     }
 
     /// <summary>
-    /// Internal accessibility — the generator emits an internal constructor.
+    /// Internal accessibility — the generator emits a <c>public</c> constructor
+    /// regardless. See <c>InjectableHostGenerator</c>'s docstring for why.
+    /// This mock lets us exercise plain
+    /// <c>services.AddSingleton&lt;GeneratedInternalHost&gt;()</c> resolution,
+    /// which depends on MS.DI's default activator finding a public ctor.
     /// </summary>
     [InjectableHost]
     internal partial class GeneratedInternalHost

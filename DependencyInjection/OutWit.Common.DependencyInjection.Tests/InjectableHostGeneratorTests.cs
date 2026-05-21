@@ -69,7 +69,9 @@ namespace OutWit.Common.DependencyInjection.Tests
         [Test]
         public void GeneratedInternalHostCompilesAndWorksTest()
         {
-            // Sanity: internal class with internal-emitted ctor works the same way.
+            // The generator emits a public ctor on internal hosts so the
+            // `new GeneratedInternalHost(sp)` path works from within the
+            // same assembly just like a public host.
             var sp = new ServiceCollection()
                 .AddSingleton<IRequiredService, RequiredServiceImpl>()
                 .BuildServiceProvider();
@@ -90,6 +92,27 @@ namespace OutWit.Common.DependencyInjection.Tests
             var instance = sp.GetRequiredService<GeneratedSimpleHost>();
 
             Assert.That(instance.Required, Is.Not.Null);
+        }
+
+        [Test]
+        public void GeneratedInternalHostResolvesViaPlainAddSingletonTest()
+        {
+            // Regression: before the generator emitted a `public` ctor
+            // unconditionally, an `internal` [InjectableHost] type registered
+            // with plain `AddSingleton<T>()` failed at resolve time with
+            // "A suitable constructor for type 'T' could not be located"
+            // because MS.DI's default activator only considers public ctors.
+            // This is the exact failure mode that motivated TI-18 in WitCloud's
+            // test-infrastructure audit (@Docs/Audit/test-infrastructure.md).
+            var sp = new ServiceCollection()
+                .AddSingleton<IRequiredService, RequiredServiceImpl>()
+                .AddSingleton<GeneratedInternalHost>()
+                .BuildServiceProvider();
+
+            var instance = sp.GetRequiredService<GeneratedInternalHost>();
+
+            Assert.That(instance.Required, Is.Not.Null);
+            Assert.That(instance.Required.Name, Is.EqualTo("Required"));
         }
     }
 }

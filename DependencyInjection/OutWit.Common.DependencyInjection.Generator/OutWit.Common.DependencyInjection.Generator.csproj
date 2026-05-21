@@ -12,7 +12,7 @@
 		<IsAnalyzer>true</IsAnalyzer>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 
 		<Description>Roslyn source generator for OutWit.Common.DependencyInjection. Emits the IServiceProvider constructor and Services property required by [Inject] field auto-discovery on classes marked [InjectableHost]. This package is automatically included with OutWit.Common.DependencyInjection.</Description>
 		<PackageTags>OutWit;Common;DependencyInjection;DI;Inject;SourceGenerator;Roslyn</PackageTags>

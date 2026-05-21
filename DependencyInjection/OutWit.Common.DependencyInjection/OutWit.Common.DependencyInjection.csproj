@@ -4,7 +4,7 @@
 		<TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 
 		<Description>Property-based dependency injection via [Inject] attribute. Replaces large constructor parameter lists with declarative, lazily-resolved properties powered by AspectInjector IL weaving. Includes a Roslyn source generator that emits the IServiceProvider constructor for classes marked [InjectableHost].</Description>
 		<PackageTags>OutWit;Common;DependencyInjection;DI;Inject;Aspect;SourceGenerator</PackageTags>
