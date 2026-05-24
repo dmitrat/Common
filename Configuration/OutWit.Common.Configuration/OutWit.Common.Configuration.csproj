@@ -4,7 +4,7 @@
 	<TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 	<Nullable>enable</Nullable>
 
-	<Version>1.0.0</Version>
+	<Version>1.1.0</Version>
 
 	<Description>Configuration utilities for .NET applications</Description>
 	<PackageTags>OutWit;Common;Configuration</PackageTags>
@@ -32,6 +32,14 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Configuration now consumes IAssemblyContext from the base
+		     OutWit.Common (1.4.0+ required for the new interface). Pure
+		     additive consumer; existing For(Assembly) overload is
+		     unchanged. -->
+		<ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
 	</ItemGroup>
 
 </Project>

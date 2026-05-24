@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using OutWit.Common.Configuration.Attributes;
+using OutWit.Common.Interfaces;
 
 namespace OutWit.Common.Configuration
 {
@@ -12,12 +13,32 @@ namespace OutWit.Common.Configuration
 
         /// <summary>
         /// Creates a new <see cref="ConfigurationInfo"/> for the specified assembly.
+        /// The configuration file lookup uses
+        /// <c>Path.GetDirectoryName(assembly.Location)</c> as its base path.
         /// </summary>
         /// <param name="assembly">The assembly whose directory will be used as the base path for configuration files.</param>
         /// <returns>A new <see cref="ConfigurationInfo"/> instance.</returns>
         public static ConfigurationInfo For(Assembly assembly)
         {
             return new ConfigurationInfo(assembly);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ConfigurationInfo"/> for the specified
+        /// <see cref="IAssemblyContext"/>. The configuration file lookup uses
+        /// <see cref="IAssemblyContext.HomeDirectory"/> as its base path —
+        /// useful when the producer of the context knows the assembly was
+        /// staged somewhere other than
+        /// <see cref="System.Reflection.Assembly.Location"/> reports
+        /// (plugin loaders, embedded resource bundles, etc.).
+        /// </summary>
+        /// <param name="context">The assembly context whose
+        /// <see cref="IAssemblyContext.HomeDirectory"/> will be used as the
+        /// base path for configuration files.</param>
+        /// <returns>A new <see cref="ConfigurationInfo"/> instance.</returns>
+        public static ConfigurationInfo For(IAssemblyContext context)
+        {
+            return new ConfigurationInfo(context);
         }
 
         /// <summary>
@@ -57,23 +78,28 @@ namespace OutWit.Common.Configuration
         }
 
         /// <summary>
-        /// Builds an <see cref="IConfiguration"/> instance from JSON files located in the assembly's directory.
+        /// Builds an <see cref="IConfiguration"/> instance from JSON files located in
+        /// <see cref="ConfigurationInfo.BasePath"/>.
         /// </summary>
         /// <param name="me">The configuration info instance.</param>
         /// <returns>A built <see cref="IConfiguration"/> instance.</returns>
-        /// <exception cref="DirectoryNotFoundException">Thrown when the assembly directory cannot be found.</exception>
+        /// <exception cref="DirectoryNotFoundException">Thrown when the configuration base path cannot be resolved (e.g. an assembly-based
+        /// <see cref="ConfigurationInfo"/> built from an assembly whose
+        /// <see cref="System.Reflection.Assembly.Location"/> has no directory component).</exception>
         public static IConfiguration Build(this ConfigurationInfo me)
         {
-            var componentDirectory = Path.GetDirectoryName(me.Assembly.Location);
-            if (componentDirectory is null)
-                throw new DirectoryNotFoundException($"Cannot find directory for component {me.Assembly.FullName}.");
-            
-            var configFileName = string.IsNullOrEmpty(me.FileName) 
-                ? DEFAULT_CONFIG_FILE_NAME 
+            if (me.BasePath is null)
+                throw new DirectoryNotFoundException(
+                    me.Assembly is not null
+                        ? $"Cannot find directory for component {me.Assembly.FullName}."
+                        : "ConfigurationInfo was constructed without a usable base path.");
+
+            var configFileName = string.IsNullOrEmpty(me.FileName)
+                ? DEFAULT_CONFIG_FILE_NAME
                 : me.FileName;
 
             var configBuilder = new ConfigurationBuilder()
-                .SetBasePath(componentDirectory)
+                .SetBasePath(me.BasePath)
                 .AddJsonFile($"{configFileName}.json", optional: true, reloadOnChange: true);
 
             if (!string.IsNullOrEmpty(me.Environment))
