@@ -3,7 +3,7 @@
   <PropertyGroup>
 	  <TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-	  <Version>1.1.7</Version>
+	  <Version>1.2.0</Version>
 
 	  <Description>A robust and flexible plugin system for .NET. Features dynamic discovery from directories, sophisticated dependency resolution (validates versions and detects circular dependencies), and isolated loading via AssemblyLoadContext to enable hot-reloading and unloading of plugins.</Description>
 	  <PackageTags>OutWit;Common;Plugins</PackageTags>
@@ -29,5 +29,9 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\OutWit.Common.Plugins.Abstractions\OutWit.Common.Plugins.Abstractions.csproj" />
+	  <!-- Plugins now exposes WitPluginHostContext implementing IAssemblyContext
+	       from base OutWit.Common (1.4.0+ required for the interface). Pure
+	       additive — no existing public API on Plugins changed. -->
+	  <ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
 	</ItemGroup>
 </Project>

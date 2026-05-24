@@ -144,6 +144,7 @@ namespace OutWit.Common.Plugins
             }
 
             m_loadedPlugins.Remove(pluginName);
+            UnregisterHostContext(loadedPlugin);
             loadedPlugin.Plugin.Dispose();
 #else
             if (!m_loadedPlugins.Remove(pluginName, out var loadedPlugin))
@@ -151,10 +152,22 @@ namespace OutWit.Common.Plugins
                 Logger?.LogError($"Plugin '{pluginName}' is not loaded or does not exist.");
                 return;
             }
-            
+
+            UnregisterHostContext(loadedPlugin);
             loadedPlugin.Plugin.Dispose();
             loadedPlugin.LoadContext.Unload();
 #endif
+        }
+
+        private static void UnregisterHostContext(WitPluginContext<TPlugin> loadedPlugin)
+        {
+            // Best-effort: drop the host-context registration so a
+            // subsequent Load() of the same assembly path gets a fresh
+            // entry. We look the assembly up by metadata.PluginTypeName's
+            // declaring assembly via the loaded instance; that's the
+            // same Assembly we registered in LoadSinglePlugin.
+            var assembly = loadedPlugin.Plugin.GetType().Assembly;
+            WitPluginHostContexts.Unregister(assembly);
         }
 
         private void LoadSinglePlugin(WitPluginMetadata metadata)
@@ -211,6 +224,7 @@ namespace OutWit.Common.Plugins
             }
 
             m_loadedPlugins[metadata.Name] = new WitPluginContext<TPlugin>(instance, metadata, loadContext, reference);
+            RegisterHostContext(assembly, metadata);
 #else
             assembly = Assembly.LoadFrom(metadata.FilePath);
 
@@ -226,7 +240,21 @@ namespace OutWit.Common.Plugins
             }
 
             m_loadedPlugins[metadata.Name] = new WitPluginContext<TPlugin>(instance, metadata);
+            RegisterHostContext(assembly, metadata);
 #endif
+        }
+
+        private static void RegisterHostContext(Assembly assembly, WitPluginMetadata metadata)
+        {
+            // metadata.FilePath is what the loader actually scanned, regardless of
+            // where the runtime ultimately resolved the assembly from
+            // (default-ALC PR-graph copy vs the staged path). The home directory
+            // we register here is the source of truth for any code asking
+            // "where did the loader put this plugin?" — see WitPluginHostContexts.
+            var homeDirectory = Path.GetDirectoryName(metadata.FilePath) ?? string.Empty;
+            WitPluginHostContexts.Register(
+                assembly,
+                new WitPluginHostContext(metadata.Name, metadata.FilePath, homeDirectory));
         }
 
 
