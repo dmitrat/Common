@@ -85,12 +85,26 @@ namespace OutWit.Common.Plugins
 
         #region Tools
 
-        internal static void Register(Assembly assembly, WitPluginHostContext context)
+        /// <summary>
+        /// Registers a host context for <paramref name="assembly"/>,
+        /// overwriting any previous entry. Called by
+        /// <c>OutWit.Common.Plugins.WitPluginLoader</c> after each
+        /// successful load; can also be called by custom non-WitPluginLoader
+        /// hosts that stage plugin assemblies into arbitrary folders and
+        /// want downstream code (e.g. <c>ConfigurationUtils.For(IAssemblyContext)</c>)
+        /// to consult the same registry.
+        /// </summary>
+        public static void Register(Assembly assembly, WitPluginHostContext context)
         {
             s_byAssembly[assembly] = context;
         }
 
-        internal static void Unregister(Assembly assembly)
+        /// <summary>
+        /// Removes the host-context entry for <paramref name="assembly"/>
+        /// if one exists. Called by the loader on unload; safe to call for
+        /// assemblies that were never registered.
+        /// </summary>
+        public static void Unregister(Assembly assembly)
         {
             s_byAssembly.TryRemove(assembly, out _);
         }
