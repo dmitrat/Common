@@ -16,7 +16,15 @@ namespace OutWit.Common.Plugins.Utils
         public static CustomAttributeData? GetAttributeData<TAttribute>(this Type me)
             where TAttribute : Attribute
         {
-            return me.CustomAttributes.FirstOrDefault(data => data.AttributeType.Is(typeof(TAttribute)));
+            // FullName comparison (vs AssemblyQualifiedName via .Is()) — the
+            // attribute type a plugin module references comes from its bundled
+            // Plugins.Abstractions copy, which can be at a different version
+            // than the host's loader. Matching by FullName lets plugins built
+            // against an older Plugins.Abstractions stay discoverable after
+            // the host bumps. Mirrors the interface check in
+            // WitPluginLoader.DiscoverMetadata.
+            var targetName = typeof(TAttribute).FullName;
+            return me.CustomAttributes.FirstOrDefault(data => data.AttributeType.FullName == targetName);
         }
         
         public static string? GetName(this CustomAttributeData? me)
@@ -78,8 +86,9 @@ namespace OutWit.Common.Plugins.Utils
         {
             var dependencies = new List<WitPluginDependency>();
 
+            var dependencyAttributeName = typeof(WitPluginDependencyAttribute).FullName;
             IReadOnlyList<CustomAttributeData> attributes = me.GetCustomAttributesData()
-                .Where(data => data.AttributeType.Is(typeof(WitPluginDependencyAttribute))).ToList();
+                .Where(data => data.AttributeType.FullName == dependencyAttributeName).ToList();
 
             if (attributes.Count == 0)
                 return dependencies;
