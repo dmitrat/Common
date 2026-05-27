@@ -27,6 +27,16 @@ namespace OutWit.Common.Plugins
 
         private const string ASSEMBLY_SEARCH_PATTERN = "*.dll";
 
+        /// <summary>
+        /// Canonical glob for production-shaped plugin folders. Each provider
+        /// staged via build/*.targets lands in a <c>&lt;name&gt;.module/</c>
+        /// directory next to its siblings in <c>@Database/</c>, <c>@Logging/</c>,
+        /// etc. Pass this to <see cref="WitPluginLoader{TPlugin}"/> via the
+        /// <c>pluginFolderPattern</c> constructor argument to limit discovery
+        /// to those folders only (and to skip a plugin by renaming its folder).
+        /// </summary>
+        public const string DEFAULT_PLUGIN_FOLDER_PATTERN = "*.module";
+
         #endregion
 
         #region Fields
@@ -35,11 +45,13 @@ namespace OutWit.Common.Plugins
 
         private readonly List<string> m_pluginSearchPaths = new ();
 
+        private readonly string? m_pluginFolderPattern;
+
         #endregion
 
         #region Constructors
 
-        public WitPluginLoader(string searchPath, bool useIsolatedContexts = true, ILogger? logger = null)
+        public WitPluginLoader(string searchPath, bool useIsolatedContexts = true, ILogger? logger = null, string? pluginFolderPattern = null)
         {
 #if NETSTANDARD2_0
             UseIsolatedContext = false;
@@ -47,6 +59,7 @@ namespace OutWit.Common.Plugins
             UseIsolatedContext = useIsolatedContexts;
 #endif
             Logger = logger;
+            m_pluginFolderPattern = pluginFolderPattern;
 
             if (string.IsNullOrEmpty(searchPath))
                 throw new ArgumentNullException(nameof(searchPath), "Search path cannot be null or empty.");
@@ -55,9 +68,9 @@ namespace OutWit.Common.Plugins
                 throw new DirectoryNotFoundException($"Search path '{searchPath}' does not exist.");
 
             m_pluginSearchPaths.Add(searchPath);
-            
+
             Logger?.LogInformation($"Looking for plugins in {m_pluginSearchPaths.Single()}");
-            
+
             if(!UseIsolatedContext)
                 AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
         }
@@ -67,7 +80,7 @@ namespace OutWit.Common.Plugins
         {
         }
 
-        public WitPluginLoader(IEnumerable<string> searchPaths, bool useIsolatedContexts, ILogger? logger = null)
+        public WitPluginLoader(IEnumerable<string> searchPaths, bool useIsolatedContexts, ILogger? logger = null, string? pluginFolderPattern = null)
         {
 #if NETSTANDARD2_0
             UseIsolatedContext = false;
@@ -75,6 +88,7 @@ namespace OutWit.Common.Plugins
             UseIsolatedContext = useIsolatedContexts;
 #endif
             Logger = logger;
+            m_pluginFolderPattern = pluginFolderPattern;
 
             if (searchPaths == null)
                 throw new ArgumentNullException(nameof(searchPaths), "Search paths cannot be null.");
@@ -454,8 +468,28 @@ namespace OutWit.Common.Plugins
 
         private IReadOnlyList<string> GetPluginCandidates()
         {
+            // If a folder pattern is configured (e.g. "*.module"), restrict
+            // discovery to immediate subdirectories matching it — then scan
+            // each matching subdir recursively for DLLs. This lets callers
+            // disable a plugin by renaming its folder (e.g. newrelic.module
+            // → newrelic.disabled) and prevents accidental scans of stray
+            // non-plugin directories that happen to live next to staged
+            // modules.
+            //
+            // If the pattern is null (default), preserve legacy behaviour
+            // — scan every DLL recursively from each search path. This keeps
+            // existing callers (and tests using direct-staging into the root
+            // search path) working without code changes.
+            if (string.IsNullOrEmpty(m_pluginFolderPattern))
+            {
+                return m_pluginSearchPaths.SelectMany(p =>
+                    Directory.GetFiles(p, ASSEMBLY_SEARCH_PATTERN, SearchOption.AllDirectories)).ToImmutableList();
+            }
+
             return m_pluginSearchPaths.SelectMany(p =>
-                Directory.GetFiles(p, ASSEMBLY_SEARCH_PATTERN, SearchOption.AllDirectories)).ToImmutableList();
+                Directory.GetDirectories(p, m_pluginFolderPattern, SearchOption.TopDirectoryOnly)
+                    .SelectMany(d => Directory.GetFiles(d, ASSEMBLY_SEARCH_PATTERN, SearchOption.AllDirectories)))
+                .ToImmutableList();
         }
         
         private IReadOnlyList<string> GetParentAssemblies()

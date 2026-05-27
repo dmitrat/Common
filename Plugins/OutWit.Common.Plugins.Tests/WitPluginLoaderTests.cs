@@ -257,6 +257,48 @@ namespace OutWit.Common.Plugins.Tests
         }
 
         [Test]
+        public void PluginFolderPatternFiltersOutNonMatchingSubdirsTest()
+        {
+            // Arrange: stage PluginA in a .module folder (production-shaped),
+            // plus PluginC in a folder that doesn't match the *.module mask
+            // (simulates the operator-renames-to-disable workflow, or a stray
+            // sidecar dir living next to staged modules).
+            StagePluginInSubfolder(typeof(PluginA), "pluginA.module");
+            StagePluginInSubfolder(typeof(PluginC), "pluginC.disabled");
+
+            using var loader = new WitPluginLoader<ITestPlugin>(
+                _pluginDir,
+                useIsolatedContexts: false,
+                pluginFolderPattern: WitPluginLoader<ITestPlugin>.DEFAULT_PLUGIN_FOLDER_PATTERN);
+
+            Assert.DoesNotThrow(() => loader.Load());
+
+            var plugins = loader.ToList();
+            Assert.That(plugins, Has.Count.EqualTo(1),
+                "Loader with *.module mask must skip the .disabled folder entirely.");
+            Assert.That(plugins[0].GetName(), Is.EqualTo("PluginA"));
+        }
+
+        [Test]
+        public void PluginFolderPatternNullPreservesLegacyRecursiveScanTest()
+        {
+            // Arrange: direct-staging into the root search path (no subfolder).
+            // The existing legacy behavior must keep working for callers that
+            // don't pass a folder pattern.
+            StagePlugin(typeof(PluginA));
+
+            using var loader = new WitPluginLoader<ITestPlugin>(
+                _pluginDir,
+                useIsolatedContexts: false /* pluginFolderPattern: null (default) */);
+
+            Assert.DoesNotThrow(() => loader.Load());
+
+            var plugins = loader.ToList();
+            Assert.That(plugins, Has.Count.EqualTo(1));
+            Assert.That(plugins[0].GetName(), Is.EqualTo("PluginA"));
+        }
+
+        [Test]
         public void LoadPluginsFromMultipleSubfoldersWithSharedDependencyTest()
         {
             // Arrange: Three plugins in three subfolders, all sharing the interface DLL
