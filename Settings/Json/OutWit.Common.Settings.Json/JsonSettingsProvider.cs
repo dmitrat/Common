@@ -13,7 +13,7 @@ namespace OutWit.Common.Settings.Json
     /// Stores settings entries as arrays keyed by group name.
     /// Group metadata is stored in an optional <c>__groups__</c> object section.
     /// </summary>
-    public sealed class JsonSettingsProvider : ISettingsProvider, ISettingsGroupInfoProvider
+    public class JsonSettingsProvider : ISettingsProvider, ISettingsGroupInfoProvider
     {
         #region Constants
 
@@ -46,6 +46,31 @@ namespace OutWit.Common.Settings.Json
             IsReadOnly = isReadOnly;
         }
 
+        /// <summary>
+        /// Constructor for derived providers that supply their JSON from a non-file source
+        /// (see <see cref="ReadRawJson"/>). <see cref="FilePath"/> is unused in that case.
+        /// </summary>
+        protected JsonSettingsProvider(bool isReadOnly)
+        {
+            FilePath = string.Empty;
+            IsReadOnly = isReadOnly;
+        }
+
+        #endregion
+
+        #region Source
+
+        /// <summary>
+        /// Returns the raw JSON document this provider reads from, or <c>null</c>/empty when there is
+        /// nothing to read. The default reads <see cref="FilePath"/>; derived providers override this
+        /// to source the same JSON shape from elsewhere (e.g. an embedded resource). All parsing —
+        /// and therefore merge behaviour — is shared, regardless of source.
+        /// </summary>
+        protected virtual string? ReadRawJson()
+        {
+            return File.Exists(FilePath) ? File.ReadAllText(FilePath) : null;
+        }
+
         #endregion
 
         #region ISettingsProvider
@@ -59,10 +84,7 @@ namespace OutWit.Common.Settings.Json
         {
             lock (m_lock)
             {
-                if (!File.Exists(FilePath))
-                    return Array.Empty<SettingsEntry>();
-
-                var json = File.ReadAllText(FilePath);
+                var json = ReadRawJson();
                 if (string.IsNullOrWhiteSpace(json))
                     return Array.Empty<SettingsEntry>();
 
@@ -120,10 +142,7 @@ namespace OutWit.Common.Settings.Json
         {
             lock (m_lock)
             {
-                if (!File.Exists(FilePath))
-                    return Array.Empty<string>();
-
-                var json = File.ReadAllText(FilePath);
+                var json = ReadRawJson();
                 if (string.IsNullOrWhiteSpace(json))
                     return Array.Empty<string>();
 
@@ -153,10 +172,7 @@ namespace OutWit.Common.Settings.Json
         {
             lock (m_lock)
             {
-                if (!File.Exists(FilePath))
-                    return Array.Empty<SettingsGroupInfo>();
-
-                var json = File.ReadAllText(FilePath);
+                var json = ReadRawJson();
                 if (string.IsNullOrWhiteSpace(json))
                     return Array.Empty<SettingsGroupInfo>();
 
@@ -226,10 +242,7 @@ namespace OutWit.Common.Settings.Json
         {
             var data = new JsonFileData();
 
-            if (!File.Exists(FilePath))
-                return data;
-
-            var json = File.ReadAllText(FilePath);
+            var json = ReadRawJson();
             if (string.IsNullOrWhiteSpace(json))
                 return data;
 

@@ -5,9 +5,9 @@
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 
-		<Version>2.0.2</Version>
+		<Version>2.1.0</Version>
 
-		<Description>JSON file storage provider for OutWit.Common.Settings. Enables storing settings in human-readable JSON format with group metadata and multi-scope support.</Description>
+		<Description>JSON storage provider for OutWit.Common.Settings — file or embedded-resource sources, group metadata, multi-scope support. Includes JsonResourceSettingsProvider / UseJsonResource for shipping immutable defaults inside the assembly.</Description>
 		<PackageTags>OutWit;Common;Settings;Configuration;Json</PackageTags>
 
 		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Settings/Json/OutWit.Common.Settings.Json</RepositoryUrl>

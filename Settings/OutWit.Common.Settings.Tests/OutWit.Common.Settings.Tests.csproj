@@ -26,6 +26,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OutWit.Common.Settings\OutWit.Common.Settings.csproj" />
+    <ProjectReference Include="..\Json\OutWit.Common.Settings.Json\OutWit.Common.Settings.Json.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Defaults template embedded for JsonResourceSettingsProvider tests; fixed logical name. -->
+    <EmbeddedResource Include="Resources\test-defaults.json">
+      <LogicalName>test-defaults.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

@@ -1,3 +1,4 @@
+using System.Reflection;
 using OutWit.Common.Settings.Configuration;
 
 namespace OutWit.Common.Settings.Json
@@ -26,6 +27,30 @@ namespace OutWit.Common.Settings.Json
         {
             builder.AddProvider(SettingsScope.Default,
                 new JsonSettingsProvider(defaultsPath, isReadOnly: true));
+
+            builder.SetScopeProviderFactory(".json",
+                path => new JsonSettingsProvider(path, isReadOnly: false));
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Configures JSON format with the default settings sourced from an EMBEDDED RESOURCE:
+        /// registers a read-only resource-backed Default provider and sets a factory for
+        /// auto-creating writable User/Global JSON file providers during Build(). Use this when the
+        /// immutable defaults should ship inside the binary (no loose file on disk) — the User/Global
+        /// scopes still persist to their own JSON files in their per-user / per-machine folders, and
+        /// merge-on-upgrade behaves identically to the file-based <see cref="UseJson(SettingsBuilder, string)"/>.
+        /// </summary>
+        /// <param name="builder">The settings builder.</param>
+        /// <param name="assembly">The assembly containing the embedded defaults resource.</param>
+        /// <param name="resourceName">The embedded resource name (full manifest name or a suffix, e.g. "settings.json").</param>
+        /// <returns>The builder for chaining.</returns>
+        public static SettingsBuilder UseJsonResource(
+            this SettingsBuilder builder, Assembly assembly, string resourceName)
+        {
+            builder.AddProvider(SettingsScope.Default,
+                new JsonResourceSettingsProvider(assembly, resourceName));
 
             builder.SetScopeProviderFactory(".json",
                 path => new JsonSettingsProvider(path, isReadOnly: false));

@@ -1,0 +1,13 @@
+{
+  "General": [
+    { "key": "Name", "value": "admin", "valueKind": "String" },
+    { "key": "NewFeature", "value": "enabled", "valueKind": "String" }
+  ],
+  "Advanced": [
+    { "key": "Level", "value": "5", "valueKind": "Integer" }
+  ],
+  "__groups__": {
+    "General": { "displayName": "Main", "priority": 1 },
+    "Advanced": { "displayName": "Advanced", "priority": 2 }
+  }
+}
