@@ -6,7 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
 
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 
 		<Description>Cross-platform helpers for collecting machine system information (OS / CPU / GPU / memory / storage / health), a stable machine identity, and semantic standard directories. Internal Strategy split per OS makes it easy to add new platforms (Windows, Linux, macOS, Android out of the box).</Description>
 		<PackageTags>OutWit;Common;Platform;SystemInfo;Health;Directories;CrossPlatform;Android</PackageTags>

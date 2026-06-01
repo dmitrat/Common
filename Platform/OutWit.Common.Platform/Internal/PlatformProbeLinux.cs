@@ -64,12 +64,16 @@ namespace OutWit.Common.Platform.Internal
 
         public virtual IReadOnlyList<SystemGpuInfo> GetGpus()
         {
-            // Best-effort: parse `lspci -mm` if available. VRAM cannot be read
-            // reliably without root + per-vendor probes, so VRamMb defaults to 0.
+            // Best-effort: parse `lspci -mm` for model/vendor. VRAM can't be read generically
+            // without per-vendor probes; for NVIDIA we read it from `nvidia-smi` (ships with the
+            // driver). AMD/Intel-integrated stay 0 (integrated shares system RAM — 0 is correct).
             var gpus = new List<SystemGpuInfo>();
             var output = TryRunCommand("lspci", "-mm");
             if (string.IsNullOrEmpty(output))
                 return gpus;
+
+            var nvidiaVramMb = ReadNvidiaVramMb();
+            var nvidiaIndex = 0;
 
             // Format example: 00:02.0 "VGA compatible controller" "Intel Corporation" "Iris Plus Graphics" -r02 "Intel Corporation" "Iris Plus Graphics"
             var regex = new Regex("\"(?<class>[^\"]+)\"\\s+\"(?<vendor>[^\"]+)\"\\s+\"(?<name>[^\"]+)\"");
@@ -86,16 +90,49 @@ namespace OutWit.Common.Platform.Internal
                 var vendor = match.Groups["vendor"].Value;
                 var name = match.Groups["name"].Value;
 
+                // nvidia-smi lists GPUs in PCI order; map its memory readings to the NVIDIA
+                // entries we encounter (also in PCI order from lspci) one-for-one.
+                long vramMb = 0;
+                if (IsNvidiaGpu(vendor, name) && nvidiaIndex < nvidiaVramMb.Count)
+                    vramMb = nvidiaVramMb[nvidiaIndex++];
+
                 gpus.Add(new SystemGpuInfo
                 {
                     ModelName = $"{vendor} {name}".Trim(),
-                    VRamMb = 0,
+                    VRamMb = vramMb,
                     GpuType = GpuClassifier.DetectType(vendor, name),
                     SupportedFeatures = GpuClassifier.DetectFeatures(vendor, name)
                 });
             }
 
             return gpus;
+        }
+
+        private static bool IsNvidiaGpu(string vendor, string name)
+        {
+            return vendor.IndexOf("NVIDIA", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("NVIDIA", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("GeForce", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Quadro", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Tesla", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        // Per-GPU total memory in MiB, one entry per NVIDIA GPU in PCI order. Empty if the driver
+        // tool isn't present (no NVIDIA GPU / driver) — callers leave VRamMb at 0 then.
+        private static IReadOnlyList<long> ReadNvidiaVramMb()
+        {
+            var values = new List<long>();
+            var output = TryRunCommand("nvidia-smi", "--query-gpu=memory.total --format=csv,noheader,nounits");
+            if (string.IsNullOrWhiteSpace(output))
+                return values;
+
+            foreach (var line in output!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (long.TryParse(line.Trim(), out var mb) && mb > 0)
+                    values.Add(mb);
+            }
+
+            return values;
         }
 
         public virtual SystemStorageType GetStorageType(string rootPath)
