@@ -25,6 +25,11 @@ namespace OutWit.Common.Platform.Internal
             if (combined.Contains("VIRTUAL") || combined.Contains("VMWARE") || combined.Contains("HYPER-V"))
                 return SystemGpuType.Virtual;
 
+            // Apple Silicon (M-series) and other Apple GPUs are integrated parts
+            // that share the machine's unified memory.
+            if (combined.Contains("APPLE"))
+                return SystemGpuType.Integrated;
+
             return SystemGpuType.Unknown;
         }
 

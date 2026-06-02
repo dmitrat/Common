@@ -169,6 +169,15 @@ namespace OutWit.Common.Platform.Internal
             var name = model!;
             var vendorText = vendor ?? string.Empty;
 
+            // Apple Silicon shares one unified memory pool with the CPU, so
+            // `system_profiler` prints no "VRAM (Total)" line and vramMb is 0.
+            // Report the total system RAM as the GPU-addressable memory: the GPU
+            // genuinely can use the whole pool, and leaving 0 would make activity
+            // filtering (RequiresGpu.MinVRamMb) exclude these machines from every
+            // GPU workload. The value is measured (sysctl hw.memsize), not a table.
+            if (vramMb <= 0 && $"{vendorText} {name}".ToUpperInvariant().Contains("APPLE"))
+                vramMb = GetTotalRamMb();
+
             gpus.Add(new SystemGpuInfo
             {
                 ModelName = name,
@@ -176,6 +185,17 @@ namespace OutWit.Common.Platform.Internal
                 GpuType = GpuClassifier.DetectType(vendorText, name),
                 SupportedFeatures = GpuClassifier.DetectFeatures(vendorText, name)
             });
+        }
+
+        private static long GetTotalRamMb()
+        {
+            var output = TryRunCommand("sysctl", "-n hw.memsize");
+            if (string.IsNullOrWhiteSpace(output))
+                return 0;
+
+            return long.TryParse(output!.Trim(), out var bytes) && bytes > 0
+                ? bytes / (1024L * 1024L)
+                : 0;
         }
 
         private static long ParseVramMb(string text)
