@@ -88,7 +88,9 @@ namespace OutWit.Common.Settings.Json
                 if (string.IsNullOrWhiteSpace(json))
                     return Array.Empty<SettingsEntry>();
 
-                using var document = JsonDocument.Parse(json, DOCUMENT_OPTIONS);
+                using var document = ParseDocumentOrRecover(json);
+                if (document == null)
+                    return Array.Empty<SettingsEntry>();
 
                 if (!document.RootElement.TryGetProperty(group, out var groupElement))
                     return Array.Empty<SettingsEntry>();
@@ -146,7 +148,9 @@ namespace OutWit.Common.Settings.Json
                 if (string.IsNullOrWhiteSpace(json))
                     return Array.Empty<string>();
 
-                using var document = JsonDocument.Parse(json, DOCUMENT_OPTIONS);
+                using var document = ParseDocumentOrRecover(json);
+                if (document == null)
+                    return Array.Empty<string>();
 
                 var groups = new List<string>();
                 foreach (var property in document.RootElement.EnumerateObject())
@@ -176,7 +180,9 @@ namespace OutWit.Common.Settings.Json
                 if (string.IsNullOrWhiteSpace(json))
                     return Array.Empty<SettingsGroupInfo>();
 
-                using var document = JsonDocument.Parse(json, DOCUMENT_OPTIONS);
+                using var document = ParseDocumentOrRecover(json);
+                if (document == null)
+                    return Array.Empty<SettingsGroupInfo>();
 
                 if (!document.RootElement.TryGetProperty(GROUPS_SECTION, out var section))
                     return Array.Empty<SettingsGroupInfo>();
@@ -246,7 +252,9 @@ namespace OutWit.Common.Settings.Json
             if (string.IsNullOrWhiteSpace(json))
                 return data;
 
-            using var document = JsonDocument.Parse(json, DOCUMENT_OPTIONS);
+            using var document = ParseDocumentOrRecover(json);
+            if (document == null)
+                return data;
 
             foreach (var property in document.RootElement.EnumerateObject())
             {
@@ -300,9 +308,41 @@ namespace OutWit.Common.Settings.Json
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            using var stream = File.Create(FilePath);
-            using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+            // Atomic write: serialize to a temp file in the same directory, fully close it, then rename
+            // it over the target. The previous File.Create(FilePath) truncated the real file up-front, so
+            // a crash/power-loss mid-write left a corrupt (partial) settings store that then crash-looped
+            // the host on the next read. With temp+rename the original survives a mid-write crash and the
+            // swap is atomic at the filesystem level.
+            var tempPath = FilePath + ".tmp";
 
+            try
+            {
+                using (var stream = File.Create(tempPath))
+                using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+                {
+                    WriteJson(writer, data);
+                }
+
+                File.Move(tempPath, FilePath, overwrite: true);
+            }
+            catch
+            {
+                try
+                {
+                    if (File.Exists(tempPath))
+                        File.Delete(tempPath);
+                }
+                catch
+                {
+                    // Best effort cleanup of the temp file; surface the original write error below.
+                }
+
+                throw;
+            }
+        }
+
+        private static void WriteJson(Utf8JsonWriter writer, JsonFileData data)
+        {
             writer.WriteStartObject();
 
             if (data.GroupInfos.Count > 0)
@@ -350,6 +390,55 @@ namespace OutWit.Common.Settings.Json
             }
 
             writer.WriteEndObject();
+        }
+
+        /// <summary>
+        /// Parses the settings JSON, recovering instead of throwing when the store is corrupt. A corrupt
+        /// file (most often truncated by a crash during a previous non-atomic write) is quarantined aside
+        /// and <c>null</c> is returned so callers fall back to defaults/empty — otherwise every read would
+        /// throw and crash-loop the host on startup. The next <see cref="WriteAll"/> writes a fresh file.
+        /// </summary>
+        private JsonDocument? ParseDocumentOrRecover(string json)
+        {
+            try
+            {
+                return JsonDocument.Parse(json, DOCUMENT_OPTIONS);
+            }
+            catch (JsonException)
+            {
+                QuarantineCorruptStore();
+                return null;
+            }
+        }
+
+        private void QuarantineCorruptStore()
+        {
+            // Only the file-backed provider has a file to move aside; derived providers source their
+            // JSON elsewhere (ReadRawJson override) and simply fall back to empty.
+            if (string.IsNullOrEmpty(FilePath) || !File.Exists(FilePath))
+                return;
+
+            try
+            {
+                var quarantinePath = FilePath + ".corrupt";
+                if (File.Exists(quarantinePath))
+                    File.Delete(quarantinePath);
+
+                File.Move(FilePath, quarantinePath);
+            }
+            catch
+            {
+                // If we cannot preserve it aside, delete it so reads stop failing and the next save
+                // can write a clean store.
+                try
+                {
+                    File.Delete(FilePath);
+                }
+                catch
+                {
+                    // Give up: subsequent reads keep returning empty via the null path above.
+                }
+            }
         }
 
         private static string GetStringProperty(JsonElement element, string name)

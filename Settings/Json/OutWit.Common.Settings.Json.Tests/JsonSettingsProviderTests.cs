@@ -440,5 +440,82 @@ namespace OutWit.Common.Settings.Json.Tests
         }
 
         #endregion
+
+        #region Atomicity + corruption recovery
+
+        [Test]
+        public void WriteDoesNotLeaveTempFileBehindTest()
+        {
+            var path = Path.Combine(m_testDir, "atomic.json");
+            var provider = new JsonSettingsProvider(path);
+
+            provider.Write("General", new[]
+            {
+                new SettingsEntry { Group = "General", Key = "K", Value = "V", ValueKind = "String" }
+            });
+
+            Assert.That(File.Exists(path), Is.True);
+            Assert.That(File.Exists(path + ".tmp"), Is.False, "the temp file must be renamed away, not left behind");
+            // Round-trips.
+            Assert.That(provider.Read("General")[0].Value, Is.EqualTo("V"));
+        }
+
+        [Test]
+        public void WriteOverExistingFileReplacesAtomicallyTest()
+        {
+            var path = WriteJsonFile(@"{ ""General"": [ { ""key"": ""K"", ""value"": ""old"", ""valueKind"": ""String"" } ] }");
+            var provider = new JsonSettingsProvider(path);
+
+            provider.Write("General", new[]
+            {
+                new SettingsEntry { Group = "General", Key = "K", Value = "new", ValueKind = "String" }
+            });
+
+            Assert.That(provider.Read("General")[0].Value, Is.EqualTo("new"));
+            Assert.That(File.Exists(path + ".tmp"), Is.False);
+        }
+
+        [Test]
+        public void ReadCorruptStoreRecoversAndQuarantinesTest()
+        {
+            var path = WriteJsonFile(@"{ ""General"": [ { ""key"": ""K"", ""value"": ""V"",");  // truncated / invalid JSON
+            var provider = new JsonSettingsProvider(path);
+
+            // Must NOT throw — recovers to empty and quarantines the corrupt file.
+            var entries = provider.Read("General");
+
+            Assert.That(entries, Is.Empty);
+            Assert.That(File.Exists(path), Is.False, "the corrupt store must be moved aside");
+            Assert.That(File.Exists(path + ".corrupt"), Is.True, "the corrupt store is preserved for forensics");
+        }
+
+        [Test]
+        public void WriteAfterCorruptionWritesFreshValidStoreTest()
+        {
+            var path = WriteJsonFile(@"{ this is not valid json ]");
+            var provider = new JsonSettingsProvider(path);
+
+            // A write reads-all (recovers corrupt -> empty), then persists a fresh, valid file.
+            provider.Write("General", new[]
+            {
+                new SettingsEntry { Group = "General", Key = "K", Value = "V", ValueKind = "String" }
+            });
+
+            Assert.That(File.Exists(path), Is.True);
+            var reread = new JsonSettingsProvider(path);
+            Assert.That(reread.Read("General")[0].Value, Is.EqualTo("V"));
+        }
+
+        [Test]
+        public void GetGroupsAndReadGroupInfoRecoverFromCorruptStoreTest()
+        {
+            var path = WriteJsonFile(@"{ broken");
+            var provider = new JsonSettingsProvider(path);
+
+            Assert.That(provider.GetGroups(), Is.Empty);
+            Assert.That(provider.ReadGroupInfo(), Is.Empty);
+        }
+
+        #endregion
     }
 }
