@@ -121,6 +121,8 @@ jobs:
               - 'DependencyInjection/OutWit.Common.DependencyInjection.Generator/**'
             OutWit.Common.Email:
               - 'Email/**'
+            OutWit.Common.Messenger:
+              - 'Messenger/**'
             OutWit.Common.Logging.Query:
               - 'Logging/OutWit.Common.Logging.Query/**'
               - 'Logging/OutWit.Common.Logging.Query.Tests/**'

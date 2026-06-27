@@ -29,6 +29,10 @@
   <Folder Name="/Email/">
     <Project Path="Email/OutWit.Common.Email/OutWit.Common.Email.csproj" />
   </Folder>
+  <Folder Name="/Messenger/">
+    <Project Path="Messenger/OutWit.Common.Messenger/OutWit.Common.Messenger.csproj" />
+    <Project Path="Messenger/OutWit.Common.Messenger.Tests/OutWit.Common.Messenger.Tests.csproj" />
+  </Folder>
   <Folder Name="/Configuration/">
     <Project Path="Configuration/OutWit.Common.Configuration.Tests/OutWit.Common.Configuration.Tests.csproj" />
     <Project Path="Configuration/OutWit.Common.Configuration/OutWit.Common.Configuration.csproj" />

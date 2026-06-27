@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+
+		<Version>1.0.1</Version>
+
+		<Description>Vendor-neutral messenger (instant-messaging) model for the OutWit ecosystem: IMessengerTransport, MessengerMessage, MessageSendResult, MessengerFailureKind. Lets a host send notifications through pluggable Telegram / Slack / etc. transports without coupling to any vendor SDK.</Description>
+		<PackageTags>OutWit;Common;Messenger;Notifications;Telegram</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Messenger/OutWit.Common.Messenger</RepositoryUrl>
+	</PropertyGroup>
+
+</Project>

@@ -39,6 +39,7 @@ on:
           - OutWit.Common.DependencyInjection
           - OutWit.Common.DependencyInjection.Generator
           - OutWit.Common.Email
+          - OutWit.Common.Messenger
           - OutWit.Common.Logging.Query
           - OutWit.Common.Logging.NewRelic
           - OutWit.Common.Logging.Loki
