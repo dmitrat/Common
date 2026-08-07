@@ -42,6 +42,14 @@
     <Project Path="DependencyInjection/OutWit.Common.DependencyInjection.Tests/OutWit.Common.DependencyInjection.Tests.csproj" />
     <Project Path="DependencyInjection/OutWit.Common.DependencyInjection/OutWit.Common.DependencyInjection.csproj" />
   </Folder>
+  <Folder Name="/Licensing/">
+    <File Path="Licensing/DESIGN.md" />
+    <Project Path="Licensing/OutWit.Common.Licensing.Tests/OutWit.Common.Licensing.Tests.csproj" />
+    <Project Path="Licensing/OutWit.Common.Licensing/OutWit.Common.Licensing.csproj" />
+  </Folder>
+  <Folder Name="/Licensing/Samples/">
+    <Project Path="Licensing/Samples/OutWit.Common.Licensing.Samples.Avalonia/OutWit.Common.Licensing.Samples.Avalonia.csproj" />
+  </Folder>
   <Folder Name="/Logging/">
     <Project Path="Logging/OutWit.Common.Logging.Abstractions/OutWit.Common.Logging.Abstractions.csproj" />
     <Project Path="Logging/OutWit.Common.Logging.Loki.Tests/OutWit.Common.Logging.Loki.Tests.csproj" />

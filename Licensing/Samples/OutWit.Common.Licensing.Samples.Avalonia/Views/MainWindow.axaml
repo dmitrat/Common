@@ -1,0 +1,214 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:OutWit.Common.Licensing.Samples.Avalonia.ViewModels"
+        x:Class="OutWit.Common.Licensing.Samples.Avalonia.Views.MainWindow"
+        x:DataType="vm:ApplicationViewModel"
+        Title="OutWit.Common.Licensing — harness"
+        Width="1240" Height="880" MinWidth="1000" MinHeight="700">
+
+	<Window.Styles>
+		<Style Selector="TextBlock.h">
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="Margin" Value="0,12,0,4" />
+			<Setter Property="Opacity" Value="0.75" />
+		</Style>
+		<Style Selector="TextBlock.mono">
+			<Setter Property="FontFamily" Value="Consolas,Menlo,monospace" />
+		</Style>
+		<Style Selector="TextBox.mono">
+			<Setter Property="FontFamily" Value="Consolas,Menlo,monospace" />
+			<Setter Property="FontSize" Value="11" />
+		</Style>
+		<Style Selector="Border.card">
+			<Setter Property="BorderBrush" Value="#33888888" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="6" />
+			<Setter Property="Padding" Value="12" />
+			<Setter Property="Margin" Value="0,0,0,10" />
+		</Style>
+	</Window.Styles>
+
+	<DockPanel>
+
+		<!-- Clock travel: the only honest way to reach expiry, a staged renewal
+		     and clock tampering without waiting a year for each. -->
+		<Border DockPanel.Dock="Top" Classes="card" Margin="10,10,10,0">
+			<StackPanel Orientation="Horizontal" Spacing="8">
+				<TextBlock Text="Clock" VerticalAlignment="Center" FontWeight="SemiBold" />
+				<TextBlock Classes="mono" Text="{Binding ClockDescription}" VerticalAlignment="Center" Width="360" />
+				<Button Content="−1 day" Command="{Binding TravelBackCmd}" />
+				<Button Content="+1 day" Command="{Binding TravelForwardCmd}" />
+				<Button Content="+1 year" Command="{Binding TravelYearCmd}" />
+				<Button Content="Reset" Command="{Binding ResetClockCmd}" />
+				<Border Width="1" Background="#33888888" Margin="8,2" />
+				<Button Content="Wipe licences" Command="{Binding WipeCmd}" />
+			</StackPanel>
+		</Border>
+
+		<Grid ColumnDefinitions="*,4,*" Margin="10">
+
+			<!-- ============ PRODUCT ============ -->
+			<ScrollViewer Grid.Column="0" DataContext="{Binding Product}">
+				<StackPanel>
+
+					<TextBlock Text="PRODUCT" FontWeight="Bold" FontSize="16" Margin="0,0,0,8" />
+
+					<Border Classes="card">
+						<StackPanel>
+							<StackPanel Orientation="Horizontal" Spacing="8">
+								<Border Background="#3300AA55" CornerRadius="4" Padding="8,3"
+								        IsVisible="{Binding CanRun}">
+									<TextBlock Text="{Binding Status}" FontWeight="SemiBold" />
+								</Border>
+								<Border Background="#33CC3333" CornerRadius="4" Padding="8,3"
+								        IsVisible="{Binding !CanRun}">
+									<TextBlock Text="{Binding Status}" FontWeight="SemiBold" />
+								</Border>
+								<Border Background="#33AAAA00" CornerRadius="4" Padding="8,3"
+								        IsVisible="{Binding IsDemo}">
+									<TextBlock Text="DEMO" FontWeight="SemiBold" />
+								</Border>
+							</StackPanel>
+							<TextBlock Text="{Binding StatusDetail}" TextWrapping="Wrap" Margin="0,8,0,0" />
+							<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="0,8,0,0">
+								<TextBlock Grid.Row="0" Grid.Column="0" Text="Edition " Opacity="0.6" />
+								<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Edition}" />
+								<TextBlock Grid.Row="1" Grid.Column="0" Text="Customer " Opacity="0.6" />
+								<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Customer}" />
+							</Grid>
+						</StackPanel>
+					</Border>
+
+					<TextBlock Classes="h" Text="FINGERPRINT — read this to support" />
+					<Border Classes="card">
+						<TextBlock Classes="mono" Text="{Binding Fingerprint}" FontSize="18" />
+					</Border>
+
+					<TextBlock Classes="h" Text="WHAT THE LICENCE GRANTS" />
+					<Border Classes="card">
+						<ItemsControl ItemsSource="{Binding Grants}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Classes="mono" Text="{Binding}" />
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</Border>
+
+					<Border Classes="card" Background="#22CC8800" IsVisible="{Binding Warnings.Count}">
+						<StackPanel>
+							<TextBlock Text="Unrecognised keys — almost certainly a typo in the issuing catalogue"
+							           TextWrapping="Wrap" FontWeight="SemiBold" />
+							<ItemsControl ItemsSource="{Binding Warnings}" Margin="0,6,0,0">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Classes="mono" Text="{Binding}" />
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</StackPanel>
+					</Border>
+
+					<TextBlock Classes="h" Text="THE GATED ACTION" />
+					<Border Classes="card">
+						<StackPanel Spacing="8">
+							<StackPanel Orientation="Horizontal" Spacing="8">
+								<Button Content="Run" Command="{Binding RunCmd}" />
+								<Button Content="Create request" Command="{Binding RequestCmd}" />
+							</StackPanel>
+							<TextBlock Text="{Binding RunMessage}" TextWrapping="Wrap" Opacity="0.8" />
+						</StackPanel>
+					</Border>
+
+					<TextBlock Classes="h" Text="INSTALL A LICENCE" />
+					<Border Classes="card">
+						<StackPanel Spacing="8">
+							<TextBox Classes="mono" Text="{Binding PastedToken}" AcceptsReturn="True"
+							         Height="90" TextWrapping="Wrap" Watermark="Paste a licence token here" />
+							<StackPanel Orientation="Horizontal" Spacing="8">
+								<Button Content="Install" Command="{Binding InstallCmd}" />
+								<Button Content="Clear" Command="{Binding ClearCmd}" />
+							</StackPanel>
+							<TextBlock Text="{Binding InstallMessage}" TextWrapping="Wrap" Opacity="0.8" />
+						</StackPanel>
+					</Border>
+
+					<TextBlock Classes="h" Text="INSTALLED ON DISK" />
+					<Border Classes="card">
+						<ItemsControl ItemsSource="{Binding Installed}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Classes="mono" Text="{Binding}" FontSize="11" />
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</Border>
+
+					<TextBlock Classes="h" Text="REQUEST BLOB" />
+					<TextBox Classes="mono" Text="{Binding RequestBlob}" IsReadOnly="True"
+					         AcceptsReturn="True" Height="110" />
+
+				</StackPanel>
+			</ScrollViewer>
+
+			<GridSplitter Grid.Column="1" Background="#33888888" />
+
+			<!-- ============ ISSUER ============ -->
+			<ScrollViewer Grid.Column="2" DataContext="{Binding Issuer}" Margin="10,0,0,0">
+				<StackPanel>
+
+					<TextBlock Text="ISSUER" FontWeight="Bold" FontSize="16" Margin="0,0,0,8" />
+					<TextBlock Text="Throwaway keys, generated in this process. A real vendor keeps private keys in an envelope-encrypted vault on a server — never beside the verifier."
+					           TextWrapping="Wrap" Opacity="0.6" FontSize="11" Margin="0,0,0,8" />
+
+					<TextBlock Classes="h" Text="REQUEST FROM THE PRODUCT" />
+					<Border Classes="card">
+						<TextBlock Classes="mono" Text="{Binding RequestSummary}" TextWrapping="Wrap" FontSize="11" />
+					</Border>
+
+					<TextBlock Classes="h" Text="SIGNING KEY" />
+					<ComboBox ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectedKey}" HorizontalAlignment="Stretch" />
+
+					<TextBlock Classes="h" Text="DEFECT TO INTRODUCE" />
+					<ComboBox ItemsSource="{Binding ForgeModes}" SelectedItem="{Binding SelectedForgeMode}" HorizontalAlignment="Stretch" />
+					<TextBlock Text="Each mode drives one refusal path. A status nothing can reach is a status nobody can trust."
+					           TextWrapping="Wrap" Opacity="0.6" FontSize="11" Margin="0,4,0,0" />
+
+					<TextBlock Classes="h" Text="TERM" />
+					<ComboBox ItemsSource="{Binding Terms}" SelectedItem="{Binding SelectedTerm}" HorizontalAlignment="Stretch" />
+
+					<TextBlock Classes="h" Text="PAYLOAD" />
+					<Border Classes="card">
+						<StackPanel Spacing="6">
+							<TextBlock Text="Edition (a label — no product ever branches on it)" Opacity="0.6" FontSize="11" />
+							<TextBox Text="{Binding Edition}" />
+							<TextBlock Text="Features (comma separated)" Opacity="0.6" FontSize="11" />
+							<TextBox Classes="mono" Text="{Binding Features}" />
+							<TextBlock Text="Limits (key=value, comma separated)" Opacity="0.6" FontSize="11" />
+							<TextBox Classes="mono" Text="{Binding Limits}" />
+							<TextBlock Text="Version range" Opacity="0.6" FontSize="11" />
+							<TextBox Classes="mono" Text="{Binding VersionRange}" />
+							<CheckBox Content="Bind to this machine" IsChecked="{Binding BindToThisMachine}" />
+							<StackPanel Orientation="Horizontal" Spacing="8">
+								<TextBlock Text="Threshold (n of m)" VerticalAlignment="Center" Opacity="0.6" FontSize="11" />
+								<NumericUpDown Value="{Binding Threshold}" Minimum="0" Maximum="5" Width="110" />
+							</StackPanel>
+						</StackPanel>
+					</Border>
+
+					<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+						<Button Content="Issue" Command="{Binding IssueCmd}" />
+						<Button Content="Send to product →" Command="{Binding SendToProductCmd}" />
+					</StackPanel>
+
+					<TextBlock Classes="h" Text="TOKEN" />
+					<TextBlock Classes="mono" Text="{Binding TokenSummary}" Opacity="0.7" FontSize="11" />
+					<TextBox Classes="mono" Text="{Binding Token}" IsReadOnly="True"
+					         AcceptsReturn="True" TextWrapping="Wrap" Height="160" Margin="0,6,0,0" />
+
+				</StackPanel>
+			</ScrollViewer>
+
+		</Grid>
+	</DockPanel>
+</Window>

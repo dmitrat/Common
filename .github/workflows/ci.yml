@@ -91,6 +91,10 @@ jobs:
               - 'NUnit/OutWit.Common.NUnit/**'
             OutWit.Common.Platform:
               - 'Platform/**'
+            OutWit.Common.Licensing:
+              - 'Licensing/**'
+              - 'Platform/**'
+              - 'Common/**'
             OutWit.Common.Plugins:
               - 'Plugins/OutWit.Common.Plugins/**'
               - 'Plugins/OutWit.Common.Plugins.Tests/**'

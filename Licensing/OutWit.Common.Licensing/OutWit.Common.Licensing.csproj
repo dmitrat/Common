@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
+
+		<Version>1.0.0</Version>
+
+		<Description>Offline software licensing for .NET: a compact signed licence token (JWS-style, ECDSA/RSA), a key ring scoped per product line, tolerant n-of-m machine binding, validation that reports a reason rather than a boolean, and a store that survives clock tampering. No BouncyCastle, no vendor service, no phone-home.</Description>
+		<PackageTags>OutWit;Common;Licensing;Licence;License;Activation;Fingerprint;Offline;ECDSA</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Licensing/OutWit.Common.Licensing</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="OutWit.Common.Licensing.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="OutWit.Common" Version="1.4.*" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+	</ItemGroup>
+
+	<!--
+	Platform supplies the per-OS machine factors that machine binding rests on.
+	ProjectReference rather than PackageReference because the factor API lands in
+	Platform 1.1.0, which ships together with this package.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\..\Platform\OutWit.Common.Platform\OutWit.Common.Platform.csproj" />
+	</ItemGroup>
+
+</Project>
