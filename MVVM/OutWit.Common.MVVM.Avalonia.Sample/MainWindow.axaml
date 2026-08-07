@@ -6,6 +6,7 @@
         xmlns:controls="clr-namespace:OutWit.Common.MVVM.Avalonia.Sample.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="OutWit.Common.MVVM.Avalonia.Sample.MainWindow"
+        x:DataType="local:MainViewModel"
         Title="OutWit.Common.MVVM.Avalonia Sample"
         Width="800" Height="600">
     

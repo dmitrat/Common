@@ -1,0 +1,32 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../WitCloud"
+		},
+		{
+			"path": "../../OmnibusCloud/WitSweep"
+		},
+		{
+			"path": "../@Legacy"
+		},
+		{
+			"path": "../Shared"
+		},
+		{
+			"path": "../WitIdentity"
+		},
+		{
+			"path": "../WitAnalytics"
+		},
+		{
+			"path": "../WitForms"
+		},
+		{
+			"path": "../WitLicense"
+		}
+	],
+	"settings": {}
+}
