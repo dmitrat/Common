@@ -59,6 +59,10 @@ on:
 permissions:
   contents: read
   packages: write
+  # Lets GitHub mint the OIDC token that nuget.org exchanges for a short-lived
+  # key. Without it the exchange fails quietly rather than loudly, which is the
+  # one failure worth naming here.
+  id-token: write
 
 jobs:
   publish:
@@ -164,11 +168,22 @@ jobs:
           --name github
           "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
+      # Trusted publishing: no stored API key. GitHub proves which repository and
+      # which workflow is asking, nuget.org checks that against its policy and
+      # returns a key valid for an hour. Nothing long-lived exists to leak, and
+      # nothing has to be rotated on a calendar.
+      - name: Authenticate to nuget.org (trusted publishing)
+        id: login
+        if: github.event.inputs.pushToNuGet == 'true' && (steps.collect.outputs.hasNupkg == 'True' || steps.collect.outputs.hasSnupkg == 'True')
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Push to nuget.org (.nupkg)
         if: github.event.inputs.pushToNuGet == 'true' && steps.collect.outputs.hasNupkg == 'True'
         run: >
           dotnet nuget push "NuGet\*.nupkg"
-          --api-key ${{ secrets.NUGET_API_KEY }}
+          --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
 
@@ -176,7 +191,7 @@ jobs:
         if: github.event.inputs.pushToNuGet == 'true' && steps.collect.outputs.hasSnupkg == 'True'
         run: >
           dotnet nuget push "NuGet\*.snupkg"
-          --api-key ${{ secrets.NUGET_API_KEY }}
+          --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
           --source https://api.nuget.org/v3/index.json
           --skip-duplicate
 
