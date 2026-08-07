@@ -30,11 +30,13 @@ PlatformDetector       // static GetCurrentPlatform()
 ISystemProfileProvider // → SystemProfile { Os, Cpu, Memory, Gpus[], TempStorage }
 ISystemHealthProvider  // → SystemHealthSnapshot { CpuLoadPercent, AvailableRamMb, GpuLoadPercent, IsUserActive, TimestampUtc }
 IMachineIdentityProvider // → stable hashed machine identity (SHA-256 hex)
+IMachineFactorsProvider  // → MachineFactor[] { Key, Value } — the same identity, kept apart
 IStandardDirectoryProvider // → User data / Shared data / Cache / Logs / Config / Temp directories
 
 SystemProfileProvider     : ISystemProfileProvider
 SystemHealthProvider      : ISystemHealthProvider, IDisposable
 MachineIdentityProvider   : IMachineIdentityProvider
+MachineFactorsProvider    : IMachineFactorsProvider
 StandardDirectoryProvider : IStandardDirectoryProvider
 ```
 
@@ -47,7 +49,36 @@ var health  = await new SystemHealthProvider().CollectAsync();
 var id      = await new MachineIdentityProvider(
                   new StandardDirectoryProvider("Acme", "MyApp")
               ).GetMachineIdentityAsync();
+var factors = await new MachineFactorsProvider().CollectAsync();
 ```
+
+## One identity, or several factors
+
+`IMachineIdentityProvider` collapses the machine into a single hash.
+`IMachineFactorsProvider` returns the same observations kept apart:
+
+```
+machine-id     = b84fe522-d160-424a-932e-642f9cfa8b3b   ← OS identity; survives hardware change
+primary-mac    = 50:EB:F6:26:50:F1                      ← physical adapter; survives OS reinstall
+machine-name   = DESKTOP-OFFICE                         ← weak, but free and independent
+```
+
+Reach for the factors when partial change has to be tolerated. Hardware drifts
+one component at a time, and a single combined hash turns a replaced network
+card into a support ticket; with factors, a caller can require *n of m* to
+still match. Reach for the single identity when a machine just needs a name.
+
+Values are returned **raw, never hashed** — hashing, storage and matching policy
+belong to the caller, and a diagnostics screen wants to show a human the real
+value. **Factors that cannot be read are omitted, never returned blank**, so two
+hosts that both failed to read something never look alike because of it.
+
+`primary-mac` picks the physical adapter and ignores the noise a real machine
+carries — hypervisor, container, VPN and Bluetooth adapters, tunnels, and the
+per-adapter filter-driver instances Windows enumerates. Wired is preferred over
+wireless, because some hosts randomise wireless addresses per network. Adapter
+**operational status is deliberately ignored**: unplugging a cable must not
+change the machine's identity.
 
 ## Architecture
 
@@ -106,6 +137,10 @@ answer** — providers never throw on missing data.
 | Available RAM MB | `PerformanceCounter("Memory", "Available MBytes")` | `/proc/meminfo` `MemAvailable` | `vm_stat` (free + inactive) | `/proc/meminfo` (inherited from Linux) | 0 |
 | User active | `GetLastInputInfo` P/Invoke (5-min idle threshold) | `true` (no headless API) | `true` (no headless API) | `true` (needs Android SDK PowerManager) | `true` |
 | Machine identity | Registry `MachineGuid` | `/etc/machine-id` / `/var/lib/dbus/machine-id` | `sysctl kern.uuid` | `build.prop ro.serialno` → Linux machine-id fallback | `null` (per-app GUID file) |
+| Machine factors | `machine-id` + `primary-mac` + `machine-name` | same | same | same | `primary-mac` + `machine-name` |
+
+`primary-mac` and `machine-name` come from the BCL and are therefore identical on
+every platform — one copy of the rules instead of one per probe.
 
 The Android probe stays **pure .NET** — it works on `net10.0` without an
 `android` TFM. Bridging real Android APIs (`Build`, `PowerManager`,
