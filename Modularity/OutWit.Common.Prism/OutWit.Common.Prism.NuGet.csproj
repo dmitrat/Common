@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	  <TargetFrameworks>net9.0-windows;net8.0-windows;net7.0-windows;net6.0-windows</TargetFrameworks>
@@ -27,9 +27,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OutWit.Common.Services" Version="1.0.0" />
-    <PackageReference Include="Prism.Wpf" Version="9.0.537" />
-    <PackageReference Include="Unity.Container" Version="5.11.11" />
+    <PackageReference Include="OutWit.Common.Services" />
+    <PackageReference Include="Prism.Wpf" />
+    <PackageReference Include="Unity.Container" />
   </ItemGroup>
 
 	<ItemGroup>

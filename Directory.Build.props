@@ -1,4 +1,16 @@
 <Project>
+
+	<PropertyGroup>
+		<!-- NU1507 asks for package source mapping whenever central package
+		     management meets more than one feed. The mapping belongs in
+		     nuget.config, which is .gitignored here because it carries a GitHub
+		     credential — so a committed mapping is not possible without first
+		     splitting credentials out into a user-level config. Suppressed rather
+		     than papered over: 756 copies of one warning hide the ones that
+		     matter. Revisit together with the credential split. -->
+		<NoWarn>$(NoWarn);NU1507</NoWarn>
+	</PropertyGroup>
+
   <PropertyGroup Condition="'$(IsTestProject)' != 'true' AND '$(IsPackable)' != 'false'">
 
 	<PackageId>$(MSBuildProjectName)</PackageId>
@@ -44,21 +56,21 @@
 	</ItemGroup>-->
   
 	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102">
+		<PackageReference Include="Microsoft.SourceLink.GitHub">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102">
+		<PackageReference Include="Microsoft.SourceLink.GitHub">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'netstandard2.0'">
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+		<PackageReference Include="Microsoft.SourceLink.GitHub">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

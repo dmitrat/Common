@@ -1,0 +1,182 @@
+<Project>
+
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+
+		<!-- OutWit's own packages float within a band (1.4.*) so a sibling repo
+		     picks up a minor without an edit. Third-party versions are exact:
+		     that asymmetry is the pinning discipline, not an oversight. -->
+		<CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+	</PropertyGroup>
+
+	<!-- ===================================================================
+	     Every third-party version for this repository lives here and nowhere
+	     else. A PackageReference in a .csproj carries no Version attribute.
+
+	     DO NOT RAISE AspectInjector. It is pinned at 2.8.2 deliberately:
+	     upgrading it has been tried and it breaks. It is woven into
+	     OutWit.Common.Aspects and OutWit.Common.DependencyInjection, and
+	     from there into everything, so a bad weave builds green and fails
+	     at runtime. Any "update everything" sweep must skip it.
+	     =================================================================== -->
+
+	<ItemGroup>
+		<PackageVersion Include="AspectInjector" Version="2.8.2" />
+		<PackageVersion Include="Avalonia" Version="12.1.1" />
+		<PackageVersion Include="Avalonia.Desktop" Version="12.1.1" />
+		<PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.1" />
+		<PackageVersion Include="Avalonia.Headless.NUnit" Version="12.1.1" />
+		<PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+		<PackageVersion Include="CommandLineParser" Version="2.9.1" />
+		<PackageVersion Include="CsvHelper" Version="33.1.0" />
+		<PackageVersion Include="MaterialDesignThemes" Version="5.1.0" />
+		<PackageVersion Include="MemoryPack" Version="1.21.4" />
+		<PackageVersion Include="MessagePack" Version="3.1.8" />
+		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+		<PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+		<PackageVersion Include="Moq" Version="4.20.72" />
+		<PackageVersion Include="MudBlazor" Version="8.15.0" />
+		<PackageVersion Include="NUnit" Version="4.5.1" />
+		<PackageVersion Include="NUnit.Analyzers" Version="4.11.2" />
+		<PackageVersion Include="OutWit.Common" Version="1.4.*" />
+		<PackageVersion Include="OutWit.Common.Aspects" Version="1.3.*" />
+		<PackageVersion Include="OutWit.Common.MVVM" Version="2.0.*" />
+		<PackageVersion Include="OutWit.Common.MVVM.WPF" Version="2.*" />
+		<PackageVersion Include="OutWit.Common.MemoryPack" Version="1.1.3" />
+		<PackageVersion Include="OutWit.Common.Services" Version="1.0.0" />
+		<PackageVersion Include="OutWit.Communication.Client.Blazor" Version="1.0.2" />
+		<PackageVersion Include="OutWit.Communication.Server.DependencyInjection" Version="2.3.6" />
+		<PackageVersion Include="OutWit.Communication.Server.WebSocket" Version="2.3.1" />
+		<PackageVersion Include="OutWit.Database.EntityFramework" Version="1.0.1" />
+		<PackageVersion Include="Prism.Wpf" Version="9.0.537" />
+		<PackageVersion Include="Serilog" Version="4.3.0" />
+		<PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
+		<PackageVersion Include="Serilog.Sinks.Debug" Version="3.0.0" />
+		<PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageVersion Include="Serilog.Sinks.TestCorrelator" Version="4.0.0" />
+		<PackageVersion Include="System.ComponentModel.Composition" Version="9.0.7" />
+		<PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+		<PackageVersion Include="Unity.Container" Version="5.11.11" />
+		<PackageVersion Include="bunit" Version="2.4.2" />
+		<PackageVersion Include="coverlet.collector" Version="6.0.4" />
+		<PackageVersion Include="protobuf-net" Version="3.2.56" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'netstandard2.0'">
+		<PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+	</ItemGroup>
+
+	<!-- Microsoft.NET.Test.Sdk refuses net6.0/net7.0 from 17.11 onwards. Held at the
+	     last version that accepts them rather than dropping the targets, because
+	     removing a TFM is a breaking change and belongs in its own major wave,
+	     not here. This whole group disappears when that wave lands. -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0'">
+		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+		<PackageVersion Include="NUnit3TestAdapter" Version="5.0.0" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' != 'net6.0' and '$(TargetFramework)' != 'net7.0'">
+		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+		<PackageVersion Include="NUnit3TestAdapter" Version="6.0.1" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net10.0'">
+		<PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.102" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+		<PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="10.0.5" />
+		<PackageVersion Include="System.Management" Version="10.0.5" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="6.0.36" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="7.0.20" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="8.0.22" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.24" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.11" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.13" />
+	</ItemGroup>
+
+	<!-- netstandard2.0 keeps the 8.x line for this one package. It is the surface
+	     a .NET Framework consumer binds against, and raising its floor to 10.x is
+	     a real change for them rather than an alignment — the rest of this file
+	     deliberately never moves a floor. -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'netstandard2.0'">
+		<PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
+		<PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
+		<PackageVersion Include="System.Reflection.MetadataLoadContext" Version="10.0.2" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0'">
+		<PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.3" />
+		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
+		<PackageVersion Include="Serilog.Extensions.Logging" Version="8.0.0" />
+		<PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="8.0.1" />
+		<PackageVersion Include="System.Management" Version="8.0.0" />
+		<PackageVersion Include="System.Reflection.MetadataLoadContext" Version="8.0.1" />
+		<PackageVersion Include="System.Text.Json" Version="8.0.5" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0'">
+		<PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.8" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.12" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.12" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.12" />
+		<PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.12" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.12" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.12" />
+		<PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.8" />
+		<PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.12" />
+		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+		<PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.2" />
+		<PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.12" />
+		<PackageVersion Include="System.Management" Version="9.0.12" />
+		<PackageVersion Include="System.Reflection.MetadataLoadContext" Version="9.0.7" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0'">
+		<PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'netstandard2.0'">
+		<PackageVersion Include="System.Text.Json" Version="10.0.2" />
+	</ItemGroup>
+
+</Project>

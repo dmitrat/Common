@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OutWit.Common.MVVM.WPF" Version="2.*" />
+    <PackageReference Include="OutWit.Common.MVVM.WPF" />
   </ItemGroup>
 
   <ItemGroup>

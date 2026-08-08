@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MemoryPack" Version="1.21.4" />
+		<PackageReference Include="MemoryPack" />
 	</ItemGroup>
 
 	<ItemGroup>

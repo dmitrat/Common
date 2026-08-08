@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
@@ -24,8 +24,8 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OutWit.Common.Aspects" Version="1.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="OutWit.Common.Aspects" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
   </ItemGroup>
 
 	<ItemGroup>

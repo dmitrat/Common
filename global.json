@@ -1,0 +1,8 @@
+{
+  "//": "Pins the SDK so the Roslyn that compiles the source generators is the same on every machine and in CI. Without this, a developer with a newer SDK compiles the generators against a different analyzer API than CI does, and the difference only shows up as generated code that differs.",
+  "sdk": {
+    "version": "10.0.300",
+    "rollForward": "latestFeature",
+    "allowPrerelease": false
+  }
+}

@@ -141,8 +141,12 @@ public class RelayCommandExtendedTests
 
         Assert.That(syncExecuted, Is.True, "Sync command should execute immediately");
 
-        Task.Delay(50).Wait();
-        Assert.That(asyncExecuted, Is.True, "Async command should complete");
+        // Polled rather than slept on: ICommand.Execute is fire-and-forget, so
+        // there is no task to await, and a fixed 50 ms was not enough for a 10 ms
+        // continuation once the whole solution runs its suites in parallel. The
+        // test then failed roughly one run in three, on timing rather than on
+        // behaviour.
+        Assert.That(() => asyncExecuted, Is.True.After(5000, 10), "Async command should complete");
     }
 
     #endregion
