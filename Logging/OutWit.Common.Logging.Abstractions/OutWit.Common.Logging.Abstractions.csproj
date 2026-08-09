@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 
-		<Version>1.0.1</Version>
+		<Version>1.0.2</Version>
 
 		<Description>Lightweight logging abstractions for the OutWit.Common.Logging ecosystem (ILogManager, ILogger extension helpers).</Description>
 		<PackageTags>OutWit;Common;Logging;Abstractions</PackageTags>

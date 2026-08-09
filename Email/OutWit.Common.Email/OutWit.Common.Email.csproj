@@ -4,7 +4,7 @@
 		<TargetFrameworks>netstandard2.0;net10.0;net9.0;net8.0;net7.0;net6.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 
-		<Version>1.0.1</Version>
+		<Version>1.0.2</Version>
 
 		<Description>Vendor-neutral email model and template primitives for the OutWit ecosystem: IEmailTransport, EmailMessage, EmailSendResult, and a simple file-based template renderer/provider.</Description>
 		<PackageTags>OutWit;Common;Email;Templates;Smtp</PackageTags>
