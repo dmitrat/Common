@@ -188,17 +188,33 @@ returns to `Licensed` with no support call and no reissue.
 
 ### 3.3 What each product refuses, concretely
 
-| | WitSweep | WitCloud (on-prem) |
-|---|---|---|
-| Never affected | Launch, open a deck, edit parameters, view and export results, sign in, licence panel | Start, `/health`, admin UI, sign-in, dashboards, accounting export, licence panel, **running jobs finish** |
-| `Restricted` refuses | Submit a sweep | Accept a **new** job; register a **new** node |
-| Failure surface | A dialog on the attempted action **plus** a persistent banner | A banner in the admin UI, a field on `/health`, a log line at `Warning`, and a licensing-specific `Result.Rejected` reason on the refused call |
-| Who fixes it | The engineer at the keyboard | An operator who may be asleep — hence the grace and the 30-day warning |
+| | WitSweep | WitCloud (on-prem) | Inventor add-in |
+|---|---|---|---|
+| What starts | The application | The service | **Autodesk Inventor. Not us** |
+| Never affected | Launch, open a deck, edit parameters, view and export results, sign in, licence panel | Start, `/health`, admin UI, sign-in, dashboards, accounting export, licence panel, **running jobs finish** | Inventor itself, the add-in loading, the ribbon appearing, the settings dialog — fingerprint, request export, licence paste |
+| `Restricted` refuses | Submit a sweep | Accept a **new** job; register a **new** node | Invoke the add-in's functions |
+| Failure surface | A dialog on the attempted action **plus** a persistent banner | A banner in the admin UI, a field on `/health`, a log line at `Warning`, and a licensing-specific `Result.Rejected` reason on the refused call | The ribbon command is **visibly disabled and says why** — never a silent no-op |
+| Who fixes it | The engineer at the keyboard | An operator who may be asleep — hence the grace and the 30-day warning | The engineer at the keyboard |
 
-The asymmetry the user asked about resolves as: **neither product refuses to
-start.** For WitCloud the answer is not "refuse start *or* degrade to
-read-only", it is degrade — refusing to start is forbidden by §2.2, because the
-admin UI is where the licence gets pasted.
+The asymmetry the user asked about resolves as: **no product refuses to start.**
+For WitCloud the answer is not "refuse start *or* degrade to read-only", it is
+degrade — refusing to start is forbidden by §2.2, because the admin UI is where
+the licence gets pasted. WitSweep is the same rule from the other end: it must
+launch, and what it withholds is the productive verb, never the customer's
+access to work they already paid for.
+
+**The add-in makes that rule physical rather than chosen.** There is no start
+moment to refuse: Inventor loads the add-in, and by then the host is already
+running. Everything the design says about level 0 therefore applies to it
+without an argument being needed — the settings dialog is reachable because
+nothing was ever in a position to prevent it.
+
+That third column carries one hazard the other two do not. "The functions are
+simply not called" is the natural way to implement a disabled add-in and the
+worst possible failure surface: the user clicks, nothing happens, and they
+report a broken plugin. A refusal must name its own axis (§2.1), so a
+`Restricted` add-in disables its commands **visibly**, with the reason on the
+control, and offers the settings dialog as the way out.
 
 ---
 
@@ -315,6 +331,18 @@ Two of these need a decision now rather than later:
   anyway, they get `kind: none` with a short term and a renewal cadence — the
   contract does the work the binding cannot.
 
+  **This answer does not transfer to the Inventor add-in, and the difference is
+  the audience, not the technology.** "We do not sell for VDI" is a position one
+  can hold about a tool a customer chooses to install; it is much harder to hold
+  about an add-in for a CAD package whose seats their IT department has already
+  standardised on Citrix or a pooled workstation image. The add-in also faces
+  routine re-imaging from a corporate template, which is a rebuild the machine
+  factors read as a different machine. So **the add-in's factor set is chosen on
+  its own evidence, not copied from WitSweep** — and the rule in §7.8.3 still
+  decides it: a factor earns its place only if lying about it breaks the
+  deployment. Where that leaves fewer than three usable factors, the threshold
+  field from the bullet above is the mechanism, not an exception to it.
+
 The wholesale-VM-clone case is unfixable offline and is already covered by
 [`DESIGN.md`](DESIGN.md) §3.2. It stays in the docs, not in the code.
 
@@ -388,7 +416,7 @@ through §3 and §8–§9 turned up eight gaps. All are small; several are block
 | # | Gap | Why it blocks | Size |
 |---|---|---|---|
 | 1 | **No `StateChanged` event on `ILicenseService`** | The house `UpdateStatus()` pattern has nothing to subscribe to; a banner cannot refresh; `CanRun` cannot re-gate a command | Small |
-| 2 | **No periodic re-evaluation** | `ReloadAsync` is only ever called by hand. A server up for four months crosses `exp` and never notices until it restarts | Small — a timer + `IHostedService` arm |
+| 2 | **No periodic re-evaluation** | `ReloadAsync` is only ever called by hand. A server up for four months crosses `exp` and never notices until it restarts — and this is **not only a server concern**: an Inventor session runs for days and a draughtsman does not restart their CAD, so a client add-in crosses `exp` mid-session exactly the same way | Small — a timer, with an `IHostedService` arm for services and a plain timer for clients |
 | 3 | **No `LicenseMode` / grace** (§3) | `CanRun` cannot express "expired but inside grace"; the products would each invent their own | Medium |
 | 4 | **No env-var or composite store** | [`DESIGN.md`](DESIGN.md) §13 promises `Licensing__License` for Docker. Only `LicenseStoreFile` and `LicenseStoreMemory` exist | Small — `LicenseStoreComposite` + `LicenseStoreEnvironment` |
 | 5 | **No uninstall on `ILicenseService`** | `ILicenseStore.Remove` exists; the service does not expose it, so the panel cannot remove a superseded document | Trivial |
@@ -495,9 +523,9 @@ missing.
 There are two shapes of consumer, and they differ in the one dimension that
 matters:
 
-| | **Services** — WitCloud, WitIdentity, WitForms, WitAnalytics, WitLicense | **Clients** — WitSweep, future desktop apps |
+| | **Services** — WitCloud, WitIdentity, WitForms, WitAnalytics, WitLicense | **Clients** — WitSweep, the Inventor add-in, future desktop apps |
 |---|---|---|
-| Built from | The OutWit product template: Kestrel + WitRPC + Blazor WASM admin + OIDC | Nothing shared — Avalonia here, WPF there, whatever next |
+| Built from | The OutWit product template: Kestrel + WitRPC + Blazor WASM admin + OIDC | Nothing shared — **Avalonia in WitSweep, WPF in the add-in**, whatever next |
 | Panel runs in | **The browser** | The app process |
 | `ILicenseService` lives in | **The host** | The same process |
 | Distance to the licence | A WitRPC round trip | A field |
@@ -1257,17 +1285,24 @@ use of something already built.
 
 **Blocking — needed before a single licence can be issued to a product:**
 
-1. **Catalogue entries for `WitCloud`, `WitIdentity` and `WitSweep`** — feature
-   and limit vocabularies, binding kinds, version ranges. The service ships empty
-   by design (`WitLicense/DESIGN.md` §2), so nothing can be issued until these
-   exist. They must agree exactly with what each product passes to
-   `Declares(...)`, or the customer silently does not get what they bought (§6 of
-   that document names this hazard) — which is what §11.8 proposes to fix at the
-   root rather than by proof-reading.
+1. **Catalogue entries for `WitCloud`, `WitIdentity`, `WitSweep` and the Inventor
+   add-in** — feature and limit vocabularies, binding kinds, version ranges. The
+   service ships empty by design (`WitLicense/DESIGN.md` §2), so nothing can be
+   issued until these exist. They must agree exactly with what each product
+   passes to `Declares(...)`, or the customer silently does not get what they
+   bought (§6 of that document names this hazard) — which is what §11.8 proposes
+   to fix at the root rather than by proof-reading.
+
+   **The add-in is a fourth product, not a WitSweep feature.** It gets its own
+   catalogue entry, its own key ring and its own licence, and buying WitSweep
+   does not convey it. If that is ever meant to change, the place to decide it is
+   the price list, before the first licence is issued — a licence already in a
+   customer's hands is the most expensive place to discover that two products
+   were meant to be one.
 2. **Key ring export, exercised** — generate the production and development keys
-   for all three product lines, export `witcloud.keyring.json`,
-   `witidentity.keyring.json` and `witsweep.keyring.json`, and consume one in the
-   harness (§6.1) before any product embeds it.
+   for all four product lines, export `witcloud.keyring.json`,
+   `witidentity.keyring.json`, `witsweep.keyring.json` and the add-in's, and
+   consume one in the harness (§6.1) before any product embeds it.
 3. **Short-term issue presets** — **1 hour, 1 day, 7 days**, alongside the
    existing durations. An hour-scale term is what makes expiry, grace and
    renewal overlap testable in real time instead of by clock travel; clock
@@ -1669,9 +1704,10 @@ data-plumbing task rather than a design task.
 | **V0** | Library gaps 1–8 (§5) + `LicenseMode` + `LicenseSnapshot` → `OutWit.Common.Licensing` **1.1.0** | Mode, `StateChanged`, periodic re-evaluation, composite/env store and the snapshot exist and are tested |
 | **V1** | `OutWit.Common.Licensing.MVVM` **1.0.0** (§7) — gateway, local gateway, panel VM, the two seams | The **harness** binds to it (§7.5) and nothing about the harness's behaviour changed |
 | **V2** | Extend the Avalonia harness (§6.1) | Mode is visible; a real key ring is loaded; a real licence issued by `license.omnibuscloud.com` and delivered **by email** installs and validates; a staged renewal switches over at `exp` |
-| **V3** | Issuing-side blockers §10.1–§10.5 | Three products in the catalogue; three key rings exported; short-term presets live; the `appVer` default and its `Unlimited` rule enforced by the form; the binding kind and threshold are choosable |
+| **V3** | Issuing-side blockers §10.1–§10.5 | Four products in the catalogue; four key rings exported; short-term presets live; the `appVer` default and its `Unlimited` rule enforced by the form; the binding kind and threshold are choosable |
 | **V4** | The containerised mock (§6.2), the key-ring generator (§11.7.3) and the vocabulary generator (§11.8.3) | `installId` from `.env` survives `--force-recreate` and the fallback file form works when it is unset; two containers produce two distinct fingerprints and neither accepts the other's licence; URL normalisation survives a trailing slash; env var and file drop both work; a licence applies with no restart; feature keys are compile-checked |
 | **V5** | **WitSweep** (§8) — Settings screen + Licence section + gate | Demo on first launch, panel reachable in every mode, Run gated with a distinct message, licence installs from a paste, level 0 verified untouched |
+| **V5′** | **The Inventor add-in** — settings dialog + ribbon gate. Scheduled by when the add-in itself exists, not by this plan | The add-in loads and its ribbon appears in every mode; commands are visibly disabled with a reason rather than silently inert; the settings dialog shows the fingerprint, exports a request and accepts a licence; the panel ViewModel is bound from **WPF** with no change to the package |
 | **V6** | `OutWit.Shared.Licensing.*` (§7.4) — contracts, host, Blazor | The containerised mock (V4) is re-pointed at the real admin-guarded channel and the shared host wiring. **The Blazor half is not proven here** — see §12.1 |
 | **V7** | **WitCloud** (§9.1–§9.6) — the five lines + gates | Demo at first start, page + `/health`, node and job gates, cap-as-throttle, grace and banner, `Reconnect` deliberately ungated |
 | **V8** | **WitIdentity** (§9.7) — the same five lines + its two gates | Authentication verified untouched in `Restricted`; new accounts and new clients refused with a licensing reason; the two services carry **two independent licences** and each refuses the other's |
@@ -1690,6 +1726,14 @@ Three ordering constraints carry real weight:
   Building WitSweep's panel first and extracting the shared piece afterwards
   would invert that, and the extraction would be shaped by whichever product
   happened to go first.
+
+  **V5 and V5′ together are what actually test §7.1**, and they test it from
+  opposite ends. WitSweep is nearly finished, so licensing it is a *retrofit* —
+  and something can always be fitted into a product that already exists. The
+  add-in has not been written, so licensing it is *greenfield*, and that is the
+  honest measurement: what it costs to license a product from the start is the
+  number §7.1 claims. The pair also settles the portability claim in §7.3, since
+  one binds the same ViewModel from Avalonia and the other from WPF.
 - **V6 before V7.** WitCloud is the *first consumer* of
   `OutWit.Shared.Licensing.*`, not its author. Writing a bespoke channel and page
   in WitCloud "and generalising later" is how four services end up with four
