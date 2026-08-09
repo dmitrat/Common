@@ -14,8 +14,8 @@
 </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OutWit.Common.Aspects" />
-    <PackageReference Include="OutWit.Common.MemoryPack" />
+    <ProjectReference Include="..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
+    <ProjectReference Include="..\..\Serialization\MemoryPack\OutWit.Common.MemoryPack\OutWit.Common.MemoryPack.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">

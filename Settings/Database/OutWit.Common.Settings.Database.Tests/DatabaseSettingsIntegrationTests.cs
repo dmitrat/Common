@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using OutWit.Common.Settings.Configuration;
 using OutWit.Common.Settings.Database;
 using OutWit.Common.Settings.Database.Tests.Utils;
-using OutWit.Database.EntityFramework.Extensions;
 
 namespace OutWit.Common.Settings.Database.Tests
 {
@@ -30,6 +30,11 @@ namespace OutWit.Common.Settings.Database.Tests
         [TearDown]
         public void TearDown()
         {
+            // Microsoft.Data.Sqlite pools connections, so the file stays open
+            // after the DbContext is disposed and the directory refuses to go.
+            // The previous provider released eagerly; this one has to be told.
+            SqliteConnection.ClearAllPools();
+
             if (Directory.Exists(m_testDir))
                 Directory.Delete(m_testDir, recursive: true);
         }
@@ -43,7 +48,7 @@ namespace OutWit.Common.Settings.Database.Tests
         {
             var defaultDb = GetDbPath("defaults");
             var provider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
 
             provider.Write("General", new[]
             {
@@ -53,7 +58,7 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .Build();
 
             manager.Load();
@@ -75,7 +80,7 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("Advanced", "Verbose", "False", "Boolean"));
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .Build();
 
             manager.Load();
@@ -97,15 +102,15 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "DarkMode", "False", "Boolean"));
 
             var userProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             userProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "UserName", Value = "john", ValueKind = "String" }
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Load();
@@ -121,7 +126,7 @@ namespace OutWit.Common.Settings.Database.Tests
         {
             var defaultDb = GetDbPath("defaults");
             var provider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
 
             provider.Write("General", new[]
             {
@@ -129,7 +134,7 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .Build();
 
             manager.Load();
@@ -143,7 +148,7 @@ namespace OutWit.Common.Settings.Database.Tests
         {
             var defaultDb = GetDbPath("defaults");
             var provider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
 
             provider.Write("General", new[]
             {
@@ -152,7 +157,7 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .Build();
 
             manager.Load();
@@ -168,7 +173,7 @@ namespace OutWit.Common.Settings.Database.Tests
             // Split built-in types across two tests with separate databases.
             var defaultDb = GetDbPath("defaults");
             var provider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
 
             provider.Write("Types", new[]
             {
@@ -181,7 +186,7 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .Build();
 
             manager.Load();
@@ -201,7 +206,7 @@ namespace OutWit.Common.Settings.Database.Tests
             // WitDb has a 9-row-per-table limit — see _WitDatabase/SaveChanges-Limit-Bug.md
             var defaultDb = GetDbPath("defaults");
             var provider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
 
             provider.Write("Types", new[]
             {
@@ -214,7 +219,7 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .Build();
 
             manager.Load();
@@ -242,8 +247,8 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "DarkMode", "False", "Boolean"));
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Load();
@@ -252,7 +257,7 @@ namespace OutWit.Common.Settings.Database.Tests
             manager.Save();
 
             var readBack = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             var entries = readBack.Read("General");
             Assert.That(entries, Has.Count.EqualTo(2));
             Assert.That(entries.First(e => e.Key == "UserName").Value, Is.EqualTo("john"));
@@ -266,7 +271,7 @@ namespace OutWit.Common.Settings.Database.Tests
             var userDb = GetDbPath("user");
 
             var defaultProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
             defaultProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "Mode", Value = "Monday", ValueKind = "Enum", Tag = "System.DayOfWeek, System.Runtime" },
@@ -274,15 +279,15 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Load();
             manager.Save();
 
             var readBack = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             var entries = readBack.Read("General");
 
             var mode = entries.First(e => e.Key == "Mode");
@@ -308,8 +313,8 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "Port", "8080", "Integer"));
 
             var manager1 = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager1.Load();
@@ -318,8 +323,8 @@ namespace OutWit.Common.Settings.Database.Tests
             manager1.Save();
 
             var manager2 = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager2.Load();
@@ -346,8 +351,8 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("Advanced", "Verbose", "False", "Boolean"));
 
             var manager1 = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager1.Load();
@@ -356,8 +361,8 @@ namespace OutWit.Common.Settings.Database.Tests
             manager1.Save();
 
             var manager2 = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager2.Load();
@@ -375,15 +380,15 @@ namespace OutWit.Common.Settings.Database.Tests
             var userDb = GetDbPath("user");
 
             var defaultProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
             defaultProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "Day", Value = "Monday", ValueKind = "Enum", Tag = "System.DayOfWeek, System.Runtime" }
             });
 
             var manager1 = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager1.Load();
@@ -391,8 +396,8 @@ namespace OutWit.Common.Settings.Database.Tests
             manager1.Save();
 
             var manager2 = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager2.Load();
@@ -417,21 +422,21 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "Theme", "Light", "String"));
 
             var userProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             userProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "Name", Value = "john", ValueKind = "String" }
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Merge();
 
             var readBack = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             var entries = readBack.Read("General");
 
             Assert.That(entries, Has.Count.EqualTo(2));
@@ -449,7 +454,7 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "Name", "admin", "String"));
 
             var userProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             userProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "Name", Value = "john", ValueKind = "String" },
@@ -457,14 +462,14 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Merge();
 
             var readBack = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             var entries = readBack.Read("General");
 
             Assert.That(entries, Has.Count.EqualTo(1));
@@ -483,7 +488,7 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "NewSetting", "default", "String"));
 
             var userProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             userProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "Name", Value = "john", ValueKind = "String" },
@@ -491,8 +496,8 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Merge();
@@ -522,7 +527,7 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "C", "default_c", "String"));
 
             var globalProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={globalDb}"));
+                o => o.UseSqlite($"Data Source={globalDb}"));
             globalProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "A", Value = "global_a", ValueKind = "String" },
@@ -530,17 +535,17 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var userProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             userProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "A", Value = "user_a", ValueKind = "String" }
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .AddProvider(SettingsScope.Global, new DatabaseSettingsProvider(
-                    o => o.UseWitDb($"Data Source={globalDb}")))
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                    o => o.UseSqlite($"Data Source={globalDb}")))
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Load();
@@ -565,8 +570,8 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "Name", "admin", "String"));
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Load();
@@ -580,7 +585,7 @@ namespace OutWit.Common.Settings.Database.Tests
         {
             var defaultDb = GetDbPath("defaults");
             var provider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
 
             provider.Write("General", new[]
             {
@@ -589,7 +594,7 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .Build();
 
             manager.Load();
@@ -642,7 +647,7 @@ namespace OutWit.Common.Settings.Database.Tests
 
             var manager1 = new SettingsBuilder()
                 .UseDatabase(() => new TestAppDbContext(options), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager1.Load();
@@ -652,7 +657,7 @@ namespace OutWit.Common.Settings.Database.Tests
 
             var manager2 = new SettingsBuilder()
                 .UseDatabase(() => new TestAppDbContext(options), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager2.Load();
@@ -678,7 +683,7 @@ namespace OutWit.Common.Settings.Database.Tests
 
             var userDb = GetDbPath("shared_user");
             var userProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             userProvider.Write("General", new[]
             {
                 new Providers.SettingsEntry { Group = "General", Key = "Name", Value = "john", ValueKind = "String" }
@@ -686,13 +691,13 @@ namespace OutWit.Common.Settings.Database.Tests
 
             var manager = new SettingsBuilder()
                 .UseDatabase(() => new TestAppDbContext(options), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Merge();
 
             var readBack = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             var entries = readBack.Read("General");
 
             Assert.That(entries, Has.Count.EqualTo(2));
@@ -770,7 +775,7 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("Advanced", "Timeout", "30", "Integer"));
 
             var defaultProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
             defaultProvider.WriteGroupInfo(new[]
             {
                 new Providers.SettingsGroupInfo { Group = "General", DisplayName = "Main", Priority = 1 },
@@ -778,8 +783,8 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager1 = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager1.Load();
@@ -791,7 +796,7 @@ namespace OutWit.Common.Settings.Database.Tests
             manager1.Save();
 
             var userProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             var infos = userProvider.ReadGroupInfo();
             Assert.That(infos.First(g => g.Group == "General").Priority, Is.EqualTo(10));
         }
@@ -805,7 +810,7 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "Name", "admin", "String"));
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .Build();
 
             manager.Load();
@@ -824,14 +829,14 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "Name", "admin", "String"));
 
             var defaultProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
             defaultProvider.WriteGroupInfo(new[]
             {
                 new Providers.SettingsGroupInfo { Group = "General", DisplayName = "From DB", Priority = 5 }
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
                 .ConfigureGroup("General", priority: 1, displayName: "From Code")
                 .Build();
 
@@ -855,7 +860,7 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("General", "Name", "admin", "String"));
 
             var defaultProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={defaultDb}"));
+                o => o.UseSqlite($"Data Source={defaultDb}"));
             defaultProvider.WriteGroupInfo(new[]
             {
                 new Providers.SettingsGroupInfo { Group = "General", DisplayName = "Main", Priority = 1 }
@@ -866,7 +871,7 @@ namespace OutWit.Common.Settings.Database.Tests
                 ("Legacy", "Old", "obsolete", "String"));
 
             var userProviderSeed = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             userProviderSeed.WriteGroupInfo(new[]
             {
                 new Providers.SettingsGroupInfo { Group = "General", DisplayName = "User Main", Priority = 5 },
@@ -874,14 +879,14 @@ namespace OutWit.Common.Settings.Database.Tests
             });
 
             var manager = new SettingsBuilder()
-                .UseDatabase(o => o.UseWitDb($"Data Source={defaultDb}"), SettingsScope.Default)
-                .UseDatabase(o => o.UseWitDb($"Data Source={userDb}"), SettingsScope.User)
+                .UseDatabase(o => o.UseSqlite($"Data Source={defaultDb}"), SettingsScope.Default)
+                .UseDatabase(o => o.UseSqlite($"Data Source={userDb}"), SettingsScope.User)
                 .Build();
 
             manager.Merge();
 
             var userProvider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={userDb}"));
+                o => o.UseSqlite($"Data Source={userDb}"));
             Assert.That(userProvider.GetGroups(), Has.Count.EqualTo(1));
             Assert.That(userProvider.GetGroups()[0], Is.EqualTo("General"));
             Assert.That(userProvider.Read("Legacy"), Is.Empty);
@@ -899,13 +904,13 @@ namespace OutWit.Common.Settings.Database.Tests
 
         private string GetDbPath(string name)
         {
-            return Path.Combine(m_testDir, $"{name}_{Guid.NewGuid():N}.witdb");
+            return Path.Combine(m_testDir, $"{name}_{Guid.NewGuid():N}.db");
         }
 
         private static void SeedDefaults(string dbPath, params (string Group, string Key, string Value, string ValueKind)[] entries)
         {
             var provider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={dbPath}"));
+                o => o.UseSqlite($"Data Source={dbPath}"));
 
             foreach (var group in entries.GroupBy(e => e.Group))
             {
@@ -922,7 +927,7 @@ namespace OutWit.Common.Settings.Database.Tests
         private static DbContextOptions<TestAppDbContext> CreateSharedOptions(string dbPath)
         {
             return new DbContextOptionsBuilder<TestAppDbContext>()
-                .UseWitDb($"Data Source={dbPath}")
+                .UseSqlite($"Data Source={dbPath}")
                 .Options;
         }
 

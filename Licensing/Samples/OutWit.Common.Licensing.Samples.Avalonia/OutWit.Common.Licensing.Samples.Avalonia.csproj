@@ -21,8 +21,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OutWit.Common.Aspects" />
-		<PackageReference Include="OutWit.Common.MVVM" />
+		<ProjectReference Include="..\..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
+		<ProjectReference Include="..\..\..\MVVM\OutWit.Common.MVVM\OutWit.Common.MVVM.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,7 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using OutWit.Common.Settings.Configuration;
 using OutWit.Common.Settings.Database;
 using OutWit.Common.Settings.Interfaces;
-using OutWit.Database.EntityFramework.Extensions;
 using OutWit.Common.Settings.Samples.Serializers;
 
 namespace OutWit.Common.Settings.Samples.Wpf.Module.Database
@@ -21,7 +21,7 @@ namespace OutWit.Common.Settings.Samples.Wpf.Module.Database
 
             Manager = new SettingsBuilder()
                 .AddCustomSerializers()
-                .UseDatabase(path => o => o.UseWitDb($"Data Source={path}"))
+                .UseDatabase(path => o => o.UseSqlite($"Data Source={path}"))
                 .RegisterContainer<AdvancedSettings>()
                 .Build();
 

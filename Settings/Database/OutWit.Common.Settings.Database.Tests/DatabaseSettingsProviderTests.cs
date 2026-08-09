@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using OutWit.Common.Settings.Database.Tests.Utils;
 using OutWit.Common.Settings.Providers;
-using OutWit.Database.EntityFramework.Extensions;
 
 namespace OutWit.Common.Settings.Database.Tests
 {
@@ -29,6 +29,11 @@ namespace OutWit.Common.Settings.Database.Tests
         [TearDown]
         public void TearDown()
         {
+            // Microsoft.Data.Sqlite pools connections, so the file stays open
+            // after the DbContext is disposed and the directory refuses to go.
+            // The previous provider released eagerly; this one has to be told.
+            SqliteConnection.ClearAllPools();
+
             if (Directory.Exists(m_testDir))
                 Directory.Delete(m_testDir, recursive: true);
         }
@@ -365,7 +370,7 @@ namespace OutWit.Common.Settings.Database.Tests
             var dbPath = GetDbPath();
 
             var options = new DbContextOptionsBuilder<TestAppDbContext>()
-                .UseWitDb($"Data Source={dbPath}")
+                .UseSqlite($"Data Source={dbPath}")
                 .Options;
 
             using (var context = new TestAppDbContext(options))
@@ -512,13 +517,13 @@ namespace OutWit.Common.Settings.Database.Tests
 
         private string GetDbPath()
         {
-            return Path.Combine(m_testDir, $"{Guid.NewGuid()}.witdb");
+            return Path.Combine(m_testDir, $"{Guid.NewGuid()}.db");
         }
 
         private static DatabaseSettingsProvider CreateProvider(string dbPath, bool isReadOnly = false)
         {
             return new DatabaseSettingsProvider(
-                options => options.UseWitDb($"Data Source={dbPath}"),
+                options => options.UseSqlite($"Data Source={dbPath}"),
                 isReadOnly);
         }
 
@@ -542,7 +547,7 @@ namespace OutWit.Common.Settings.Database.Tests
         private static void InitSharedDatabase(string dbPath)
         {
             var options = new DbContextOptionsBuilder<TestAppDbContext>()
-                .UseWitDb($"Data Source={dbPath}")
+                .UseSqlite($"Data Source={dbPath}")
                 .Options;
 
             using var context = new TestAppDbContext(options);
@@ -552,7 +557,7 @@ namespace OutWit.Common.Settings.Database.Tests
         private static DatabaseSettingsProvider CreateSharedProvider(string dbPath, bool isReadOnly = false)
         {
             var options = new DbContextOptionsBuilder<TestAppDbContext>()
-                .UseWitDb($"Data Source={dbPath}")
+                .UseSqlite($"Data Source={dbPath}")
                 .Options;
 
             return new DatabaseSettingsProvider(

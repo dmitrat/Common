@@ -33,6 +33,11 @@
 		<PackageVersion Include="MaterialDesignThemes" Version="5.1.0" />
 		<PackageVersion Include="MemoryPack" Version="1.21.4" />
 		<PackageVersion Include="MessagePack" Version="3.1.8" />
+		<!-- The neutral relational provider the settings tests and samples run against.
+		     Deliberately Microsoft-only: a concrete provider from a repository that
+		     itself depends on Common would make this repository unbuildable from
+		     scratch. See the WitDatabase-specific suite, parked outside the solution. -->
+		<PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.2" />
 		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />

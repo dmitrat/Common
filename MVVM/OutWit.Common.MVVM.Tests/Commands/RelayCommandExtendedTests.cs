@@ -35,10 +35,16 @@ public class RelayCommandExtendedTests
 
     #endregion
 
+    // ICommand.Execute is fire-and-forget: there is no task to await, so these
+    // tests poll instead of sleeping a fixed amount. Fixed sleeps failed roughly
+    // one run in three once the whole solution ran its suites in parallel.
+    private const int POLL_TIMEOUT_MS = 5000;
+    private const int POLL_INTERVAL_MS = 10;
+
     #region Async support
 
     [Test]
-    public async Task AsyncFuncTaskExecutesTest()
+    public void AsyncFuncTaskExecutesTest()
     {
         var executed = false;
         var command = new RelayCommandAsync(async () =>
@@ -48,13 +54,12 @@ public class RelayCommandExtendedTests
         });
 
         command.Execute(null);
-        await Task.Delay(50); // Wait for async execution
 
-        Assert.That(executed, Is.True);
+        Assert.That(() => executed, Is.True.After(POLL_TIMEOUT_MS, POLL_INTERVAL_MS));
     }
 
     [Test]
-    public async Task AsyncFuncTaskWithParameterExecutesTest()
+    public void AsyncFuncTaskWithParameterExecutesTest()
     {
         var receivedParam = "";
         var command = new RelayCommandAsync(async (object? param) =>
@@ -64,13 +69,12 @@ public class RelayCommandExtendedTests
         });
 
         command.Execute("test");
-        await Task.Delay(50);
 
-        Assert.That(receivedParam, Is.EqualTo("test"));
+        Assert.That(() => receivedParam, Is.EqualTo("test").After(POLL_TIMEOUT_MS, POLL_INTERVAL_MS));
     }
 
     [Test]
-    public async Task AsyncCommandDisablesWhileExecutingTest()
+    public void AsyncCommandDisablesWhileExecutingTest()
     {
         var tcs = new TaskCompletionSource<bool>();
         var command = new RelayCommandAsync(async () => await tcs.Task);
@@ -79,20 +83,18 @@ public class RelayCommandExtendedTests
         Assert.That(command.IsExecuting, Is.False);
 
         command.Execute(null);
-        await Task.Delay(10); // Let execution start
 
+        Assert.That(() => command.IsExecuting, Is.True.After(POLL_TIMEOUT_MS, POLL_INTERVAL_MS), "IsExecuting should be true");
         Assert.That(command.CanExecute(null), Is.False, "Command should be disabled during execution");
-        Assert.That(command.IsExecuting, Is.True, "IsExecuting should be true");
 
         tcs.SetResult(true);
-        await Task.Delay(10); // Let execution complete
 
+        Assert.That(() => command.IsExecuting, Is.False.After(POLL_TIMEOUT_MS, POLL_INTERVAL_MS), "IsExecuting should be false");
         Assert.That(command.CanExecute(null), Is.True, "Command should be enabled after execution");
-        Assert.That(command.IsExecuting, Is.False, "IsExecuting should be false");
     }
 
     [Test]
-    public async Task AsyncCommandWithCanExecuteTest()
+    public void AsyncCommandWithCanExecuteTest()
     {
         var canExecute = true;
         var executed = false;
@@ -114,9 +116,8 @@ public class RelayCommandExtendedTests
         canExecute = true;
         command.RaiseCanExecuteChanged();
         command.Execute(null);
-        await Task.Delay(50);
 
-        Assert.That(executed, Is.True);
+        Assert.That(() => executed, Is.True.After(POLL_TIMEOUT_MS, POLL_INTERVAL_MS));
     }
 
     #endregion
@@ -146,7 +147,7 @@ public class RelayCommandExtendedTests
         // continuation once the whole solution runs its suites in parallel. The
         // test then failed roughly one run in three, on timing rather than on
         // behaviour.
-        Assert.That(() => asyncExecuted, Is.True.After(5000, 10), "Async command should complete");
+        Assert.That(() => asyncExecuted, Is.True.After(POLL_TIMEOUT_MS, POLL_INTERVAL_MS), "Async command should complete");
     }
 
     #endregion

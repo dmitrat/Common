@@ -1,8 +1,8 @@
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.IO;
 using OutWit.Common.Settings.Database;
 using OutWit.Common.Settings.Providers;
-using OutWit.Database.EntityFramework.Extensions;
 
 namespace OutWit.Common.Settings.Samples.Wpf.Module.Database
 {
@@ -35,7 +35,7 @@ namespace OutWit.Common.Settings.Samples.Wpf.Module.Database
                 Directory.CreateDirectory(directory);
 
             var provider = new DatabaseSettingsProvider(
-                o => o.UseWitDb($"Data Source={dbPath}"),
+                o => o.UseSqlite($"Data Source={dbPath}"),
                 isReadOnly: false);
 
             provider.Write(GROUP, GetDefaultEntries());

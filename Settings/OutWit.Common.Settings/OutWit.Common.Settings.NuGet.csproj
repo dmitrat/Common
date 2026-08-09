@@ -24,7 +24,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OutWit.Common.Aspects" />
+    <ProjectReference Include="..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
     <PackageReference Include="System.Configuration.ConfigurationManager" />
   </ItemGroup>
 

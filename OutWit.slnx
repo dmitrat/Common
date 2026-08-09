@@ -147,11 +147,12 @@
   <Folder Name="/Settings/Samples/">
     <Project Path="Settings/Samples/OutWit.Common.Settings.Samples.Serializers/OutWit.Common.Settings.Samples.Serializers.csproj" />
   </Folder>
-  <Folder Name="/Settings/Samples/Services/">
-    <Project Path="Settings/Samples/Services/OutWit.Common.Settings.Samples.Service.UI/OutWit.Common.Settings.Samples.Service.UI.csproj" />
-    <Project Path="Settings/Samples/Services/OutWit.Common.Settings.Samples.Service.Contracts/OutWit.Common.Settings.Samples.Service.Contracts.csproj" />
-    <Project Path="Settings/Samples/Services/OutWit.Common.Settings.Samples.Service/OutWit.Common.Settings.Samples.Service.csproj" />
-  </Folder>
+  <!-- Settings/Samples/Services is deliberately not part of this solution. It
+       demonstrates settings served over WitRPC, so it depends on
+       OutWit.Communication.*, which depends back on OutWit.Common.* — building
+       it here would make this repository unbuildable from scratch and pin its
+       build to previously published packages. The sample stays on disk and
+       moves to the WitRPC repository, where it sits above both. -->
   <Folder Name="/Settings/Samples/Wpf/">
     <Project Path="Settings/Samples/Wpf/OutWit.Common.Settings.Samples.Wpf.Module.Csv/OutWit.Common.Settings.Samples.Wpf.Module.Csv.csproj" />
     <Project Path="Settings/Samples/Wpf/OutWit.Common.Settings.Samples.Wpf.Module.Database/OutWit.Common.Settings.Samples.Wpf.Module.Database.csproj" />

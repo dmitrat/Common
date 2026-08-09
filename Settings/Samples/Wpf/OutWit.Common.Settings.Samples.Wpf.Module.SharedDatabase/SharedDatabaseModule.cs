@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using OutWit.Common.Settings.Configuration;
 using OutWit.Common.Settings.Database;
 using OutWit.Common.Settings.Interfaces;
-using OutWit.Database.EntityFramework.Extensions;
 
 namespace OutWit.Common.Settings.Samples.Wpf.Module.SharedDatabase
 {
@@ -26,7 +25,7 @@ namespace OutWit.Common.Settings.Samples.Wpf.Module.SharedDatabase
         public void Initialize()
         {
             Action<DbContextOptionsBuilder> configure =
-                o => o.UseWitDb($"Data Source={DB_PATH}");
+                o => o.UseSqlite($"Data Source={DB_PATH}");
 
             SharedDatabaseSeeder.EnsureDefaults(configure);
 

@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+		PARKED — deliberately absent from OutWit.slnx.
+
+		This suite proves that OutWit.Common.Settings.Database works on the
+		WitDatabase EF provider. That is a worthwhile thing to test, but it
+		cannot be tested from here: OutWit.Database.EntityFramework depends on
+		OutWit.Database, which depends on OutWit.Common — so building it as part
+		of this repository makes Common unbuildable from scratch and pins its
+		tests to a previously published Common.
+
+		A test that proves "A works with B" belongs in whichever repository sits
+		above both. That is WitDatabase, which already depends on Common and can
+		reference it without a cycle.
+
+		Until it moves, this project is kept intact rather than deleted so the
+		relocation is a folder copy: drop it into the WitDatabase repository,
+		swap the ProjectReference below for a PackageReference on
+		OutWit.Common.Settings.Database, and add it to that solution.
+	-->
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="OutWit.Database.EntityFramework" />
+		<PackageReference Include="NUnit" />
+		<PackageReference Include="NUnit.Analyzers">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="NUnit3TestAdapter" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.Settings.Database\OutWit.Common.Settings.Database.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="NUnit.Framework" />
+	</ItemGroup>
+
+</Project>

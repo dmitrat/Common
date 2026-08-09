@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OutWit.Common.MVVM.WPF" />
+    <ProjectReference Include="..\..\..\..\MVVM\OutWit.Common.MVVM.WPF\OutWit.Common.MVVM.WPF.csproj" />
   </ItemGroup>
 
   <ItemGroup>
