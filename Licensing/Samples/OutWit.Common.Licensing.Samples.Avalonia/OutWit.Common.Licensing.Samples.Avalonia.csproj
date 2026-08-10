@@ -39,4 +39,19 @@
 		<ProjectReference Include="..\..\OutWit.Common.Licensing.MVVM\OutWit.Common.Licensing.MVVM.csproj" />
 	</ItemGroup>
 
+	<!--
+	The vocabulary generator. Referenced as an analyzer, so the bench's feature
+	and limit keys become constants and a typo at a call site is a build error
+	rather than a capability that is silently off.
+
+	In-repo this is a ProjectReference with OutputItemType="Analyzer"; a consumer
+	outside the repo adds the package and gets the same thing, plus the
+	AdditionalFiles convention from its build props.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\..\OutWit.Common.Licensing.Generator\OutWit.Common.Licensing.Generator.csproj"
+		                  OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<AdditionalFiles Include="bench.product.json" />
+	</ItemGroup>
+
 </Project>

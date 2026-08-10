@@ -1,0 +1,15 @@
+<Project>
+	<ItemGroup>
+		<Analyzer Include="$(MSBuildThisFileDirectory)..\analyzers\dotnet\cs\OutWit.Common.Licensing.Generator.dll" />
+	</ItemGroup>
+
+	<!--
+	The descriptor is picked up by convention. A product that has to remember to
+	mark its own vocabulary file as an AdditionalFile is a product that will one
+	day forget, and the symptom of forgetting is an empty vocabulary rather than
+	an error.
+	-->
+	<ItemGroup>
+		<AdditionalFiles Include="**\*.product.json" Exclude="$(BaseOutputPath)**;$(BaseIntermediateOutputPath)**" />
+	</ItemGroup>
+</Project>

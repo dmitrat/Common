@@ -80,12 +80,9 @@ public class ProductViewModel : ViewModelBase<ApplicationViewModel>
             .WithDemo(TimeSpan.FromDays(30), demo => demo
                 .Limit("maxVariants", 8)
                 .Feature("format.inp"))
-            .Declares(vocabulary => vocabulary
-                .Feature("format.inp", "CalculiX / Abaqus decks")
-                .Feature("format.nas", "Nastran decks")
-                .Feature("integration.prepomax", "Open in PrePoMax")
-                .Limit("maxVariants", "Variants per run", 64)
-                .Limit("maxNodes", "Compute nodes", 4))
+            // Generated from bench.product.json, so the keys declared here cannot
+            // drift from the keys the code checks — they are the same list.
+            .Declares(SampleProductLicense.Declare)
             .WithClock(ApplicationVm.Now));
 
         m_gateway = new LicenseGatewayLocal(m_licensing);
@@ -132,7 +129,11 @@ public class ProductViewModel : ViewModelBase<ApplicationViewModel>
         if (m_licensing == null)
             return;
 
-        RunMessage = $"Ran with maxVariants={m_licensing.Limit("maxVariants")} " +
+        // The constant, not the string. A typo here used to compile, run, and
+        // quietly hand the customer the declared default instead of what they
+        // bought — with no error, no warning, and nothing in the unrecognised-key
+        // report, which only ever sees what the licence granted.
+        RunMessage = $"Ran with maxVariants={m_licensing.Limit(SampleProductLicense.Limits.MaxVariants)} " +
                      $"at {ApplicationVm.Now():yyyy-MM-dd HH:mm} UTC.";
     }
 

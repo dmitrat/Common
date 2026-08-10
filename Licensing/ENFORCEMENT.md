@@ -1905,6 +1905,40 @@ or a sibling analyzer package, plus one JSON file per product. Cheaper than the
 first support ticket it prevents, and it makes the V2 descriptor import a
 data-plumbing task rather than a design task.
 
+**Built as `OutWit.Common.Licensing.Generator`**, a sibling package rather than
+part of the MVVM one: a service has a vocabulary and no view models, and making
+it take an MVVM dependency to get compile-checked keys would be the tail wagging
+the dog.
+
+Proved the only way it can be. The bench's keys came out of its descriptor,
+`Declares(SampleProductLicense.Declare)` replaced the hand-written list, the
+call site became `Limits.MaxVariants` — and then one letter was added to it and
+the build failed with *"'SampleProductLicense.Limits' does not contain a
+definition for 'MaxVariantss'"*. That is the hazard with no other mitigation,
+turned into a compiler error.
+
+Three decisions worth recording:
+
+- **A descriptor that will not parse is an error, not an empty vocabulary.**
+  Diagnostic `OWL001` names the reason and the offset. Degrading to "declares
+  nothing" would have reintroduced precisely the silent failure the generator
+  exists to remove.
+- **The file is picked up by convention** (`**/*.product.json`, from the
+  package's build props). A product that must remember to register its own
+  vocabulary is one that will eventually forget, and forgetting looks like an
+  empty vocabulary rather than a build break.
+- **The declaration is `Declare(LicenseVocabulary)`, not the extension method
+  this section sketched.** `options.Declares(WitSweepLicense.Declare)` reads the
+  same and cannot be confused with the existing `Declares(Action<…>)` it is
+  passed to; an extension called `Declares()` sitting beside a method called
+  `Declares(…)` would be a puzzle at every call site.
+
+The JSON parser is hand-rolled, which is worth a sentence because it looks like
+the wrong call. An analyzer has to carry its dependencies inside the analyzer
+folder, and a serialiser is a large thing to ship there for a file with three
+keys in it. Comments are accepted, because a descriptor nobody may annotate is
+one nobody explains.
+
 ---
 
 ## 12. Staged plan

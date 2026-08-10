@@ -1,0 +1,22 @@
+// The bench's licensing vocabulary — the single source of truth for the keys
+// its code asks about, the keys it declares to the runtime, and the keys an
+// operator can grant in the registry catalogue.
+//
+// Keep this in step with the catalogue entry for the product the bench is
+// standing in for. That is the whole hazard: the catalogue says "SSO", the
+// product checks "sso", nothing fails, and the customer simply does not get
+// what they paid for.
+{
+  "product": "SampleProduct",
+
+  "features": [
+    { "key": "format.inp", "name": "CalculiX / Abaqus decks" },
+    { "key": "format.nas", "name": "Nastran decks" },
+    { "key": "integration.prepomax", "name": "Open in PrePoMax" }
+  ],
+
+  "limits": [
+    { "key": "maxVariants", "name": "Variants per run", "default": 64 },
+    { "key": "maxNodes", "name": "Compute nodes", "default": 4 }
+  ]
+}
