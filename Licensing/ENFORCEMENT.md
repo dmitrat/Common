@@ -1,15 +1,20 @@
 # OutWit Licensing — the verifying side
 
-> **Status: draft for review (2026-08-08).** The counterpart to
+> **Status: agreed, and built through V4 (2026-08-10).** The counterpart to
 > [`DESIGN.md`](DESIGN.md) (format, crypto, flows) and
 > [`WitLicense/DESIGN.md`](../../WitLicense/DESIGN.md) (the factory and the
 > books). Those two describe how a licence is *made*; this one describes how a
 > product *behaves* when it reads one — the enforcement model, the mock apps
 > that prove it, and the integration plans for WitCloud and WitSweep.
 >
-> The issuing half is built and deployed (`license.omnibuscloud.com`, v1.0.5,
-> `OutWit.Common.Licensing` and `OutWit.Common.Platform` on nuget.org). Nothing
-> in this document is code yet.
+> This document argues the decisions. For what to actually type when licensing a
+> product, see [`INTEGRATION.md`](INTEGRATION.md).
+>
+> **Built so far:** `OutWit.Common.Licensing` 1.1.0,
+> `OutWit.Common.Licensing.MVVM` 1.0.0 and `OutWit.Common.Licensing.Generator`
+> 1.0.0 on nuget.org; WitLicense 1.2.1 deployed at `license.omnibuscloud.com`;
+> both mock apps running, the desktop one proven end to end against the
+> production service. V5 — the first real product — is next.
 
 ---
 

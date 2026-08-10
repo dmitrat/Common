@@ -45,6 +45,7 @@
   <Folder Name="/Licensing/">
     <File Path="Licensing/DESIGN.md" />
     <File Path="Licensing/ENFORCEMENT.md" />
+    <File Path="Licensing/INTEGRATION.md" />
     <Project Path="Licensing/OutWit.Common.Licensing.Generator.Tests/OutWit.Common.Licensing.Generator.Tests.csproj" />
     <Project Path="Licensing/OutWit.Common.Licensing.Generator/OutWit.Common.Licensing.Generator.csproj" />
     <Project Path="Licensing/OutWit.Common.Licensing.MVVM.Tests/OutWit.Common.Licensing.MVVM.Tests.csproj" />

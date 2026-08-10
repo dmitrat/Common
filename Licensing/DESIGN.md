@@ -1,10 +1,13 @@
 # OutWit Licensing — Design
 
-> **Status: draft for review (2026-08-05).** Design for `OutWit.Common.Licensing`
-> and its integration into the OutWit product family. No code exists yet — this
-> document is what gets built. Layout follows the house convention of
-> [`ARCHITECTURE.md`](../../WitCloud/ARCHITECTURE.md) and
+> **Status: built (2026-08-10).** Design for `OutWit.Common.Licensing` and its
+> integration into the OutWit product family. Layout follows the house
+> convention of [`ARCHITECTURE.md`](../../WitCloud/ARCHITECTURE.md) and
 > [`PLUGINS_GUIDE.md`](../Plugins/PLUGINS_GUIDE.md).
+>
+> This document is the format and the rules.
+> [`ENFORCEMENT.md`](ENFORCEMENT.md) is how a product behaves when it reads a
+> licence, and why. [`INTEGRATION.md`](INTEGRATION.md) is what to type.
 
 ---
 
