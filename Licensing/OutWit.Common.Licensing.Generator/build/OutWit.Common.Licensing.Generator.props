@@ -4,12 +4,17 @@
 	</ItemGroup>
 
 	<!--
-	The descriptor is picked up by convention. A product that has to remember to
+	Both files are picked up by convention. A product that has to remember to
 	mark its own vocabulary file as an AdditionalFile is a product that will one
 	day forget, and the symptom of forgetting is an empty vocabulary rather than
 	an error.
+
+	*.dev.keyring.json is the development ring; it also matches *.keyring.json,
+	and the generator tells them apart by name so that one product ends up with
+	one class holding both.
 	-->
 	<ItemGroup>
 		<AdditionalFiles Include="**\*.product.json" Exclude="$(BaseOutputPath)**;$(BaseIntermediateOutputPath)**" />
+		<AdditionalFiles Include="**\*.keyring.json" Exclude="$(BaseOutputPath)**;$(BaseIntermediateOutputPath)**" />
 	</ItemGroup>
 </Project>

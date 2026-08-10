@@ -13,8 +13,8 @@
 
 		<Version>1.0.0</Version>
 
-		<Description>Turns a product's licensing vocabulary into compile-checked constants. One `*.product.json` per product goes in as an AdditionalFile; out come the feature and limit keys as consts and the declaration the runtime needs — so a mistyped feature key is a compiler error instead of a capability that is silently off, and the same file is the descriptor the licence registry imports.</Description>
-		<PackageTags>OutWit;Common;Licensing;Licence;License;Generator;SourceGenerator;Vocabulary</PackageTags>
+		<Description>Turns a product's licensing files into compile-checked code. One `*.product.json` goes in and the feature and limit keys come out as consts plus the declaration the runtime needs — so a mistyped feature key is a compiler error instead of a capability that is silently off, and the same file is the descriptor the licence registry imports. One `*.keyring.json` exported by the issuing service goes in and the trusted public keys come out as a `const string`, which is the shape string encryption can defend — an embedded resource is a blob anyone can swap for their own key without touching an instruction.</Description>
+		<PackageTags>OutWit;Common;Licensing;Licence;License;Generator;SourceGenerator;Vocabulary;KeyRing</PackageTags>
 
 		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Licensing/OutWit.Common.Licensing.Generator</RepositoryUrl>
 
@@ -28,14 +28,34 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
 	</ItemGroup>
 
+	<!--
+	The rule journal Roslyn asks for (RS2008). It is not bureaucracy here: these
+	diagnostics are a public contract — a consumer may raise OWL003 to an error
+	or suppress it — and a rule that changes severity without a record is a build
+	that breaks for reasons nobody can look up.
+	-->
+	<ItemGroup>
+		<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 		<None Include="$(OutputPath)\$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" Condition="'$(Configuration)' == 'Debug' and Exists('$(OutputPath)\$(AssemblyName).pdb')" />
 		<None Include="build\OutWit.Common.Licensing.Generator.props" Pack="true" PackagePath="build" />
 	</ItemGroup>
 
+	<!--
+	The dll is packed by path, so it has to exist before Pack collects it.
+
+	Properties="..." is not decoration: calling Build on this same project from a
+	target Pack depends on is a cycle in the dependency graph unless the inner
+	call resolves to a different project instance, and MSBuild answers that with
+	MSB4006 rather than by building anything. CI never saw it, because it packs
+	with NoBuild set and this target's own condition skips that case — so it only
+	ever broke a plain `dotnet pack` on a developer's machine.
+	-->
 	<Target Name="EnsureBuild" BeforeTargets="Pack" Condition="'$(NoBuild)' != 'true'">
-		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" />
+		<MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" Properties="_PackEnsureBuild=true" />
 	</Target>
 
 </Project>

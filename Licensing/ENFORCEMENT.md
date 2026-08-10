@@ -1813,6 +1813,51 @@ Ranked honestly, what actually raises the cost:
    canary token, redundant rings — is theatre. An attacker who can edit one
    constant can edit two.
 
+**Built, as the second half of `OutWit.Common.Licensing.Generator`.**
+`witsweep.keyring.json` in, `WitSweepKeyRing.Create()` out, with
+`witsweep.dev.keyring.json` emitted under `#if DEBUG` from a second file exactly
+as sketched. Two things came out of building it that the sketch did not have.
+
+**The ring is re-emitted, not copied.** A descriptor may carry comments and
+trailing commas — that was a deliberate choice for the vocabulary file, and an
+exported ring is a file people annotate too. The runtime reader accepts neither,
+and `LicenseKeyRing.FromJson` answers a parse failure with an *empty ring* rather
+than an exception. A verbatim copy would therefore compile happily and leave a
+product that trusts nothing and can only say "unknown key id". Re-emitting
+through a strict writer makes the constant something the runtime reader accepts
+by construction. Members are ordered while it is written, because generated
+output that changes between builds is output nobody can review in a diff.
+
+**Every silent failure in `LicenseKeyRing` now has a build-time counterpart.**
+The runtime's choices there are right for a runtime — a packaging slip must not
+become an outage — but each leaves a customer holding "licence invalid" with
+nothing to say which side is wrong:
+
+| In the file | At runtime | At build |
+|---|---|---|
+| A key with no `kid` | Dropped without a word | `OWL002`, error |
+| The same `kid` twice | The second silently wins | `OWL002`, error |
+| `"policy": "Development"` | The reader throws and returns an **empty ring** — every key in the file lost to one word | `OWL002`, error |
+| A key naming no products | Covers nothing (fails closed, by design) | `OWL003`, warning |
+| No key covering the ring's own product | Refuses every licence | `OWL003`, warning |
+| Two rings claiming one product | File ordering decides | `OWL004`, error |
+
+The third row is worth its line. It was found by writing `"policy":
+"Development"` in a test fixture — a value that does not exist, in a field where
+it reads as obviously correct — and watching a ring that parses, validates and
+generates cleanly produce a product that trusts nothing at all. That is the
+sharpest form of the hazard this whole section is about, it was reachable by a
+plausible typo, and nothing anywhere would have reported it.
+
+The enum values are checked against a hard-coded list, because an analyzer cannot
+reference the library it generates for. The cost is a line here when the library
+gains an algorithm; the alternative is a whole ring lost to a spelling.
+
+**Its first real consumer is V5.** Unlike the vocabulary half, which the Avalonia
+bench exercises, nothing ships an embedded ring yet — the bench loads one at
+runtime on purpose, and a service's ring is replaceable by design (§11.7.4). It
+rests on its tests until WitSweep takes it.
+
 #### 11.7.4 Three limits to state plainly
 
 - **This is tamper-resistance, not secrecy.** The ring stays readable with
@@ -1841,6 +1886,13 @@ out, dev ring under `#if DEBUG` from a second file. Already decided; noting here
 that it *is* source generation, and that a generator is preferable to an MSBuild
 target because it participates in IDE builds and design-time compilation rather
 than surprising someone at `dotnet build`.
+
+**Built**, and the two halves ship as one package — `*.product.json` and
+`*.keyring.json` are the same convention over the same reader, and a product that
+had to take two analyzer packages to get one build checked would eventually take
+one of them. The generated class is `{Product}KeyRing`, named from the ring's own
+`product` field rather than from the file name, so the two generators agree on
+what a product is called without either being told.
 
 **2. `LicenseSnapshot` ↔ MemoryPack DTO mapping** (§7.4). Could be generated.
 Should not be — it is about twenty lines, written once, in one place, and a
@@ -1950,7 +2002,7 @@ one nobody explains.
 | **V1** | `OutWit.Common.Licensing.MVVM` **1.0.0** (§7) — gateway, local gateway, panel VM, the ~~two~~ **three** seams (§7.3) | The **harness** binds to it (§7.5) and nothing about the harness's behaviour changed — **done**, and it cost the design one correction |
 | **V2** | Extend the Avalonia harness (§6.1) | Mode is visible; a real key ring is loaded; a real licence issued by `license.omnibuscloud.com` and delivered **by email** installs and validates; a staged renewal switches over at `exp` |
 | **V3** | Issuing-side blockers §10.1–§10.5 | Four products in the catalogue; four key rings exported; short-term presets live; the `appVer` default and its `Unlimited` rule enforced by the form; the binding kind and threshold are choosable |
-| **V4** | The containerised mock (§6.2), the key-ring generator (§11.7.3) and the vocabulary generator (§11.8.3) | `installId` from `.env` survives `--force-recreate` and the fallback file form works when it is unset; two containers produce two distinct fingerprints and neither accepts the other's licence; URL normalisation survives a trailing slash; env var and file drop both work; a licence applies with no restart; feature keys are compile-checked |
+| **V4** | The containerised mock (§6.2), the key-ring generator (§11.7.3) and the vocabulary generator (§11.8.3) | `installId` from `.env` survives `--force-recreate` and the fallback file form works when it is unset; two containers produce two distinct fingerprints and neither accepts the other's licence; URL normalisation survives a trailing slash; env var and file drop both work; a licence applies with no restart; feature keys are compile-checked — **done**; both generators ship as `OutWit.Common.Licensing.Generator`, and the ring half waits on V5 for its first real consumer |
 | **V5** | **WitSweep** (§8) — Settings screen + Licence section + gate | Demo on first launch, panel reachable in every mode, Run gated with a distinct message, licence installs from a paste, level 0 verified untouched |
 | **V5′** | **The Inventor add-in** — settings dialog + ribbon gate. Scheduled by when the add-in itself exists, not by this plan | The add-in loads and its ribbon appears in every mode; commands are visibly disabled with a reason rather than silently inert; the settings dialog shows the fingerprint, exports a request and accepts a licence; the panel ViewModel is bound from **WPF** with no change to the package |
 | **V6** | `OutWit.Shared.Licensing.*` (§7.4) — contracts, host, Blazor | The containerised mock (V4) is re-pointed at the real admin-guarded channel and the shared host wiring. **The Blazor half is not proven here** — see §12.1 |

@@ -55,10 +55,20 @@ namespace OutWit.Common.Licensing.Generator
             return Identifier(product) + "License";
         }
 
+        /// <summary>The name of the generated ring class: <c>WitSweep</c> becomes <c>WitSweepKeyRing</c>.</summary>
+        public static string RingClassName(string product)
+        {
+            return Identifier(product) + "KeyRing";
+        }
+
         /// <summary>Escapes a string for a C# literal.</summary>
         public static string Literal(string? value)
         {
-            return "\"" + (value ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+            return "\"" + (value ?? string.Empty)
+                .Replace("\\", "\\\\")
+                .Replace("\"", "\\\"")
+                .Replace("\r", "\\r")
+                .Replace("\n", "\\n") + "\"";
         }
 
         /// <summary>A doc-comment-safe rendering of arbitrary text.</summary>

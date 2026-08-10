@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="NUnit" />
+		<PackageReference Include="NUnit.Analyzers">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="NUnit3TestAdapter" />
+	</ItemGroup>
+
+	<!--
+	A plain reference to the generator, not an analyzer one: these tests drive it
+	through a GeneratorDriver so they can see the diagnostics it reports.
+
+	The licensing library is referenced so the generated code is compiled against
+	the real types rather than against stubs. Half the value of these tests is
+	that "it emits the right text" and "the text builds" are checked together —
+	a generator whose output only compiles in a test's imagination is a generator
+	that breaks on the day the library renames a method.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.Licensing.Generator\OutWit.Common.Licensing.Generator.csproj" />
+		<ProjectReference Include="..\OutWit.Common.Licensing\OutWit.Common.Licensing.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="NUnit.Framework" />
+	</ItemGroup>
+
+</Project>
