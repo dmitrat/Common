@@ -38,6 +38,7 @@
 				<TextBlock Classes="mono" Text="{Binding ClockDescription}" VerticalAlignment="Center" Width="360" />
 				<Button Content="−1 day" Command="{Binding TravelBackCmd}" />
 				<Button Content="+1 day" Command="{Binding TravelForwardCmd}" />
+				<Button Content="+30 days" Command="{Binding TravelMonthCmd}" />
 				<Button Content="+1 year" Command="{Binding TravelYearCmd}" />
 				<Button Content="Reset" Command="{Binding ResetClockCmd}" />
 				<Border Width="1" Background="#33888888" Margin="8,2" />

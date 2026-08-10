@@ -461,7 +461,7 @@ What it does not yet do, and needs to:
 | **Mode display** — `Licensed / Demo / Grace / Restricted`, not just a status string | §3 is the new thing being designed; it has to be visible or it is not being tested |
 | **Real key ring** — load `witsweep.keyring.json` exported from WitLicense, alongside the throwaway keys | The export format (`WitLicense/DESIGN.md` §7.2) has never been consumed by anything. Until a verifier reads one, it is unproven. **Done** — see below |
 | **Real token round trip** — paste a licence issued by `license.omnibuscloud.com`, delivered by email | Closes the first full production cycle, which has never been run end to end. Also the first real Resend send |
-| **Renewal overlap** — install a staged `NotYetValid` renewal beside a live licence and watch the switch at `exp` | `LicenseService.Evaluate` implements best-valid selection and supersession; nothing has ever watched it happen |
+| **Renewal overlap** — install a staged `NotYetValid` renewal beside a live licence and watch the switch at `exp` | `LicenseService.Evaluate` implements best-valid selection and supersession; nothing has ever watched it happen. **Done** — and the switch is not where this row assumed, see below |
 | **Uninstall** | Gap 5, and the only way to test a document being removed rather than superseded |
 
 Note what this buys beyond testing the library: **it discharges four items from
@@ -491,6 +491,31 @@ Two consequences for the harness, both of which outlast this exercise:
   them.** The bench has to keep driving its nine deliberate defect modes, which
   need private keys it can sign with, while also verifying a licence signed by a
   key it will never hold. A shipping product embeds only the second kind.
+
+**Renewal overlap, watched — and this row was wrong about where the switch
+happens.** A staged renewal was installed beside the live production licence:
+the store held both, the panel listed both, and the incumbent was untouched
+while the renewal sat `NotYetValid`. Moving the clock forward thirty days, the
+takeover was unambiguous — a different edition, a different customer, a
+different expiry and a different feature set, with the mode never leaving
+`Licensed`.
+
+The switch happened at the **renewal's `nbf`, not at the incumbent's `exp`.**
+Best-valid selection prefers the longer term, so the moment the renewal becomes
+valid it wins, and the incumbent goes on sitting there `Valid` but not in force.
+That is *better* than what this row expected: there is no instant at which the
+product depends on a licence that is about to lapse, and the twenty days of
+overlap are twenty days of belt and braces rather than twenty days of waiting.
+The behaviour the row imagined — a handover exactly at expiry — only occurs when
+a renewal is staged to start precisely when the old one ends, which is the one
+arrangement nobody needs to choose.
+
+Two notes from doing it, both about the instrument rather than the design. The
+clock gained a **thirty-day step**, because renewal is a monthly-scale event and
+a day at a time is not a way to watch one. And the bench's throwaway keys are
+regenerated per process, so a renewal it signed itself becomes
+`SignatureInvalid` after a restart — correct, and worth knowing before it is
+mistaken for a defect: the whole overlap has to be driven inside one run.
 
 ### 6.2 A second mock, containerised — the one the Avalonia app cannot be
 

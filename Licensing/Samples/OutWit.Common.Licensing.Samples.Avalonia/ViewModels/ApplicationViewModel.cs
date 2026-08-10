@@ -84,6 +84,11 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
         // design and blocking on it here would deadlock the window.
         TravelForwardCmd = new RelayCommandAsync(() => TravelAsync(1));
         TravelBackCmd = new RelayCommandAsync(() => TravelAsync(-1));
+
+        // A month step, because renewal happens on that scale: a staged licence
+        // starts weeks before the one it replaces ends, and a day at a time is
+        // not a way to watch the handover.
+        TravelMonthCmd = new RelayCommandAsync(() => TravelAsync(30));
         TravelYearCmd = new RelayCommandAsync(() => TravelAsync(365));
         ResetClockCmd = new RelayCommandAsync(() => TravelAsync(-ClockOffsetDays));
         WipeCmd = new RelayCommand(_ => Wipe());
@@ -302,6 +307,8 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
     public RelayCommandAsync TravelForwardCmd { get; private set; } = null!;
 
     public RelayCommandAsync TravelBackCmd { get; private set; } = null!;
+
+    public RelayCommandAsync TravelMonthCmd { get; private set; } = null!;
 
     public RelayCommandAsync TravelYearCmd { get; private set; } = null!;
 
