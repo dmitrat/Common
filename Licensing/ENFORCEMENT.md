@@ -600,6 +600,43 @@ public interface ILicenseFileTransfer
 WitSweep already has `IClipboardService` and `IFilePickerService`; the Blazor
 side already has the JS-interop download path. Each adapter is about ten lines.
 
+**Correction from building it: there is a third seam, and unlike these two it is
+not optional.** `LicensePanelViewModel` also takes an `IDispatcher` (already in
+`OutWit.Common.MVVM`, framework-neutral), and **every consumer with a UI thread
+must supply one.**
+
+The reasoning that hid this is worth recording, because it is plausible and
+wrong. A panel that *awaits* the gateway does come back to the thread that
+asked, so the command path looks safe. But `ILicenseService.StateChanged` is not
+awaited by anybody: the runtime raises it from wherever its own re-evaluation
+finished, and every await inside `OutWit.Common.Licensing` suppresses the
+synchronization context **by design**, so that a desktop host can block on its
+first evaluation without deadlocking (§5 gap 8). The two decisions compose into
+a snapshot that arrives on a thread-pool thread — and it arrives that way after
+an **ordinary install**, not only when the periodic re-evaluation of gap 2 is
+switched on.
+
+The symptom, seen the first time the migrated harness was run rather than in any
+test: a licence installed correctly and the screen showed half of it. Four
+properties updated, the collections faulted, and the notification layer — which
+dispatches subscribers through reflection — re-wrapped the whole thing as
+*"Exception has been thrown by the target of an invocation"*, a sentence naming
+neither threading nor licensing.
+
+Three consequences, all now closed:
+
+- The panel takes the seam, documents it as required, and marshals through it.
+- `LicenseGatewayLocal` deliberately does **not** suppress the context, which is
+  the one place in this stack where capturing it is right: a gateway is the
+  boundary a view model awaits.
+- The panel unwraps to the innermost exception before showing one. A licence
+  panel is the screen a customer reaches *because* something is already wrong;
+  it is the last place that may report a reflection detail instead of a cause.
+
+This is exactly what §7.6 predicted the harness would buy — a defect in the
+abstraction, found while the abstraction was still free to change, by a consumer
+rather than by a test.
+
 ### 7.4 Component 1 — services: `OutWit.Shared.Licensing.*`
 
 This is a **direct clone of the precedent that already works**:
@@ -1701,8 +1738,8 @@ data-plumbing task rather than a design task.
 | Stage | Content | Done when |
 |---|---|---|
 | **V-1** | **The alignment wave** (§12.3) — central package management, `global.json`, one JWT stack, one MudBlazor, services onto `OutWit.Common` 1.4.x. **`AspectInjector` stays at 2.8.2** | Every repo builds green against one centrally pinned set; no package appears at two versions in the family except where a TFM condition explains it |
-| **V0** | Library gaps 1–8 (§5) + `LicenseMode` + `LicenseSnapshot` → `OutWit.Common.Licensing` **1.1.0** | Mode, `StateChanged`, periodic re-evaluation, composite/env store and the snapshot exist and are tested |
-| **V1** | `OutWit.Common.Licensing.MVVM` **1.0.0** (§7) — gateway, local gateway, panel VM, the two seams | The **harness** binds to it (§7.5) and nothing about the harness's behaviour changed |
+| **V0** | Library gaps 1–8 (§5) + `LicenseMode` + `LicenseSnapshot` → `OutWit.Common.Licensing` **1.1.0** | Mode, `StateChanged`, periodic re-evaluation, composite/env store and the snapshot exist and are tested — **done** |
+| **V1** | `OutWit.Common.Licensing.MVVM` **1.0.0** (§7) — gateway, local gateway, panel VM, the ~~two~~ **three** seams (§7.3) | The **harness** binds to it (§7.5) and nothing about the harness's behaviour changed — **done**, and it cost the design one correction |
 | **V2** | Extend the Avalonia harness (§6.1) | Mode is visible; a real key ring is loaded; a real licence issued by `license.omnibuscloud.com` and delivered **by email** installs and validates; a staged renewal switches over at `exp` |
 | **V3** | Issuing-side blockers §10.1–§10.5 | Four products in the catalogue; four key rings exported; short-term presets live; the `appVer` default and its `Unlimited` rule enforced by the form; the binding kind and threshold are choosable |
 | **V4** | The containerised mock (§6.2), the key-ring generator (§11.7.3) and the vocabulary generator (§11.8.3) | `installId` from `.env` survives `--force-recreate` and the fallback file form works when it is unset; two containers produce two distinct fingerprints and neither accepts the other's licence; URL normalisation survives a trailing slash; env var and file drop both work; a licence applies with no restart; feature keys are compile-checked |

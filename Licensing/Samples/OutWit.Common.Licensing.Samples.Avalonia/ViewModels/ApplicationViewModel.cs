@@ -1,9 +1,11 @@
 using System;
+using System.ComponentModel;
 using System.IO;
+using System.Threading.Tasks;
 using OutWit.Common.Aspects;
-using OutWit.Common.Licensing.Samples.Avalonia.Model;
 using OutWit.Common.MVVM.Commands;
 using OutWit.Common.MVVM.ViewModels;
+using OutWit.Common.Utils;
 
 namespace OutWit.Common.Licensing.Samples.Avalonia.ViewModels;
 
@@ -31,6 +33,7 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
         LicenseDirectory = Path.Combine(AppContext.BaseDirectory, LICENSE_FOLDER);
 
         InitDefault();
+        InitEvents();
         InitCommands();
     }
 
@@ -42,6 +45,7 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
     {
         ProductVersion = new Version(1, 5, 0);
         ClockOffsetDays = 0;
+        GraceDays = 0;
 
         Issuer = new IssuerViewModel(this);
         Product = new ProductViewModel(this);
@@ -51,12 +55,19 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
         UpdateStatus();
     }
 
+    private void InitEvents()
+    {
+        PropertyChanged += OnPropertyChanged;
+    }
+
     private void InitCommands()
     {
-        TravelForwardCmd = new RelayCommand(_ => Travel(1));
-        TravelBackCmd = new RelayCommand(_ => Travel(-1));
-        TravelYearCmd = new RelayCommand(_ => Travel(365));
-        ResetClockCmd = new RelayCommand(_ => Travel(-ClockOffsetDays));
+        // Asynchronous, because the panel's refresh returns to the UI thread by
+        // design and blocking on it here would deadlock the window.
+        TravelForwardCmd = new RelayCommandAsync(() => TravelAsync(1));
+        TravelBackCmd = new RelayCommandAsync(() => TravelAsync(-1));
+        TravelYearCmd = new RelayCommandAsync(() => TravelAsync(365));
+        ResetClockCmd = new RelayCommandAsync(() => TravelAsync(-ClockOffsetDays));
         WipeCmd = new RelayCommand(_ => Wipe());
     }
 
@@ -74,10 +85,11 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
         return DateTime.UtcNow.AddDays(ClockOffsetDays);
     }
 
-    private void Travel(int days)
+    private async Task TravelAsync(int days)
     {
         ClockOffsetDays += days;
-        Product.Refresh();
+
+        await Product.RefreshAsync();
 
         UpdateStatus();
     }
@@ -108,6 +120,23 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
 
     #endregion
 
+    #region Event Handlers
+
+    /// <summary>
+    /// Renewal grace belongs to the build, so changing it here means shipping a
+    /// different product — which is exactly what a rebuild stands for. It is a
+    /// control rather than a constant because a mode nothing can reach is a mode
+    /// nobody can trust, and Grace is otherwise unreachable at the default of
+    /// zero days.
+    /// </summary>
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.IsProperty((ApplicationViewModel vm) => vm.GraceDays))
+            Product.Rebuild();
+    }
+
+    #endregion
+
     #region Properties
 
     /// <summary>Where the harness keeps its licences — a real folder, inspectable while it runs.</summary>
@@ -122,6 +151,10 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
     [Notify]
     public string ClockDescription { get; set; } = string.Empty;
 
+    /// <summary>The product's renewal grace. Zero — the default — makes expiry immediate.</summary>
+    [Notify]
+    public int GraceDays { get; set; }
+
     #endregion
 
     #region View Models
@@ -134,13 +167,13 @@ public class ApplicationViewModel : ViewModelBase<ApplicationViewModel>
 
     #region Commands
 
-    public RelayCommand TravelForwardCmd { get; private set; } = null!;
+    public RelayCommandAsync TravelForwardCmd { get; private set; } = null!;
 
-    public RelayCommand TravelBackCmd { get; private set; } = null!;
+    public RelayCommandAsync TravelBackCmd { get; private set; } = null!;
 
-    public RelayCommand TravelYearCmd { get; private set; } = null!;
+    public RelayCommandAsync TravelYearCmd { get; private set; } = null!;
 
-    public RelayCommand ResetClockCmd { get; private set; } = null!;
+    public RelayCommandAsync ResetClockCmd { get; private set; } = null!;
 
     public RelayCommand WipeCmd { get; private set; } = null!;
 

@@ -41,6 +41,13 @@
 				<Button Content="+1 year" Command="{Binding TravelYearCmd}" />
 				<Button Content="Reset" Command="{Binding ResetClockCmd}" />
 				<Border Width="1" Background="#33888888" Margin="8,2" />
+				<!-- Renewal grace belongs to the build, so moving it rebuilds the
+				     product. A control rather than a constant because Grace is
+				     otherwise unreachable, and a mode nothing can reach is a mode
+				     nobody can trust. -->
+				<TextBlock Text="Grace (days)" VerticalAlignment="Center" Opacity="0.6" />
+				<NumericUpDown Value="{Binding GraceDays}" Minimum="0" Maximum="90" Width="110" />
+				<Border Width="1" Background="#33888888" Margin="8,2" />
 				<Button Content="Wipe licences" Command="{Binding WipeCmd}" />
 			</StackPanel>
 		</Border>
@@ -53,40 +60,62 @@
 
 					<TextBlock Text="PRODUCT" FontWeight="Bold" FontSize="16" Margin="0,0,0,8" />
 
+					<!-- Everything from here down is bound to LicensePanelViewModel,
+					     supplied whole by OutWit.Common.Licensing.MVVM. What stays
+					     on the product is the gate, and nothing else. -->
 					<Border Classes="card">
 						<StackPanel>
 							<StackPanel Orientation="Horizontal" Spacing="8">
 								<Border Background="#3300AA55" CornerRadius="4" Padding="8,3"
-								        IsVisible="{Binding CanRun}">
-									<TextBlock Text="{Binding Status}" FontWeight="SemiBold" />
+								        IsVisible="{Binding Panel.CanRun}">
+									<TextBlock Text="{Binding Panel.Status}" FontWeight="SemiBold" />
 								</Border>
 								<Border Background="#33CC3333" CornerRadius="4" Padding="8,3"
-								        IsVisible="{Binding !CanRun}">
-									<TextBlock Text="{Binding Status}" FontWeight="SemiBold" />
+								        IsVisible="{Binding !Panel.CanRun}">
+									<TextBlock Text="{Binding Panel.Status}" FontWeight="SemiBold" />
+								</Border>
+								<!-- The mode is the new thing this stage designed. It has
+								     to be visible, or it is not being tested. -->
+								<Border Background="#333388FF" CornerRadius="4" Padding="8,3">
+									<TextBlock Text="{Binding Panel.ModeText}" FontWeight="SemiBold" />
 								</Border>
 								<Border Background="#33AAAA00" CornerRadius="4" Padding="8,3"
-								        IsVisible="{Binding IsDemo}">
+								        IsVisible="{Binding Panel.IsDemo}">
 									<TextBlock Text="DEMO" FontWeight="SemiBold" />
 								</Border>
+								<Border Background="#33FF8800" CornerRadius="4" Padding="8,3"
+								        IsVisible="{Binding Panel.IsClockSuspect}">
+									<TextBlock Text="CLOCK" FontWeight="SemiBold" />
+								</Border>
 							</StackPanel>
-							<TextBlock Text="{Binding StatusDetail}" TextWrapping="Wrap" Margin="0,8,0,0" />
-							<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="0,8,0,0">
+							<TextBlock Text="{Binding Panel.StatusDetail}" TextWrapping="Wrap" Margin="0,8,0,0" />
+							<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,8,0,0">
 								<TextBlock Grid.Row="0" Grid.Column="0" Text="Edition " Opacity="0.6" />
-								<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Edition}" />
+								<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Panel.Edition}" />
 								<TextBlock Grid.Row="1" Grid.Column="0" Text="Customer " Opacity="0.6" />
-								<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Customer}" />
+								<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Panel.Customer}" />
+								<TextBlock Grid.Row="2" Grid.Column="0" Text="Expires " Opacity="0.6" />
+								<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Panel.ExpiryText}" />
+								<TextBlock Grid.Row="3" Grid.Column="0" Text="Grace " Opacity="0.6" />
+								<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Panel.GracePolicyText}"
+								           TextWrapping="Wrap" />
 							</Grid>
 						</StackPanel>
 					</Border>
 
 					<TextBlock Classes="h" Text="FINGERPRINT — read this to support" />
 					<Border Classes="card">
-						<TextBlock Classes="mono" Text="{Binding Fingerprint}" FontSize="18" />
+						<StackPanel Orientation="Horizontal" Spacing="12">
+							<TextBlock Classes="mono" Text="{Binding Panel.Fingerprint}" FontSize="18"
+							           VerticalAlignment="Center" />
+							<Button Content="Copy" Command="{Binding Panel.CopyFingerprintCmd}"
+							        VerticalAlignment="Center" />
+						</StackPanel>
 					</Border>
 
 					<TextBlock Classes="h" Text="WHAT THE LICENCE GRANTS" />
 					<Border Classes="card">
-						<ItemsControl ItemsSource="{Binding Grants}">
+						<ItemsControl ItemsSource="{Binding Panel.Grants}">
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
 									<TextBlock Classes="mono" Text="{Binding}" />
@@ -95,11 +124,11 @@
 						</ItemsControl>
 					</Border>
 
-					<Border Classes="card" Background="#22CC8800" IsVisible="{Binding Warnings.Count}">
+					<Border Classes="card" Background="#22CC8800" IsVisible="{Binding Panel.Warnings.Count}">
 						<StackPanel>
 							<TextBlock Text="Unrecognised keys — almost certainly a typo in the issuing catalogue"
 							           TextWrapping="Wrap" FontWeight="SemiBold" />
-							<ItemsControl ItemsSource="{Binding Warnings}" Margin="0,6,0,0">
+							<ItemsControl ItemsSource="{Binding Panel.Warnings}" Margin="0,6,0,0">
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
 										<TextBlock Classes="mono" Text="{Binding}" />
@@ -114,7 +143,8 @@
 						<StackPanel Spacing="8">
 							<StackPanel Orientation="Horizontal" Spacing="8">
 								<Button Content="Run" Command="{Binding RunCmd}" />
-								<Button Content="Create request" Command="{Binding RequestCmd}" />
+								<Button Content="Create request" Command="{Binding Panel.CreateRequestCmd}" />
+								<Button Content="Save request…" Command="{Binding Panel.SaveRequestCmd}" />
 							</StackPanel>
 							<TextBlock Text="{Binding RunMessage}" TextWrapping="Wrap" Opacity="0.8" />
 						</StackPanel>
@@ -123,29 +153,39 @@
 					<TextBlock Classes="h" Text="INSTALL A LICENCE" />
 					<Border Classes="card">
 						<StackPanel Spacing="8">
-							<TextBox Classes="mono" Text="{Binding PastedToken}" AcceptsReturn="True"
+							<TextBox Classes="mono" Text="{Binding Panel.PastedToken}" AcceptsReturn="True"
 							         Height="90" TextWrapping="Wrap" Watermark="Paste a licence token here" />
 							<StackPanel Orientation="Horizontal" Spacing="8">
-								<Button Content="Install" Command="{Binding InstallCmd}" />
-								<Button Content="Clear" Command="{Binding ClearCmd}" />
+								<Button Content="Install" Command="{Binding Panel.InstallCmd}" />
+								<Button Content="Open .lic…" Command="{Binding Panel.OpenLicenseFileCmd}" />
+								<Button Content="Clear" Command="{Binding Panel.ClearCmd}" />
 							</StackPanel>
-							<TextBlock Text="{Binding InstallMessage}" TextWrapping="Wrap" Opacity="0.8" />
+							<TextBlock Text="{Binding Panel.InstallMessage}" TextWrapping="Wrap" Opacity="0.8" />
 						</StackPanel>
 					</Border>
 
 					<TextBlock Classes="h" Text="INSTALLED ON DISK" />
 					<Border Classes="card">
-						<ItemsControl ItemsSource="{Binding Installed}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<TextBlock Classes="mono" Text="{Binding}" FontSize="11" />
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
+						<StackPanel Spacing="8">
+							<ListBox ItemsSource="{Binding Panel.Installed}"
+							         SelectedItem="{Binding Panel.SelectedDocument}"
+							         MaxHeight="140" Background="Transparent">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<StackPanel Orientation="Horizontal" Spacing="8">
+											<TextBlock Classes="mono" Text="{Binding}" FontSize="11" />
+											<TextBlock Classes="mono" Text="{Binding KeyId, StringFormat='kid {0}'}"
+											           FontSize="11" Opacity="0.6" />
+										</StackPanel>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+							<Button Content="Uninstall selected" Command="{Binding Panel.RemoveCmd}" />
+						</StackPanel>
 					</Border>
 
 					<TextBlock Classes="h" Text="REQUEST BLOB" />
-					<TextBox Classes="mono" Text="{Binding RequestBlob}" IsReadOnly="True"
+					<TextBox Classes="mono" Text="{Binding Panel.RequestBlob}" IsReadOnly="True"
 					         AcceptsReturn="True" Height="110" />
 
 				</StackPanel>

@@ -58,7 +58,12 @@ namespace OutWit.Common.Licensing.Validation
                 LicenseStatus.BindingMismatch => $"This licence was issued for a different machine{subject}.",
                 LicenseStatus.NotYetValid => $"This licence is not valid until {Format(Payload?.NotBeforeUtc)}.",
                 LicenseStatus.Expired => $"Licence{subject} expired on {Format(Payload?.ExpiresUtc)}.",
-                LicenseStatus.ClockTampered => "The system clock has been moved backwards; the licence cannot be trusted until it is corrected.",
+                // Deliberately an observation rather than an accusation. A VM
+                // restored from a snapshot, a dead RTC, a laptop back from a
+                // badly configured timezone and a container with no NTP yet are
+                // each more common than the tampering this guards against, and
+                // all four produce a customer who did nothing wrong.
+                LicenseStatus.ClockTampered => $"The system clock is behind the last time this product ran; the licence{subject} cannot be checked until it is corrected.",
                 LicenseStatus.ExceedsKeyPolicy => "This licence claims more than the key that signed it is permitted to grant.",
                 LicenseStatus.Superseded => "This licence has been replaced by a newer one installed on this machine.",
                 _ => "The licence could not be validated."

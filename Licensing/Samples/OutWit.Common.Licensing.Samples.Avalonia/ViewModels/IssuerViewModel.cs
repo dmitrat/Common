@@ -114,7 +114,7 @@ public class IssuerViewModel : ViewModelBase<ApplicationViewModel>
 
     private void SendToProduct()
     {
-        ApplicationVm.Product.PastedToken = Token;
+        ApplicationVm.Product.Panel.PastedToken = Token;
     }
 
     #endregion

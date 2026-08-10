@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
+
+		<Version>1.0.0</Version>
+
+		<Description>The licence panel, without a view. A ready ViewModel over OutWit.Common.Licensing — mode, severity, expiry, grants, installed documents, install, uninstall and request export, with every enablement rule already computed — plus the gateway abstraction that lets the same panel serve an in-process desktop app and a remote admin screen. No UI framework: not Avalonia, not WPF, not Blazor. Bring your own view.</Description>
+		<PackageTags>OutWit;Common;Licensing;Licence;License;MVVM;ViewModel;Panel;CrossPlatform</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Licensing/OutWit.Common.Licensing.MVVM</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="OutWit.Common.Licensing.MVVM.Tests" />
+	</ItemGroup>
+
+	<!--
+	Three references, and the list is the package's defining constraint. MVVM is
+	the framework-neutral base — ViewModelBase, RelayCommand, IDispatcher — and
+	Aspects supplies [Notify]. Nothing here knows what a window is; that is what
+	lets WitSweep bind this from Avalonia and the Inventor add-in bind the same
+	type from WPF.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.Licensing\OutWit.Common.Licensing.csproj" />
+		<ProjectReference Include="..\..\MVVM\OutWit.Common.MVVM\OutWit.Common.MVVM.csproj" />
+		<ProjectReference Include="..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
+	</ItemGroup>
+
+</Project>

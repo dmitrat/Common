@@ -23,10 +23,20 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Aspects\OutWit.Common.Aspects\OutWit.Common.Aspects.csproj" />
 		<ProjectReference Include="..\..\..\MVVM\OutWit.Common.MVVM\OutWit.Common.MVVM.csproj" />
+		<!-- For AvaloniaDispatcher alone. The licensing packages know nothing
+		     about Avalonia; supplying the thread-marshalling seam is the
+		     consumer's job, and this is how a real Avalonia product does it. -->
+		<ProjectReference Include="..\..\..\MVVM\OutWit.Common.MVVM.Avalonia\OutWit.Common.MVVM.Avalonia.csproj" />
 	</ItemGroup>
 
+	<!--
+	The harness is the panel's first consumer, not its last: it binds
+	OutWit.Common.Licensing.MVVM before any shipping product does, so the
+	abstraction is exercised while it is still free to change.
+	-->
 	<ItemGroup>
 		<ProjectReference Include="..\..\OutWit.Common.Licensing\OutWit.Common.Licensing.csproj" />
+		<ProjectReference Include="..\..\OutWit.Common.Licensing.MVVM\OutWit.Common.Licensing.MVVM.csproj" />
 	</ItemGroup>
 
 </Project>

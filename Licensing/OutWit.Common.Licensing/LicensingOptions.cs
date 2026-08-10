@@ -90,6 +90,45 @@ namespace OutWit.Common.Licensing
             return this;
         }
 
+        /// <summary>
+        /// Sets how long the product keeps working after a licence expires.
+        /// <para>
+        /// This is <b>renewal</b> grace, and it belongs to the build rather than
+        /// to the payload: it is a product promise, uniform across customers,
+        /// and putting it in the document would mean every licence ever issued
+        /// silently ran longer than the term on the invoice. A server takes one
+        /// because the operator who fixes it may be asleep; a desktop app
+        /// usually takes none, because a person is sitting in front of it and
+        /// the fix is one paste.
+        /// </para>
+        /// <para>
+        /// Not to be confused with check-in grace, which answers "the registry
+        /// is unreachable" and is chosen per licence by whoever issues it.
+        /// </para>
+        /// </summary>
+        public LicensingOptions WithGrace(TimeSpan grace)
+        {
+            Grace = grace < TimeSpan.Zero ? TimeSpan.Zero : grace;
+            return this;
+        }
+
+        /// <summary>
+        /// Re-evaluates the licence on a timer, so a long-lived process notices
+        /// its own expiry.
+        /// <para>
+        /// Needed by both families and for the same reason. A server up for four
+        /// months crosses <c>exp</c> and would never find out until it restarts;
+        /// a CAD session runs for days and a draughtsman does not restart their
+        /// host either. Without this, the only re-evaluation is one somebody
+        /// asked for by hand.
+        /// </para>
+        /// </summary>
+        public LicensingOptions WithPeriodicReload(TimeSpan interval)
+        {
+            ReloadInterval = interval <= TimeSpan.Zero ? null : interval;
+            return this;
+        }
+
         #endregion
 
         #region Tools
@@ -176,6 +215,19 @@ namespace OutWit.Common.Licensing
 
         /// <summary>Clock-tamper detection.</summary>
         public ClockGuard ClockGuard { get; set; } = new();
+
+        /// <summary>
+        /// How long the product keeps working past expiry. Zero — the default —
+        /// means the entitlement ends the day the licence does.
+        /// </summary>
+        public TimeSpan Grace { get; set; } = TimeSpan.Zero;
+
+        /// <summary>
+        /// How often the licence is re-evaluated on its own, or <c>null</c> for
+        /// never. Off by default: a timer nobody asked for is a surprise in a
+        /// short-lived process.
+        /// </summary>
+        public TimeSpan? ReloadInterval { get; set; }
 
         /// <summary>The time source.</summary>
         public Func<DateTime> Clock { get; set; } = () => DateTime.UtcNow;

@@ -10,13 +10,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- The real container, not just the abstractions: the DI arm of
-		     AddLicensing is only meaningfully tested against one that resolves
-		     and disposes. -->
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
 		<PackageReference Include="NUnit" />
 		<PackageReference Include="NUnit3TestAdapter" />
@@ -31,7 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\OutWit.Common.Licensing\OutWit.Common.Licensing.csproj" />
+		<ProjectReference Include="..\OutWit.Common.Licensing.MVVM\OutWit.Common.Licensing.MVVM.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
