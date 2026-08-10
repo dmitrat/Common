@@ -58,12 +58,7 @@ public class IssuerViewModel : ViewModelBase<ApplicationViewModel>
         ForgeModes = new ObservableCollection<ForgeMode>(Enum.GetValues<ForgeMode>());
         Terms = new ObservableCollection<string> { "30 days", "1 year", "3 years", "Expired last week", "Starts in 20 days", "Unlimited" };
 
-        AddKey(PRIMARY_KEY, LicenseAlgorithm.ES256, LicenseKeyPolicy.Commercial, ApplicationViewModel.PRODUCT);
-        AddKey(TRIAL_KEY, LicenseAlgorithm.ES256, LicenseKeyPolicy.TrialOnly, ApplicationViewModel.PRODUCT);
-        AddKey(FOREIGN_KEY, LicenseAlgorithm.ES384, LicenseKeyPolicy.Commercial, "SomeOtherProduct");
-
-        // Generated but never put in the ring — the product must refuse it.
-        AddKey(UNTRUSTED_KEY, LicenseAlgorithm.ES256, LicenseKeyPolicy.Commercial, ApplicationViewModel.PRODUCT, trusted: false);
+        Rescope();
 
         SelectedKey = m_keys[PRIMARY_KEY];
         SelectedForgeMode = ForgeMode.None;
@@ -87,12 +82,52 @@ public class IssuerViewModel : ViewModelBase<ApplicationViewModel>
 
     #region Functions
 
-    /// <summary>The ring the product embeds — every key except the untrusted one.</summary>
+    /// <summary>
+    /// Regenerates the throwaway keys for whatever product the bench is now
+    /// claiming to be.
+    /// <para>
+    /// Necessary rather than tidy: a key is scoped to a product line, so keys
+    /// minted for <c>SampleProduct</c> would refuse to sign for <c>WitSweep</c>
+    /// with <c>ExceedsKeyPolicy</c> — a correct refusal, arriving for a reason
+    /// that has nothing to do with what was being tested.
+    /// </para>
+    /// </summary>
+    public void Rescope()
+    {
+        var product = ApplicationVm.AppliedProductKey;
+
+        m_keys.Clear();
+        Keys.Clear();
+
+        AddKey(PRIMARY_KEY, LicenseAlgorithm.ES256, LicenseKeyPolicy.Commercial, product);
+        AddKey(TRIAL_KEY, LicenseAlgorithm.ES256, LicenseKeyPolicy.TrialOnly, product);
+        AddKey(FOREIGN_KEY, LicenseAlgorithm.ES384, LicenseKeyPolicy.Commercial, "SomeOtherProduct");
+
+        // Generated but never put in the ring — the product must refuse it.
+        AddKey(UNTRUSTED_KEY, LicenseAlgorithm.ES256, LicenseKeyPolicy.Commercial, product, trusted: false);
+
+        SelectedKey = m_keys[PRIMARY_KEY];
+    }
+
+    /// <summary>
+    /// The ring the product embeds: this process's throwaway keys, plus any real
+    /// ring exported from WitLicense.
+    /// <para>
+    /// Both together on purpose. The bench has to keep exercising its nine
+    /// deliberate defect modes, which need private keys it can sign with, while
+    /// also verifying a licence signed by a key it will never hold. A real
+    /// product embeds only the second kind.
+    /// </para>
+    /// </summary>
     public LicenseKeyRing BuildRing()
     {
-        return new LicenseKeyRing(Keys
+        var throwaway = Keys
             .Where(key => key.KeyId != UNTRUSTED_KEY)
-            .Select(key => key.Info));
+            .Select(key => key.Info);
+
+        var real = LicenseKeyRing.FromJson(ApplicationVm.KeyRingJson).Keys;
+
+        return new LicenseKeyRing(throwaway.Concat(real));
     }
 
     /// <summary>Takes the factors from a request the product produced.</summary>
@@ -157,7 +192,7 @@ public class IssuerViewModel : ViewModelBase<ApplicationViewModel>
         {
             Id = Guid.NewGuid().ToString("N"),
             IssuedUtc = now,
-            Product = mode == ForgeMode.WrongProduct ? "SomethingElse" : ApplicationViewModel.PRODUCT,
+            Product = mode == ForgeMode.WrongProduct ? "SomethingElse" : ApplicationVm.AppliedProductKey,
             Edition = Edition,
             AppVersionRange = mode == ForgeMode.WrongVersion ? ">=9.0.0" : VersionRange,
             Customer = new LicenseCustomer { Id = "acme", Name = "ACME GmbH", Contact = "it@acme.example" },

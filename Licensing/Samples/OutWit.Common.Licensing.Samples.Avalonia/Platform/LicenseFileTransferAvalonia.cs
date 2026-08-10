@@ -23,6 +23,7 @@ internal sealed class LicenseFileTransferAvalonia : ILicenseFileTransfer
 
     private const string LICENSE_EXTENSION = "lic";
     private const string REQUEST_EXTENSION = "owlreq";
+    private const string KEY_RING_EXTENSION = "keyring.json";
 
     #endregion
 
@@ -74,6 +75,45 @@ internal sealed class LicenseFileTransferAvalonia : ILicenseFileTransfer
         await using var writer = new StreamWriter(stream);
 
         await writer.WriteAsync(content);
+    }
+
+    #endregion
+
+    #region Functions
+
+    /// <summary>
+    /// Opens a <c>&lt;product&gt;.keyring.json</c> exported from WitLicense.
+    /// <para>
+    /// Not part of <see cref="ILicenseFileTransfer"/>, and deliberately so: a
+    /// shipping product embeds its ring as a resource at build time and has no
+    /// business loading one at runtime. Only a bench needs this.
+    /// </para>
+    /// </summary>
+    public async Task<string?> OpenKeyRingAsync()
+    {
+        var storage = Storage();
+        if (storage == null)
+            return null;
+
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open an exported key ring",
+            AllowMultiple = false,
+            FileTypeFilter = new List<FilePickerFileType>
+            {
+                new("Key ring") { Patterns = new[] { $"*.{KEY_RING_EXTENSION}" } },
+                new("JSON") { Patterns = new[] { "*.json" } },
+                new("All files") { Patterns = new[] { "*" } }
+            }
+        });
+
+        if (files.Count == 0)
+            return null;
+
+        await using var stream = await files[0].OpenReadAsync();
+        using var reader = new StreamReader(stream);
+
+        return await reader.ReadToEndAsync();
     }
 
     #endregion

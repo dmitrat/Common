@@ -72,7 +72,7 @@ public class ProductViewModel : ViewModelBase<ApplicationViewModel>
         // Licensing.Create rather than a container: a desktop app composes by
         // hand, and this is the path WitSweep and the add-in will take.
         m_licensing = Licensing.Create(options => options
-            .ForProduct(ApplicationViewModel.PRODUCT, ApplicationVm.ProductVersion)
+            .ForProduct(ApplicationVm.AppliedProductKey, ApplicationVm.ProductVersion)
             .WithKeyRing(ApplicationVm.Issuer.BuildRing())
             .WithBinding(new LicenseBindingProviderMachine())
             .WithStore(new LicenseStoreFile(ApplicationVm.LicenseDirectory))

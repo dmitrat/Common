@@ -459,7 +459,7 @@ What it does not yet do, and needs to:
 | Addition | Why |
 |---|---|
 | **Mode display** — `Licensed / Demo / Grace / Restricted`, not just a status string | §3 is the new thing being designed; it has to be visible or it is not being tested |
-| **Real key ring** — load `witsweep.keyring.json` exported from WitLicense, alongside the throwaway keys | The export format (`WitLicense/DESIGN.md` §7.2) has never been consumed by anything. Until a verifier reads one, it is unproven |
+| **Real key ring** — load `witsweep.keyring.json` exported from WitLicense, alongside the throwaway keys | The export format (`WitLicense/DESIGN.md` §7.2) has never been consumed by anything. Until a verifier reads one, it is unproven. **Done** — see below |
 | **Real token round trip** — paste a licence issued by `license.omnibuscloud.com`, delivered by email | Closes the first full production cycle, which has never been run end to end. Also the first real Resend send |
 | **Renewal overlap** — install a staged `NotYetValid` renewal beside a live licence and watch the switch at `exp` | `LicenseService.Evaluate` implements best-valid selection and supersession; nothing has ever watched it happen |
 | **Uninstall** | Gap 5, and the only way to test a document being removed rather than superseded |
@@ -467,6 +467,30 @@ What it does not yet do, and needs to:
 Note what this buys beyond testing the library: **it discharges four items from
 the operational tail** — the never-run production cycle, the unverified Resend
 transport, the unconsumed key-ring export, and the untested `.owlreq` import.
+
+**The key-ring export is now proven, and the risk turned out smaller than it
+looked.** `KeyVault.ExportRingAsync` builds an
+`OutWit.Common.Licensing.Keys.LicenseKeyRing` and calls its own `ToJson` — the
+issuing side serialises with the *verifier's own type*, so the two halves cannot
+disagree about the format by construction. What was genuinely unproven was the
+operational path, and that has now been walked end to end: a ring exported for a
+product, loaded into the harness, and a licence signed by a key the harness has
+never held accepted against it. Clearing the ring turns the same licence into
+`UnknownKeyId` / `Restricted`, which is what makes the first result mean
+something.
+
+Two consequences for the harness, both of which outlast this exercise:
+
+- **The product key and version became settings.** A ring is exported *for a
+  product* and a licence names one, so a bench permanently called
+  `SampleProduct` could consume neither. It can now stand in for any of the four
+  products, and the throwaway keys are re-scoped when it does — otherwise the
+  bench would refuse its own licences with `ExceedsKeyPolicy`, a correct refusal
+  arriving for a reason that has nothing to do with what was being tested.
+- **The real ring is merged with the throwaway keys rather than replacing
+  them.** The bench has to keep driving its nine deliberate defect modes, which
+  need private keys it can sign with, while also verifying a licence signed by a
+  key it will never hold. A shipping product embeds only the second kind.
 
 ### 6.2 A second mock, containerised — the one the Avalonia app cannot be
 
