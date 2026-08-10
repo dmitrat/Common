@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using OutWit.Common.Abstract;
+using OutWit.Common.Attributes;
 using OutWit.Common.Licensing.Keys;
 using OutWit.Common.Values;
 
@@ -50,6 +51,7 @@ namespace OutWit.Common.Licensing.Abstract
         #region Properties
 
         /// <summary>Algorithm the signature claims to use.</summary>
+        [ToString("alg")]
         [JsonPropertyName("alg")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LicenseAlgorithm Algorithm { get; init; } = LicenseAlgorithm.None;
@@ -59,6 +61,7 @@ namespace OutWit.Common.Licensing.Abstract
         /// both hang off this: without it, one leaked key would compromise every
         /// licence ever issued, for every product, unfixably.
         /// </summary>
+        [ToString("kid")]
         [JsonPropertyName("kid")]
         public string KeyId { get; init; } = string.Empty;
 

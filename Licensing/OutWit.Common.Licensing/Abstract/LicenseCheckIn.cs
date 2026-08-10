@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using OutWit.Common.Abstract;
+using OutWit.Common.Attributes;
 using OutWit.Common.Values;
 
 namespace OutWit.Common.Licensing.Abstract
@@ -56,6 +57,7 @@ namespace OutWit.Common.Licensing.Abstract
         #region Properties
 
         /// <summary>Registry endpoint to confirm against.</summary>
+        [ToString]
         [JsonPropertyName("url")]
         public string Url { get; init; } = string.Empty;
 

@@ -37,13 +37,22 @@ namespace OutWit.Common.Licensing.Crypto
 
         #region Constructors
 
-        private LicenseToken(LicenseTokenHeader header, LicensePayload payload, byte[] signature, string signingInput, string raw)
+        private LicenseToken(
+            LicenseTokenHeader header,
+            LicensePayload payload,
+            byte[] signature,
+            string signingInput,
+            string raw,
+            string headerJson,
+            string payloadJson)
         {
             Header = header;
             Payload = payload;
             Signature = signature;
             SigningInput = signingInput;
             Raw = raw;
+            HeaderJson = headerJson;
+            PayloadJson = payloadJson;
         }
 
         #endregion
@@ -102,7 +111,7 @@ namespace OutWit.Common.Licensing.Crypto
                 if (header == null || payload == null)
                     return null;
 
-                return new LicenseToken(header, payload, signature, $"{parts[0]}.{parts[1]}", trimmed);
+                return new LicenseToken(header, payload, signature, $"{parts[0]}.{parts[1]}", trimmed, headerJson, payloadJson);
             }
             catch (JsonException)
             {
@@ -136,6 +145,21 @@ namespace OutWit.Common.Licensing.Crypto
 
         /// <summary>The token exactly as it arrived.</summary>
         public string Raw { get; }
+
+        /// <summary>The header's JSON, decoded from the token's own bytes.</summary>
+        public string HeaderJson { get; }
+
+        /// <summary>
+        /// The payload's JSON, decoded from the token's own bytes.
+        /// <para>
+        /// Carried rather than re-serialised from <see cref="Payload"/>, and the
+        /// difference is the whole point of the format: a newer issuer may add
+        /// fields, and round-tripping through this build's model would silently
+        /// drop exactly the fields somebody inspecting an unfamiliar licence
+        /// most needs to see. This is what the signature covers.
+        /// </para>
+        /// </summary>
+        public string PayloadJson { get; }
 
         #endregion
     }

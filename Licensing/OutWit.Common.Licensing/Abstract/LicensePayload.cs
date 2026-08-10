@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using OutWit.Common.Abstract;
+using OutWit.Common.Attributes;
 using OutWit.Common.Collections;
 using OutWit.Common.Values;
 
@@ -117,6 +118,7 @@ namespace OutWit.Common.Licensing.Abstract
         #region Properties
 
         /// <summary>Issuance id, quoted in support and used by supersession.</summary>
+        [ToString("jti")]
         [JsonPropertyName("jti")]
         public string Id { get; init; } = string.Empty;
 
@@ -125,10 +127,12 @@ namespace OutWit.Common.Licensing.Abstract
         public DateTime IssuedUtc { get; init; }
 
         /// <summary>Product key. Checked hard — a licence for one product never satisfies another.</summary>
+        [ToString]
         [JsonPropertyName("product")]
         public string Product { get; init; } = string.Empty;
 
         /// <summary>Human-facing bundle name. Display only — see the type remarks.</summary>
+        [ToString]
         [JsonPropertyName("edition")]
         public string Edition { get; init; } = string.Empty;
 
@@ -147,10 +151,12 @@ namespace OutWit.Common.Licensing.Abstract
         public LicenseCustomer? Customer { get; init; }
 
         /// <summary>Not valid before this instant.</summary>
+        [ToString("from", Format = "yyyy-MM-dd")]
         [JsonPropertyName("nbf")]
         public DateTime NotBeforeUtc { get; init; }
 
         /// <summary>Expiry, or <c>null</c> for unlimited.</summary>
+        [ToString("until", Format = "yyyy-MM-dd")]
         [JsonPropertyName("exp")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public DateTime? ExpiresUtc { get; init; }

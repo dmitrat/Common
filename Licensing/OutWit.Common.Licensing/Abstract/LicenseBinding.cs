@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using OutWit.Common.Abstract;
+using OutWit.Common.Attributes;
 using OutWit.Common.Collections;
 using OutWit.Common.Licensing.Binding;
 using OutWit.Common.Values;
@@ -64,6 +65,7 @@ namespace OutWit.Common.Licensing.Abstract
         #region Properties
 
         /// <summary>What kind of thing the licence is tied to.</summary>
+        [ToString]
         [JsonPropertyName("kind")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LicenseBindingKind Kind { get; init; } = LicenseBindingKind.None;
@@ -72,6 +74,7 @@ namespace OutWit.Common.Licensing.Abstract
         /// How many of <see cref="Factors"/> must match. Zero means the binding
         /// imposes nothing.
         /// </summary>
+        [ToString("of")]
         [JsonPropertyName("threshold")]
         public int Threshold { get; init; }
 

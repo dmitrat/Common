@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using OutWit.Common.Abstract;
+using OutWit.Common.Attributes;
 using OutWit.Common.Values;
 
 namespace OutWit.Common.Licensing.Abstract
@@ -46,6 +47,7 @@ namespace OutWit.Common.Licensing.Abstract
         public string Id { get; init; } = string.Empty;
 
         /// <summary>Display name, as it should appear to the customer.</summary>
+        [ToString]
         [JsonPropertyName("name")]
         public string Name { get; init; } = string.Empty;
 

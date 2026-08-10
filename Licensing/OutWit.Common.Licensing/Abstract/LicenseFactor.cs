@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using OutWit.Common.Abstract;
+using OutWit.Common.Attributes;
 using OutWit.Common.Values;
 
 namespace OutWit.Common.Licensing.Abstract
@@ -44,6 +45,7 @@ namespace OutWit.Common.Licensing.Abstract
         /// Factor name — a <c>MachineFactorKeys</c> constant, or a
         /// consumer-defined key such as <c>tenant</c> or <c>installId</c>.
         /// </summary>
+        [ToString("key")]
         [JsonPropertyName("k")]
         public string Key { get; init; } = string.Empty;
 
