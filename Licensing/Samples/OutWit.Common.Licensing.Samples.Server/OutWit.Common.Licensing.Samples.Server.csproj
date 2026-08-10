@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
+
+		<!-- A mock, never a product: not packed, not published, never signed. -->
+		<IsPackable>false</IsPackable>
+		<UserSecretsId>outwit-licensing-samples-server</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\OutWit.Common.Licensing\OutWit.Common.Licensing.csproj" />
+	</ItemGroup>
+
+</Project>

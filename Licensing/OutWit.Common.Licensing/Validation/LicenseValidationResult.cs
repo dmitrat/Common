@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using OutWit.Common.Licensing.Abstract;
+using OutWit.Common.Licensing.Binding;
 
 namespace OutWit.Common.Licensing.Validation
 {
@@ -55,7 +56,7 @@ namespace OutWit.Common.Licensing.Validation
                 LicenseStatus.SignatureInvalid => "The licence signature does not verify — it has been altered.",
                 LicenseStatus.WrongProduct => $"This licence is for a different product{DescribeProduct()}.",
                 LicenseStatus.WrongVersion => $"This licence does not cover the running version{DescribeVersionRange()}.",
-                LicenseStatus.BindingMismatch => $"This licence was issued for a different machine{subject}.",
+                LicenseStatus.BindingMismatch => DescribeBindingMismatch(),
                 LicenseStatus.NotYetValid => $"This licence is not valid until {Format(Payload?.NotBeforeUtc)}.",
                 LicenseStatus.Expired => $"Licence{subject} expired on {Format(Payload?.ExpiresUtc)}.",
                 // Deliberately an observation rather than an accusation. A VM
@@ -84,6 +85,34 @@ namespace OutWit.Common.Licensing.Validation
             var name = Payload?.Customer?.Name;
 
             return string.IsNullOrWhiteSpace(name) ? string.Empty : $" to {name}";
+        }
+
+        /// <summary>
+        /// Names the thing the licence is actually tied to.
+        /// <para>
+        /// It used to say "a different machine" whatever the binding was. Told
+        /// that about a container, a server operator goes and looks at hardware
+        /// — and the answer is a URL or an installation id in a config file.
+        /// A refusal that names the wrong axis sends people to the wrong place,
+        /// which is the one thing a specific reason exists to prevent.
+        /// </para>
+        /// <para>
+        /// The customer is introduced separately rather than through the shared
+        /// subject clause, because "issued for a different machine to ACME GmbH"
+        /// reads as though the machine were theirs.
+        /// </para>
+        /// </summary>
+        private string DescribeBindingMismatch()
+        {
+            var subject = Payload?.Binding?.Kind == LicenseBindingKind.Tenant
+                ? "a different deployment"
+                : "a different machine";
+
+            var name = Payload?.Customer?.Name;
+
+            return string.IsNullOrWhiteSpace(name)
+                ? $"This licence was issued for {subject}."
+                : $"This licence, issued to {name}, was issued for {subject}.";
         }
 
         private string DescribeTerm()

@@ -1,0 +1,53 @@
+# Two deployments of one image, which is the arrangement the interesting
+# questions need. They differ in exactly the things a real pair of deployments
+# differ in — the address they serve and the identity they own — and in nothing
+# else, so any difference in outcome is attributable.
+#
+# Run from the repository root:
+#   docker compose -f Licensing/Samples/OutWit.Common.Licensing.Samples.Server/docker-compose.yml up -d --build
+
+services:
+
+  # The deployment under test. Its installation id is generated on first start
+  # and lives in the volume, which is the case an installer never touched.
+  first:
+    build:
+      context: ../../..
+      dockerfile: Licensing/Samples/OutWit.Common.Licensing.Samples.Server/Dockerfile
+    environment:
+      Licensing__PublicBaseUrl: ${FIRST_URL:-https://first.example}
+      Licensing__Issuer: ${FIRST_ISSUER:-https://auth.example}
+      # A licence delivered the compose way, alongside whatever is in the volume.
+      Licensing__License: ${FIRST_LICENSE:-}
+      Licensing__KeyRing: /run/secrets/keyring
+      Licensing__ReloadSeconds: ${RELOAD_SECONDS:-5}
+    volumes:
+      - first-license:/app/license
+      - ${KEYRING_FILE:-./keyring.json}:/run/secrets/keyring:ro
+    ports:
+      - "127.0.0.1:8081:8080"
+
+  # The second deployment. Same image, same key ring, different address — so a
+  # licence issued to the first must be refused here, and a fresh volume means a
+  # fresh identity.
+  second:
+    build:
+      context: ../../..
+      dockerfile: Licensing/Samples/OutWit.Common.Licensing.Samples.Server/Dockerfile
+    environment:
+      Licensing__PublicBaseUrl: ${SECOND_URL:-https://second.example}
+      Licensing__Issuer: ${SECOND_ISSUER:-https://auth.example}
+      Licensing__KeyRing: /run/secrets/keyring
+      Licensing__ReloadSeconds: ${RELOAD_SECONDS:-5}
+    volumes:
+      - second-license:/app/license
+      - ${KEYRING_FILE:-./keyring.json}:/run/secrets/keyring:ro
+    ports:
+      - "127.0.0.1:8082:8080"
+
+volumes:
+  # Named, because the whole installId argument rests on this surviving
+  # `up --force-recreate`. A bind mount would too; a container's writable layer
+  # would not, and that is the mistake this file exists to not make.
+  first-license:
+  second-license:

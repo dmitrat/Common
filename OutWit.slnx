@@ -52,6 +52,7 @@
   </Folder>
   <Folder Name="/Licensing/Samples/">
     <Project Path="Licensing/Samples/OutWit.Common.Licensing.Samples.Avalonia/OutWit.Common.Licensing.Samples.Avalonia.csproj" />
+    <Project Path="Licensing/Samples/OutWit.Common.Licensing.Samples.Server/OutWit.Common.Licensing.Samples.Server.csproj" />
   </Folder>
   <Folder Name="/Logging/">
     <Project Path="Logging/OutWit.Common.Logging.Abstractions/OutWit.Common.Logging.Abstractions.csproj" />

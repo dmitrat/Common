@@ -568,6 +568,43 @@ no identity, no WitRPC. It is the WitCloud *shape* with none of the WitCloud
 This is a small, high-leverage artifact: it de-risks the single decision in the
 design most likely to produce a silent, delayed, customer-visible failure.
 
+**Built, and it answered its questions.** Five of the six were settled without a
+container at all — two processes, two directories and two `PublicBaseUrl` values
+reproduce a pair of deployments exactly, because that is all a deployment
+identity is:
+
+| Question | Answer |
+|---|---|
+| Does `installId` survive a restart with the volume intact? | Yes |
+| Does a licence apply **without a restart**? | Yes — by paste, and by dropping a `.lic` into the volume, which needs the periodic reload of gap 2 |
+| `Licensing__License` beside a dropped file — which wins? | **Neither.** Both are read and the *better licence* wins, whichever door it came through. Swapping the two licences between the two doors swaps the winner |
+| Two deployments, two identities? | Yes, and each refuses the other's licence |
+| A copied volume at a different address? | **Refused.** `installId` matched, `publicBaseUrl` did not — the third factor doing exactly the job §7.8.2 argued for, on its first real test |
+| A copied volume at the *licensed* address? | Accepted, correctly: that is a replica of one deployment, and it is also the honest limit of any offline binding |
+
+Two things had to be written before the mock could exist, and both were gaps
+rather than mock scaffolding:
+
+- **`installId` did not exist.** §4.3 says so plainly and it was still true:
+  `LicenseBindingProviderTenant` took one as an argument and nothing anywhere
+  generated, persisted or read one. It lives in the library now — configuration
+  first, a generated file beside the licences as the fallback, written through a
+  temporary file so a process killed mid-write cannot leave a half-written
+  identity that reads back as a different installation. An unwritable directory
+  yields *nothing* rather than something new: an absent factor fails a licence
+  visibly, one that shifted every start would fail it mysteriously.
+- **URL normalisation.** A trailing slash hashed differently, so
+  `https://acme.example/` and `https://acme.example` were two deployments. An
+  operator who pastes one into one config and the other into another has moved
+  nothing, and the licence would have died for a reason nobody could see.
+
+And one defect the mock exposed by being read rather than by failing: the
+`BindingMismatch` sentence said *"a different machine"* whatever the binding
+was. Told that about a container, a server operator goes and looks at hardware —
+and the answer is a URL in a config file. A refusal that names the wrong axis
+sends people to the wrong place, which is the one thing a specific reason exists
+to prevent.
+
 ### 6.3 What is *not* worth mocking
 
 No mock for WitIdentity interaction — there is none by design (§2). No mock for
