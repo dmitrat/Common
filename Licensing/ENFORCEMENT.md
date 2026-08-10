@@ -460,13 +460,41 @@ What it does not yet do, and needs to:
 |---|---|
 | **Mode display** — `Licensed / Demo / Grace / Restricted`, not just a status string | §3 is the new thing being designed; it has to be visible or it is not being tested |
 | **Real key ring** — load `witsweep.keyring.json` exported from WitLicense, alongside the throwaway keys | The export format (`WitLicense/DESIGN.md` §7.2) has never been consumed by anything. Until a verifier reads one, it is unproven. **Done** — see below |
-| **Real token round trip** — paste a licence issued by `license.omnibuscloud.com`, delivered by email | Closes the first full production cycle, which has never been run end to end. Also the first real Resend send |
+| **Real token round trip** — paste a licence issued by `license.omnibuscloud.com`, delivered by email | Closes the first full production cycle, which has never been run end to end. Also the first real Resend send. **Done** — see below |
 | **Renewal overlap** — install a staged `NotYetValid` renewal beside a live licence and watch the switch at `exp` | `LicenseService.Evaluate` implements best-valid selection and supersession; nothing has ever watched it happen. **Done** — and the switch is not where this row assumed, see below |
 | **Uninstall** | Gap 5, and the only way to test a document being removed rather than superseded |
 
 Note what this buys beyond testing the library: **it discharges four items from
 the operational tail** — the never-run production cycle, the unverified Resend
 transport, the unconsumed key-ring export, and the untested `.owlreq` import.
+
+**All four are now discharged.** A request left the bench as `.owlreq`, was
+imported, issued against a real key, delivered by Resend to a real inbox,
+pasted back in, and verified against a ring exported from the service. Nothing
+in that sentence had ever happened before.
+
+Three defects came out of it, and none was findable by reading:
+
+- The issue form computed the expiry when the term was picked rather than when
+  the licence was signed. Noise on a year; on the hour-scale terms of §10.3 it
+  is the difference between the licence somebody asked for and a shorter one.
+- The delivery column held either an address or the word `"downloaded"`, so the
+  send dialog — which prefills from it, sensibly, because re-sending to the same
+  person is the common case — offered `"downloaded"` as an email address.
+- The compose defaults described a deployment that did not exist: SMTP with a
+  blank host, sending from a domain the provider had never verified. A default
+  that can only fail is worse than no default, because it reads as a decision.
+
+The delivery shape settled as **body text, not an attachment**. A `.lic` is an
+unknown extension and mail filters strip those far more often than they strip
+text; the token is one line precisely so it survives a text channel. The
+message now says *paste this*, because the panel takes a paste and telling a
+customer to save a file first is a detour with a stray character at the end of
+it. Attaching as well is the better answer and is not free: `EmailMessage`
+carries no attachment concept at all, so it would mean changing
+`OutWit.Common.Email` and both real providers in `Shared` — and a provider that
+silently dropped attachments would be a new quiet failure, so neither could be
+skipped.
 
 **The key-ring export is now proven, and the risk turned out smaller than it
 looked.** `KeyVault.ExportRingAsync` builds an
