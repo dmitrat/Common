@@ -1344,6 +1344,13 @@ use of something already built.
    existing durations. An hour-scale term is what makes expiry, grace and
    renewal overlap testable in real time instead of by clock travel; clock
    travel proves the branch, a real short licence proves the wiring.
+
+   **Done.** `IssueTerm` replaces the months-only tuple table, because the two
+   kinds of term are two arithmetics: a commercial term is a *calendar*
+   quantity and a test term is an *elapsed* one, and an hour cannot be
+   expressed in months. The short terms sit **below** the commercial ones in
+   the list and carry a visible marker — they share a dropdown with "3 years",
+   and a mis-click there ships a customer a licence lasting until lunchtime.
 4. **`appVer` default and its one hard rule.** Decided (§3.4 covers the product
    side; this is the issuing side):
    - The form **prefills `>={current} <{next major}`** and stays editable. That
@@ -1355,11 +1362,41 @@ use of something already built.
      revocation, and every future major version free forever. Overriding it must
      take an explicit action with a typed reason that lands in the audit log, not
      a checkbox.
+
+   **Done**, with three notes worth keeping:
+   - *Unbounded* here means **no upper bound**, not *no clauses*. `">=1.5.0"`
+     has a clause, is not empty, and still covers every major version ever to
+     be written. `LicenseVersionRange.HasUpperBound` is the distinction, and it
+     is the one the rule actually rests on.
+   - The rule is enforced on the **host**, against the *effective* range after
+     the catalogue default has filled in for a blank — so a draft that looks
+     unbounded may not be, and one that looks safe may not be. Preview and issue
+     take the same path, so what the operator saw is what the rule was applied
+     to. `IssueResult.RequiresUnlimitedReason` tells the form which single
+     refusal is overridable, so every other one stays a refusal instead of
+     reading like a prompt. The override gets **its own audit row**
+     (`license.unlimited.granted`) rather than a clause on the issue line.
+   - The prefill floors at the **exact version that asked**, as written above.
+     That means a customer who later reinstalls an earlier patch of the same
+     line falls outside their own range. The field stays editable and the
+     hazard is noted at the code; if it produces support volume, loosening the
+     floor to `{major}.0.0` is a one-line change and the place to make it is the
+     prefill, not the rule.
 5. **Range validation on the form** — because the product **fails open** on a
    malformed range (§3.4): an unparseable clause is silently dropped and an
    unparseable range matches everything. `">=1.5.0 <2.x"` quietly becomes
    `">=1.5.0"`. The form must parse each clause, refuse to sign an unparseable
    one, and **preview which versions the range covers** before signing.
+
+   **Done.** The diagnostics live in `OutWit.Common.Licensing` — a second parser
+   on the issuing side would be free to drift from the one that actually decides,
+   which is the precise failure this check exists to prevent. `Parse` gained an
+   overload reporting the clauses it dropped, and `Describe()` renders coverage
+   in words from the text **as typed**, so `"<2.0.0"` does not read back as
+   `"below 2.0.0.0"` and leave an operator wondering what the tool did to it.
+   A refusal names the dropped clause *and* what the licence would have covered,
+   because the damage is never the clause that failed — it is the range that
+   silently became wider than the one that was typed.
 
 **Needed during the phase:**
 

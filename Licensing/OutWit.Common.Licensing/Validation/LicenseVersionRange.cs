@@ -19,6 +19,12 @@ namespace OutWit.Common.Licensing.Validation
     /// </summary>
     public sealed class LicenseVersionRange
     {
+        #region Constants
+
+        private static readonly string[] OPERATORS = { ">=", "<=", "!=", ">", "<", "=" };
+
+        #endregion
+
         #region Fields
 
         private readonly IReadOnlyList<Clause> m_clauses;
@@ -44,17 +50,44 @@ namespace OutWit.Common.Licensing.Validation
         /// </summary>
         public static LicenseVersionRange Parse(string? range)
         {
+            return Parse(range, out _);
+        }
+
+        /// <summary>
+        /// Parses a range and reports the clauses it could not use.
+        /// <para>
+        /// The verifier fails open on purpose, so <b>the issuing form is the
+        /// only place a typo can be caught</b>. Catching it there means knowing
+        /// exactly what the verifier will silently drop, which is why this
+        /// reports it rather than leaving the issuing side to re-implement the
+        /// same parser and drift away from it.
+        /// </para>
+        /// </summary>
+        /// <param name="range">The range as typed.</param>
+        /// <param name="rejected">Tokens that carry no meaning and were dropped.</param>
+        public static LicenseVersionRange Parse(string? range, out IReadOnlyList<string> rejected)
+        {
+            var dropped = new List<string>();
+
             if (string.IsNullOrWhiteSpace(range))
+            {
+                rejected = dropped;
                 return new LicenseVersionRange(Array.Empty<Clause>());
+            }
 
             var clauses = new List<Clause>();
 
             foreach (var token in range!.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 var clause = Clause.Parse(token);
-                if (clause != null)
+
+                if (clause == null)
+                    dropped.Add(token);
+                else
                     clauses.Add(clause);
             }
+
+            rejected = dropped;
 
             return new LicenseVersionRange(clauses);
         }
@@ -77,8 +110,27 @@ namespace OutWit.Common.Licensing.Validation
             return m_clauses.All(clause => clause.Matches(normalized));
         }
 
-        /// <summary>True when the range imposes nothing.</summary>
-        public bool IsUnbounded => m_clauses.Count == 0;
+        /// <summary>
+        /// What this range covers, in words, for an operator to read before
+        /// signing. A range is a compact expression with an expensive failure
+        /// mode; the sentence is what makes <c>"&gt;=1.5.0 &lt;2.x"</c> —
+        /// which quietly parses as <c>"&gt;=1.5.0"</c> — visible as the
+        /// open-ended grant it actually is.
+        /// </summary>
+        public string Describe()
+        {
+            if (m_clauses.Count == 0)
+                return "Every version, including major versions that do not exist yet.";
+
+            return string.Join(", ", m_clauses.Select(clause => clause.Describe())) + ".";
+        }
+
+        public override string ToString()
+        {
+            return m_clauses.Count == 0
+                ? "(any version)"
+                : string.Join(" ", m_clauses.Select(clause => clause.Text));
+        }
 
         #endregion
 
@@ -104,33 +156,60 @@ namespace OutWit.Common.Licensing.Validation
 
         #endregion
 
+        #region Properties
+
+        /// <summary>True when the range imposes nothing.</summary>
+        public bool IsUnbounded => m_clauses.Count == 0;
+
+        /// <summary>
+        /// True when some clause caps the version from above.
+        /// <para>
+        /// Distinct from <see cref="IsUnbounded"/>, and the distinction is the
+        /// whole point: <c>"&gt;=1.5.0"</c> has a clause, so it is not
+        /// unbounded, and it still covers every major version ever to be
+        /// written. Paired with an unlimited term that is the one grant in this
+        /// system that cannot be taken back in either dimension.
+        /// </para>
+        /// </summary>
+        public bool HasUpperBound => m_clauses.Any(clause => clause.IsUpperBound);
+
+        /// <summary>The clauses that were understood, as they were written.</summary>
+        public IReadOnlyList<string> Clauses => m_clauses.Select(clause => clause.Text).ToList();
+
+        #endregion
+
         #region Clause
 
         private sealed class Clause
         {
             private readonly string m_operator;
             private readonly Version m_version;
+            private readonly string m_versionText;
 
-            private Clause(string op, Version version)
+            private Clause(string op, Version version, string versionText, string text)
             {
                 m_operator = op;
                 m_version = version;
+                m_versionText = versionText;
+                Text = text;
             }
 
             public static Clause? Parse(string token)
             {
-                foreach (var op in new[] { ">=", "<=", "!=", ">", "<", "=" })
+                foreach (var op in OPERATORS)
                 {
                     if (!token.StartsWith(op, StringComparison.Ordinal))
                         continue;
 
-                    return Version.TryParse(token.Substring(op.Length), out var parsed)
-                        ? new Clause(op, Normalize(parsed))
+                    var text = token.Substring(op.Length);
+
+                    return Version.TryParse(text, out var parsed)
+                        ? new Clause(op, Normalize(parsed), text, token)
                         : null;
                 }
 
                 return Version.TryParse(token, out var exact)
-                    ? new Clause("=", Normalize(exact))
+                    ? new Clause("=", Normalize(exact), token, token)
                     : null;
             }
 
@@ -148,6 +227,34 @@ namespace OutWit.Common.Licensing.Validation
                     _ => comparison == 0
                 };
             }
+
+            /// <summary>
+            /// Described from the text as typed rather than from the padded
+            /// value, so a range written <c>"&lt;2.0.0"</c> does not read back
+            /// as <c>"below 2.0.0.0"</c> and leave an operator wondering what
+            /// the tool did to it.
+            /// </summary>
+            public string Describe()
+            {
+                return m_operator switch
+                {
+                    ">=" => $"{m_versionText} or later",
+                    "<=" => $"{m_versionText} or earlier",
+                    ">" => $"after {m_versionText}",
+                    "<" => $"below {m_versionText}",
+                    "!=" => $"except {m_versionText}",
+                    _ => $"exactly {m_versionText}"
+                };
+            }
+
+            /// <summary>
+            /// Whether this clause stops the range going up forever. An exact
+            /// match counts: it is the tightest ceiling there is.
+            /// </summary>
+            public bool IsUpperBound => m_operator is "<" or "<=" or "=";
+
+            /// <summary>The clause exactly as it was written.</summary>
+            public string Text { get; }
         }
 
         #endregion
