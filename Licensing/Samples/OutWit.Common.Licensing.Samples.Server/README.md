@@ -11,12 +11,14 @@ It can be destroyed and recreated in a loop. That is the point.
 
 | Question | Answer |
 |---|---|
-| Does `installId` survive a restart with the volume intact? | **Yes.** Generated once into `<licenceDir>/install-id`, read thereafter |
+| Does `installId` survive `docker compose up --force-recreate`? | **Yes.** New container, same identity, same licence |
+| Does the store land somewhere a non-root container can write? | **Yes.** Runs as `uid=1654(app)` and persists to `/app/license` |
 | Does a licence apply **without a restart**? | **Yes**, both by `POST /license` and by dropping a `.lic` into the volume — the latter needs `WithPeriodicReload` |
 | Does `Licensing__License` work beside a dropped file, and which wins? | Both are read. **Neither door wins** — the better licence does, whichever way it arrived |
 | Do two deployments get two identities? | **Yes.** A fresh volume is a fresh installation, and it refuses the other's licence |
 | Is a copied volume at a different address refused? | **Yes** — `installId` matches, `publicBaseUrl` does not. This is the whole argument for the third factor |
 | Is a copied volume at the *licensed* address accepted? | **Yes**, correctly: that is a replica of one deployment. It is also the honest limit of an offline binding |
+| The volume is lost — generated id vs configured id | Generated: fresh identity, needs a Transfer. **Configured survives**, which is why `.env` is the primary form and the file only the fallback |
 
 ## Running it
 

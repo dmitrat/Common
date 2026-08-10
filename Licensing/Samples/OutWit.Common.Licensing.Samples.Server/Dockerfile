@@ -5,7 +5,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY Directory.Build.props Directory.Build.targets Directory.Packages.props global.json nuget.config* ./
+# nuget.config is deliberately NOT copied. The one in this repository carries a
+# GitHub token in clear text, and copying it would bake that token into a build
+# layer — where it survives even though the final image only takes /app. The
+# mock needs nothing from it: every OutWit dependency here is a project
+# reference, and the rest comes from nuget.org.
+COPY Directory.Build.props Directory.Build.targets Directory.Packages.props global.json ./
 COPY Common/OutWit.Common/ Common/OutWit.Common/
 COPY Platform/OutWit.Common.Platform/ Platform/OutWit.Common.Platform/
 COPY Licensing/OutWit.Common.Licensing/ Licensing/OutWit.Common.Licensing/

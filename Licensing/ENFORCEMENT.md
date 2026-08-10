@@ -568,10 +568,33 @@ no identity, no WitRPC. It is the WitCloud *shape* with none of the WitCloud
 This is a small, high-leverage artifact: it de-risks the single decision in the
 design most likely to produce a silent, delayed, customer-visible failure.
 
-**Built, and it answered its questions.** Five of the six were settled without a
-container at all — two processes, two directories and two `PublicBaseUrl` values
-reproduce a pair of deployments exactly, because that is all a deployment
-identity is:
+**Built and run, in containers.** Five of the six could be settled without one —
+two processes, two directories and two `PublicBaseUrl` values reproduce a pair of
+deployments exactly, because that is all a deployment identity is. The two that
+could not are the two that mattered most:
+
+| Container question | Answer |
+|---|---|
+| Does `installId` survive `docker compose up --force-recreate`? | **Yes.** Container `95178afad6d1` → `a41ec98ce231`, identity and licence unchanged. This is the question §4.3 exists to answer |
+| Does the store land somewhere a non-root container can write? | **Yes.** The process runs as `uid=1654(app)` and persists the identity to `/app/license` |
+| Two containers, one image — two identities? | **Yes**, and the second refuses the first's licence: *"This licence, issued to ACME GmbH, was issued for a different deployment."* |
+| The volume is lost (`down -v`) with the **generated** id | Fresh identity, back to Demo — the documented cost, and the case that needs a Transfer |
+| The volume is lost with the **configured** id | **Survives.** `Licensing__InstallId` came back identical through total volume destruction |
+
+That last pair is §7.8.3's argument, demonstrated rather than asserted: the
+generated file is a fallback and it is genuinely weaker, because it lives in the
+one place a rebuild throws away. Configuration survives because it lives with
+`.env`, beside the database password — a file operators already know they must
+not lose. Both forms ship, and the installer should always set the variable.
+
+One thing the Dockerfile got wrong on the first pass, caught before the first
+build rather than after: it copied `nuget.config` into the build stage, and the
+one in this repository carries a GitHub token in clear text. The final image
+would not have held it — only `/app` is copied forward — but a build layer
+would, and build layers get cached, exported and pushed. The mock needs nothing
+from that file: every OutWit dependency here is a project reference.
+
+The five that needed no container:
 
 | Question | Answer |
 |---|---|

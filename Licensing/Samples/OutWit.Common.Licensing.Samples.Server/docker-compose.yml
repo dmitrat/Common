@@ -15,6 +15,11 @@ services:
       context: ../../..
       dockerfile: Licensing/Samples/OutWit.Common.Licensing.Samples.Server/Dockerfile
     environment:
+      # What an installer writes at deploy time. Left blank here so the default
+      # run exercises the fallback; set it to see the property that makes
+      # configuration the primary form — an identity that survives losing the
+      # volume, which the generated file cannot.
+      Licensing__InstallId: ${FIRST_INSTALL_ID:-}
       Licensing__PublicBaseUrl: ${FIRST_URL:-https://first.example}
       Licensing__Issuer: ${FIRST_ISSUER:-https://auth.example}
       # A licence delivered the compose way, alongside whatever is in the volume.
@@ -35,6 +40,7 @@ services:
       context: ../../..
       dockerfile: Licensing/Samples/OutWit.Common.Licensing.Samples.Server/Dockerfile
     environment:
+      Licensing__InstallId: ${SECOND_INSTALL_ID:-}
       Licensing__PublicBaseUrl: ${SECOND_URL:-https://second.example}
       Licensing__Issuer: ${SECOND_ISSUER:-https://auth.example}
       Licensing__KeyRing: /run/secrets/keyring
