@@ -132,5 +132,111 @@ namespace OutWit.Common.Proxy.Generator.Tests
             StringAssert.Contains("MethodName = \"remove_MyEvent\"", generatedCode);
             StringAssert.Contains("_MyEvent -= value;", generatedCode);
         }
+
+        [Test]
+        public void GeneratesGenericMethodTest()
+        {
+            // Arrange
+            var source = """
+                        using OutWit.Common.Proxy.Attributes;
+                        namespace MyTest
+                        {
+                            [ProxyTarget]
+                            public interface IService5
+                            {
+                                T Echo<T>(int number, T value);
+                            }
+                        }
+                        """;
+            // Act
+            var generatedCode = RunGenerator(source, out var diagnostics);
+
+            // Assert
+            Assert.That(diagnostics, Is.Empty);
+            StringAssert.Contains("public T Echo<T>(int number, T value)", generatedCode);
+            StringAssert.Contains("GenericArguments = new string[] { typeof(T).AssemblyQualifiedName! }", generatedCode);
+            // The closed parameter keeps the literal format, the open one is resolved at run time.
+            StringAssert.Contains("typeof(T).AssemblyQualifiedName!", generatedCode);
+        }
+
+        [Test]
+        public void GeneratesAsyncGenericMethodWithNestedResultTest()
+        {
+            // Arrange: mirrors the OutWit.Cloud.Contracts IApiChannel shape —
+            // Task<Result<TResult?>> with a default parameter value.
+            var source = """
+                        using System;
+                        using System.Threading.Tasks;
+                        using OutWit.Common.Proxy.Attributes;
+                        namespace MyTest
+                        {
+                            public class Result<T> { public T Value; }
+
+                            [ProxyTarget]
+                            public interface IService6
+                            {
+                                Task<Result<TResult?>> GetJobResultAsync<TResult>(Guid jobId, string resultVariable = "result");
+                            }
+                        }
+                        """;
+            // Act
+            var generatedCode = RunGenerator(source, out var diagnostics);
+
+            // Assert
+            Assert.That(diagnostics, Is.Empty);
+            StringAssert.Contains("GetJobResultAsync<TResult>(", generatedCode);
+            StringAssert.Contains("GenericArguments = new string[] { typeof(TResult).AssemblyQualifiedName! }", generatedCode);
+            // The nullable annotation must not leak into typeof(...).
+            StringAssert.Contains("typeof(global::MyTest.Result<TResult>).AssemblyQualifiedName!", generatedCode);
+        }
+
+        [Test]
+        public void GeneratesGenericMethodWithConstraintsTest()
+        {
+            // Arrange
+            var source = """
+                        using System.Threading.Tasks;
+                        using OutWit.Common.Proxy.Attributes;
+                        namespace MyTest
+                        {
+                            [ProxyTarget]
+                            public interface IService7
+                            {
+                                Task<T> CreateAsync<T>() where T : class, new();
+                            }
+                        }
+                        """;
+            // Act
+            var generatedCode = RunGenerator(source, out var diagnostics);
+
+            // Assert
+            Assert.That(diagnostics, Is.Empty);
+            StringAssert.Contains("CreateAsync<T>() where T : class, new()", generatedCode);
+        }
+
+        [Test]
+        public void NonGenericMethodsKeepLiteralTypeStringsTest()
+        {
+            // Arrange: guards the historical emission — closed types must keep the
+            // compile-time literal format, not switch to typeof(...) expressions.
+            var source = """
+                        using OutWit.Common.Proxy.Attributes;
+                        namespace MyTest
+                        {
+                            [ProxyTarget]
+                            public interface IService8
+                            {
+                                string RequestData(string message);
+                            }
+                        }
+                        """;
+            // Act
+            var generatedCode = RunGenerator(source, out var diagnostics);
+
+            // Assert
+            Assert.That(diagnostics, Is.Empty);
+            StringAssert.Contains("ParametersTypes = new string[] { \"System.String, ", generatedCode);
+            StringAssert.DoesNotContain("typeof(", generatedCode);
+        }
     }
 }
