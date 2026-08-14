@@ -17,14 +17,16 @@ namespace OutWit.Common.Proxy.Generator.Generators
             if(me.AssociatedSymbol is IEventSymbol)
                 return;
 
-            var returnType = me.ReturnType.ToDisplayString();
+            var returnType = me.ReturnType.GetCSharpTypeSyntax();
             var typeParameters = me.IsGenericMethod
                 ? $"<{string.Join(", ", me.TypeParameters.Select(symbol => symbol.Name))}>"
                 : "";
             var constraints = me.IsGenericMethod
                 ? me.TypeParameters.GetConstraintsString()
                 : "";
-            var parameters = string.Join(", ", me.Parameters.Select(symbol => $"{symbol.Type} {symbol.Name}"));
+            // GetCSharpTypeSyntax, not ToString/ToDisplayString: both spell a multi-dimensional
+            // array as int[*,*], which is not valid C# and breaks the generated signature.
+            var parameters = string.Join(", ", me.Parameters.Select(symbol => $"{symbol.Type.GetCSharpTypeSyntax()} {symbol.Name}"));
             var parameterNames = string.Join(", ", me.Parameters.Select(symbol => symbol.Name));
             var parameterTypes = string.Join(", ", me.Parameters.Select(symbol => symbol.Type.GetTypeStringExpression()));
             var genericArguments = me.IsGenericMethod
@@ -62,7 +64,7 @@ namespace OutWit.Common.Proxy.Generator.Generators
             sourceBuilder.AppendLine();
 
             if(returnsTaskWithResult)
-                sourceBuilder.AppendLine($"                return ((System.Threading.Tasks.Task<object>)invocation.{nameof(IProxyInvocation.ReturnValue)}).ContinueWith(x => ({taskResultType?.ToDisplayString()})x.Result);");
+                sourceBuilder.AppendLine($"                return ((System.Threading.Tasks.Task<object>)invocation.{nameof(IProxyInvocation.ReturnValue)}).ContinueWith(x => ({taskResultType?.GetCSharpTypeSyntax()})x.Result);");
             else if (returnsTask)
                 sourceBuilder.AppendLine($"                return (System.Threading.Tasks.Task)invocation.{nameof(IProxyInvocation.ReturnValue)};");
             else if (hasReturnValue)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using OutWit.Common.Proxy.Generator.Utils;
@@ -10,7 +10,7 @@ namespace OutWit.Common.Proxy.Generator.Generators
     {
         public static void Generate(this IPropertySymbol me, StringBuilder sourceBuilder)
         {
-            var propertyType = me.Type.ToDisplayString();
+            var propertyType = me.Type.GetCSharpTypeSyntax();
             var propertyName = me.Name;
 
             sourceBuilder.AppendLine();
@@ -35,14 +35,14 @@ namespace OutWit.Common.Proxy.Generator.Generators
             sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.MethodName)} = \"get_{me.Name}\",");
             sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.Parameters)} = new object[0],");
             sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.ParametersTypes)} = new string[0],");
-            sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.ReturnType)} = \"{me.Type.GetTypeString()}\"");
+            sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.ReturnType)} = {me.Type.GetTypeStringExpression()}");
             sourceBuilder.AppendLine("                };");
             sourceBuilder.AppendLine();
             sourceBuilder.AppendLine("                _interceptor.Intercept(invocation);");
             sourceBuilder.AppendLine();
             sourceBuilder.AppendLine($"                if (invocation.{nameof(IProxyInvocation.ReturnValue)} != null)");
-            sourceBuilder.AppendLine($"                    return ({me.Type.ToDisplayString()})invocation.{nameof(IProxyInvocation.ReturnValue)};");
-            sourceBuilder.AppendLine($"                return default({me.Type.ToDisplayString()});");
+            sourceBuilder.AppendLine($"                    return ({me.Type.GetCSharpTypeSyntax()})invocation.{nameof(IProxyInvocation.ReturnValue)};");
+            sourceBuilder.AppendLine($"                return default({me.Type.GetCSharpTypeSyntax()});");
             sourceBuilder.AppendLine("            }");
         }
 
@@ -57,7 +57,7 @@ namespace OutWit.Common.Proxy.Generator.Generators
             sourceBuilder.AppendLine("                {");
             sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.MethodName)} = \"set_{me.Name}\",");
             sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.Parameters)} = new object[] {{ value }},");
-            sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.ParametersTypes)} = new string[] {{ \"{me.Type.GetTypeString()}\" }},");
+            sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.ParametersTypes)} = new string[] {{ {me.Type.GetTypeStringExpression()} }},");
             sourceBuilder.AppendLine($"                    {nameof(IProxyInvocation.ReturnType)} = \"void\"");
 
             sourceBuilder.AppendLine("                };");

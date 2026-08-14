@@ -35,8 +35,9 @@ namespace OutWit.Common.Proxy.Generator.Tests
 
             if (compilationErrors.Any())
             {
-                var errors = string.Join("\n", compilationErrors.Select(e => e.GetMessage()));
-                Assert.Fail($"Compilation failed with errors: \n{errors}");
+                var errors = string.Join("\n", compilationErrors.Select(e => $"{e.Location.GetLineSpan()}: {e.GetMessage()}"));
+                var generated = outputCompilation.SyntaxTrees.LastOrDefault()?.ToString();
+                Assert.Fail($"Compilation failed with errors: \n{errors}\n\nGenerated source:\n{generated}");
             }
 
             return outputCompilation.SyntaxTrees.LastOrDefault()?.ToString() ?? string.Empty;
