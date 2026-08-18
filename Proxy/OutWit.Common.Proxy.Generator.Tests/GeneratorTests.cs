@@ -1,4 +1,4 @@
-﻿using NUnit.Framework.Legacy;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -235,7 +235,10 @@ namespace OutWit.Common.Proxy.Generator.Tests
 
             // Assert
             Assert.That(diagnostics, Is.Empty);
-            StringAssert.Contains("ParametersTypes = new string[] { \"System.String, ", generatedCode);
+            // Core-library types stay unqualified (see TypeUtils.GetDefiningAssembly): a bare
+            // "System.String" resolves on the JIT runtime and on NativeAOT alike, whereas the
+            // reference facade "System.String, System.Runtime" resolves only under the JIT.
+            StringAssert.Contains("ParametersTypes = new string[] { \"System.String\" }", generatedCode);
             StringAssert.DoesNotContain("typeof(", generatedCode);
         }
     }

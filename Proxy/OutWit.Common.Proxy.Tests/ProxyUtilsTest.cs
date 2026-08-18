@@ -1,4 +1,4 @@
-﻿using OutWit.Common.Proxy.Tests.Mock;
+using OutWit.Common.Proxy.Tests.Mock;
 using OutWit.Common.Proxy.Utils;
 using System;
 using System.Collections.Generic;
@@ -81,6 +81,26 @@ namespace OutWit.Common.Proxy.Tests
 
             // Assert
             Assert.That(typeString, Is.EqualTo(type.AssemblyQualifiedName));
+        }
+
+        [Test]
+        public void ResolveTypeAcceptsBareFacadeAndQualifiedNamesTest()
+        {
+            // The forms a generated proxy may carry: unqualified core-library names, names
+            // qualified with a reference facade (System.Runtime / mscorlib), and nested generic
+            // arguments in either form. All resolve to the same runtime types.
+            Assert.Multiple(() =>
+            {
+                Assert.That(ProxyUtils.ResolveType("System.String"), Is.EqualTo(typeof(string)));
+                Assert.That(ProxyUtils.ResolveType("System.String, System.Runtime"), Is.EqualTo(typeof(string)));
+                Assert.That(ProxyUtils.ResolveType("System.Guid, mscorlib"), Is.EqualTo(typeof(Guid)));
+                Assert.That(ProxyUtils.ResolveType("System.Collections.Generic.List`1[[System.String]]"), Is.EqualTo(typeof(List<string>)));
+                Assert.That(ProxyUtils.ResolveType("System.Collections.Generic.List`1[[System.String, System.Runtime]], System.Runtime"), Is.EqualTo(typeof(List<string>)));
+                Assert.That(ProxyUtils.ResolveType(typeof(Task<byte[]>).AssemblyQualifiedName), Is.EqualTo(typeof(Task<byte[]>)));
+                Assert.That(ProxyUtils.ResolveType("No.Such.Type, No.Such.Assembly"), Is.Null);
+                Assert.That(ProxyUtils.ResolveType(""), Is.Null);
+                Assert.That(ProxyUtils.ResolveType(null), Is.Null);
+            });
         }
     }
 }

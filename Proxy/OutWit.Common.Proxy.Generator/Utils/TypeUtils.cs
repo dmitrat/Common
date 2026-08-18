@@ -120,13 +120,29 @@ namespace OutWit.Common.Proxy.Generator.Utils
         /// <summary>
         /// The assembly that qualifies the name: for an array that is the element's
         /// assembly (<c>typeof(byte[]).AssemblyQualifiedName</c> names byte's assembly).
+        /// Core-library types stay UNQUALIFIED: the compiler sees them in a reference
+        /// facade (System.Runtime / netstandard / mscorlib) whose name the JIT runtime
+        /// forwards but NativeAOT does not resolve at all, while a bare name such as
+        /// <c>System.String</c> resolves against the core library on every runtime.
         /// </summary>
         private static string GetDefiningAssembly(this ITypeSymbol me)
         {
             if (me is IArrayTypeSymbol array)
                 return array.ElementType.GetDefiningAssembly();
 
-            return me.ContainingAssembly?.ToString() ?? "";
+            var assembly = me.ContainingAssembly;
+            if (assembly == null)
+                return "";
+
+            return IsCoreLibraryFacade(assembly.Name) ? "" : assembly.ToString();
+        }
+
+        private static bool IsCoreLibraryFacade(string assemblyName)
+        {
+            return assemblyName == "System.Runtime"
+                   || assemblyName == "System.Private.CoreLib"
+                   || assemblyName == "mscorlib"
+                   || assemblyName == "netstandard";
         }
 
         /// <summary>

@@ -37,6 +37,30 @@ namespace OutWit.Common.Proxy.Generator.Tests
 
         #endregion
 
+        #region Core Library Tests
+
+        [Test]
+        public void CoreLibraryTypesStayUnqualifiedAndResolveTest()
+        {
+            // The compiler sees BCL types in the System.Runtime reference facade; a literal
+            // qualified with that facade resolves under the JIT (type forwarding) but returns
+            // null on NativeAOT, where the proxy would silently degrade to void/null results.
+            // Bare names resolve against the core library on every runtime.
+            var generatedCode = RunGeneratorForInterface("Task<Guid> RegisterAsync(string name, int count, System.Collections.Generic.List<string> tags);");
+
+            var parameters = ExtractParameterTypes(generatedCode);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(parameters, Is.EqualTo(new[] { "System.String", "System.Int32", "System.Collections.Generic.List`1[[System.String]]" }));
+                Assert.That(Type.GetType(parameters[2]), Is.EqualTo(typeof(System.Collections.Generic.List<string>)));
+                Assert.That(ExtractTaskResultType(generatedCode), Is.EqualTo("System.Guid"));
+                Assert.That(Type.GetType(ExtractTaskResultType(generatedCode)), Is.EqualTo(typeof(Guid)));
+            });
+        }
+
+        #endregion
+
         #region Array Tests
 
         [Test]
@@ -71,7 +95,7 @@ namespace OutWit.Common.Proxy.Generator.Tests
 
             var taskResultType = ExtractTaskResultType(generatedCode);
 
-            StringAssert.StartsWith("MyTest.Result`1[[System.Byte[], ", taskResultType);
+            StringAssert.StartsWith("MyTest.Result`1[[System.Byte[]]], ", taskResultType);
             StringAssert.DoesNotContain("[[]]", taskResultType);
         }
 
@@ -90,7 +114,7 @@ namespace OutWit.Common.Proxy.Generator.Tests
                 // long[][,] is named System.Int64[,][] in metadata. Both spellings must hold —
                 // the signature has to compile and the type string has to resolve.
                 Assert.That(Type.GetType(parameters[2]), Is.EqualTo(typeof(long[][,])));
-                StringAssert.StartsWith("System.Int64[,][], ", parameters[2]);
+                Assert.That(parameters[2], Is.EqualTo("System.Int64[,][]"), "core-library element types stay unqualified");
             });
 
             StringAssert.Contains("StoreAsync(byte[][] jagged, int[,] grid, long[][,] mixed)", generatedCode);
@@ -101,8 +125,7 @@ namespace OutWit.Common.Proxy.Generator.Tests
         {
             var generatedCode = RunGeneratorForInterface("Task SendAsync(Result<int>[] items);");
 
-            StringAssert.StartsWith("MyTest.Result`1[[System.Int32, ", ExtractParameterTypes(generatedCode)[0]);
-            StringAssert.Contains("]][], TestAssembly", ExtractParameterTypes(generatedCode)[0]);
+            StringAssert.StartsWith("MyTest.Result`1[[System.Int32]][], TestAssembly", ExtractParameterTypes(generatedCode)[0]);
         }
 
         #endregion
