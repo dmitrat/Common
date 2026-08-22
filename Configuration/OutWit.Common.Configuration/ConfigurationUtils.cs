@@ -78,8 +78,28 @@ namespace OutWit.Common.Configuration
         }
 
         /// <summary>
+        /// Makes the JSON providers watch their files and reload on change.
+        /// Off by default: every reloading provider pins a
+        /// <see cref="System.IO.FileSystemWatcher"/> (one inotify instance on Linux)
+        /// for the lifetime of the built configuration - a configuration built per
+        /// request or per unit of work would leak a watcher each time and eventually
+        /// exhaust <c>fs.inotify.max_user_instances</c>. Opt in only for a configuration
+        /// that lives as long as the process and must track edits.
+        /// </summary>
+        /// <param name="me">The configuration info instance.</param>
+        /// <param name="reloadOnChange">Whether to watch the files; <c>true</c> when omitted.</param>
+        /// <returns>The same <see cref="ConfigurationInfo"/> instance for fluent chaining.</returns>
+        public static ConfigurationInfo WithReloadOnChange(this ConfigurationInfo me, bool reloadOnChange = true)
+        {
+            me.ReloadOnChange = reloadOnChange;
+            return me;
+        }
+
+        /// <summary>
         /// Builds an <see cref="IConfiguration"/> instance from JSON files located in
-        /// <see cref="ConfigurationInfo.BasePath"/>.
+        /// <see cref="ConfigurationInfo.BasePath"/>. The files are read once; they are
+        /// watched for changes only when <see cref="ConfigurationInfo.ReloadOnChange"/>
+        /// was requested (see <see cref="WithReloadOnChange"/>).
         /// </summary>
         /// <param name="me">The configuration info instance.</param>
         /// <returns>A built <see cref="IConfiguration"/> instance.</returns>
@@ -100,10 +120,10 @@ namespace OutWit.Common.Configuration
 
             var configBuilder = new ConfigurationBuilder()
                 .SetBasePath(me.BasePath)
-                .AddJsonFile($"{configFileName}.json", optional: true, reloadOnChange: true);
+                .AddJsonFile($"{configFileName}.json", optional: true, reloadOnChange: me.ReloadOnChange);
 
             if (!string.IsNullOrEmpty(me.Environment))
-                configBuilder.AddJsonFile($"{configFileName}.{me.Environment}.json", optional: true, reloadOnChange: true);
+                configBuilder.AddJsonFile($"{configFileName}.{me.Environment}.json", optional: true, reloadOnChange: me.ReloadOnChange);
 
             return configBuilder.Build();
         }

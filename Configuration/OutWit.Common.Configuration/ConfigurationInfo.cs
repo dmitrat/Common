@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using OutWit.Common.Interfaces;
 
@@ -65,6 +65,18 @@ namespace OutWit.Common.Configuration
         /// Gets or sets the environment name for environment-specific overrides.
         /// </summary>
         public string? Environment { get; internal set; }
+
+        /// <summary>
+        /// Whether the JSON configuration providers built from this info
+        /// watch their files and reload on change. Default <c>false</c>:
+        /// every reloading provider pins a <see cref="System.IO.FileSystemWatcher"/>
+        /// (one inotify instance on Linux) for the lifetime of the configuration,
+        /// so a configuration built per request or per unit of work leaks a
+        /// watcher each time. Opt in via
+        /// <see cref="ConfigurationUtils.WithReloadOnChange"/> for a long-lived
+        /// configuration that must track edits.
+        /// </summary>
+        public bool ReloadOnChange { get; internal set; }
 
         #endregion
     }
