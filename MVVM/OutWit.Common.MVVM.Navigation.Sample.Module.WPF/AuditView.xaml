@@ -1,0 +1,19 @@
+<UserControl x:Class="OutWit.Common.MVVM.Navigation.Sample.Module.WPF.AuditView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <StackPanel>
+    <TextBlock Text="Audit" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Foreground="#666" TextWrapping="Wrap" Margin="0,8,0,0"
+               Text="This screen was not compiled into the application. Its DLL was dropped into @Modules and found there at start-up by OutWit.Common.Plugins — route, view and navigation bar entry included." />
+    <TextBlock Margin="0,12,0,0" FontFamily="Consolas" Text="{Binding Assembly, StringFormat='assembly: {0}'}" />
+    <ItemsControl ItemsSource="{Binding Entries}" Margin="0,8,0,0">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding}" FontFamily="Consolas" Foreground="#444" TextWrapping="Wrap" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+
+</UserControl>

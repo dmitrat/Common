@@ -51,11 +51,11 @@ namespace OutWit.Common.MVVM.Navigation.Sample.Core
                 nav.HistoryDepth = 20;
             });
 
-            // one module, compiled in. Point AddUiModules at a folder instead and the same
-            // class shipped as a DLL would be picked up with no other change.
+            // Two modules, arriving two different ways. Reports is compiled in; Audit is a DLL
+            // the application does not reference, staged into @Modules by the build and found
+            // there by OutWit.Common.Plugins. Neither the shell nor this method names Audit.
             services.AddUiModules(modules =>
             {
-                modules.ScanFolder = false;
                 modules.AddModule<ReportsModule>();
             });
 

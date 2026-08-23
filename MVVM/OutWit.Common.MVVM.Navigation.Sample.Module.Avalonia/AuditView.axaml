@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:m="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Module.Avalonia"
+             x:Class="OutWit.Common.MVVM.Navigation.Sample.Module.Avalonia.AuditView"
+             x:DataType="m:AuditViewModel">
+
+  <StackPanel Spacing="12">
+    <TextBlock Text="Audit" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Foreground="#666" TextWrapping="Wrap"
+               Text="This screen was not compiled into the application. Its DLL was dropped into @Modules and found there at start-up by OutWit.Common.Plugins — route, view and navigation bar entry included." />
+    <TextBlock Text="{Binding Assembly, StringFormat='assembly: {0}'}" FontFamily="Consolas,monospace" />
+    <ItemsControl ItemsSource="{Binding Entries}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="x:String">
+          <TextBlock Text="{Binding}" FontFamily="Consolas,monospace" Foreground="#444" TextWrapping="Wrap" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </StackPanel>
+
+</UserControl>

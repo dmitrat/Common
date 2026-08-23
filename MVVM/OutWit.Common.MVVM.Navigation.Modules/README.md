@@ -6,9 +6,11 @@ plugins that register services, routes, views and contributions. Built on
 shape as every other OutWit plugin axis — services before the container is built, everything
 else after.
 
-A working module, compiled into the application rather than loaded from a folder, is in the
-[navigation sample](../OutWit.Common.MVVM.Navigation.Sample.Core/README.md): it adds a route,
-a navigation bar entry and a nested menu item without the shell knowing it exists.
+The [navigation sample](../OutWit.Common.MVVM.Navigation.Sample.Core/README.md) runs two
+modules, one of each kind: `ReportsModule` compiled into the application, and `AuditModule`
+shipped as a DLL the application does not reference, staged into `@Modules/audit.module/` and
+found there by the loader. Both add a route, a view and a navigation bar entry without the
+shell knowing they exist.
 
 ## A module
 

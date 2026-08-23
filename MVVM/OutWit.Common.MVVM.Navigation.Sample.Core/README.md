@@ -25,7 +25,8 @@ call and a list of view registrations.
 | Open a study, then open another | `Transient`: a new view model per navigation, in its own DI scope, disposed when the next screen arrives. |
 | Tick **unsaved changes**, then click another route | The screen's `INavigationGuard` awaits a dialog from inside `CanNavigateFromAsync`. Cancel → the navigation returns `Rejected` and nothing moved. |
 | **Back** / **Forward** | The outlet's journal. Going back to a `Transient` route builds a fresh view model with the old parameters; going back to a `Cached` one shows the instance that was already there. |
-| **Reports** in the rail, and **File → Open → Reports…** | Contributed by `ReportsModule`. The shell's markup never names it: the module registered the route, the rail entry and the menu item. |
+| **Reports** in the rail, and **File → Open → Reports…** | Contributed by `ReportsModule`, compiled into the shared assembly. The shell's markup never names it: the module registered the route, the rail entry and the menu item. |
+| **Audit** in the rail | The same, from a DLL the application does not reference. Its build output is staged into `@Modules/audit.module/` and `OutWit.Common.Plugins` finds it there at start-up; the screen prints the path it was loaded from. |
 | **Settings → Toggle navigation lock**, then click anything | A global guard — one service, asked about every navigation in every outlet. This is what replaces Prism-era `LockNavigation`. |
 
 ## The shape of it
@@ -43,9 +44,36 @@ ViewModels/
   SettingsViewModel.cs        Cached, toggles the global guard
   ReportsViewModel.cs         belongs to the module
   ConfirmDialogViewModel.cs   IDialogAware<bool>
-Modules/ReportsModule.cs      a UiModuleBase, compiled in — a folder DLL would behave the same
+Modules/ReportsModule.cs      a UiModuleBase, compiled in
 SampleComposition.cs          AddSample() / AddSampleContributions()
 ```
+
+The second module is a separate assembly per platform —
+`OutWit.Common.MVVM.Navigation.Sample.Module.Avalonia` and `...Module.WPF`. Each sample
+references its own with `ReferenceOutputAssembly="false"`, so the application is built without
+being able to see the module's types, and a build target stages the output into
+`@Modules/audit.module/`:
+
+```xml
+<ProjectReference Include="..\...Sample.Module.Avalonia\...csproj"
+                  ReferenceOutputAssembly="false" Private="false" />
+
+<Target Name="StageSampleModules" AfterTargets="Build">
+  <ItemGroup>
+    <SampleModuleFiles Include="..\...Sample.Module.Avalonia\bin\$(Configuration)\$(TargetFramework)\**\*" />
+  </ItemGroup>
+  <Copy SourceFiles="@(SampleModuleFiles)" DestinationFolder="$(OutDir)@Modules\audit.module\%(RecursiveDir)" />
+</Target>
+```
+
+That folder ends up carrying its own copies of the shared assemblies, which is the interesting
+part: UI modules load into the **default** assembly context, so the loader reuses what the host
+already has rather than loading a second `Avalonia.dll` and giving the module a view type the
+host cannot use. Two consequences worth knowing — a module can hand the host real controls and
+real view models, and a module cannot be unloaded at run time.
+
+A module that ships screens is platform-specific, which is why there are two of them; the
+module class, the route and the contribution are identical, and only the view differs.
 
 `ApplicationViewModel` follows the house style — every view model derives from
 `ViewModelBase<ApplicationViewModel>` — with one change navigation forces: it no longer

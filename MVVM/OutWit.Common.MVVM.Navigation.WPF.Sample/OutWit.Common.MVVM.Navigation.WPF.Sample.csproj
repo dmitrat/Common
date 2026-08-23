@@ -15,6 +15,29 @@
 	<ItemGroup>
 		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation.WPF\OutWit.Common.MVVM.Navigation.WPF.csproj" />
 		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation.Sample.Core\OutWit.Common.MVVM.Navigation.Sample.Core.csproj" />
+
+		<!--
+		The module is built, never referenced: ReferenceOutputAssembly is false, so the
+		application cannot see its types at compile time — which is the whole point. Its
+		output is staged below into @Modules, where the loader finds it at run time.
+		-->
+		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation.Sample.Module.WPF\OutWit.Common.MVVM.Navigation.Sample.Module.WPF.csproj"
+		                  ReferenceOutputAssembly="false"
+		                  Private="false" />
 	</ItemGroup>
+
+	<!--
+	Stages the module the way a NuGet-delivered one arrives: one folder per module under the
+	deployment root, carrying the DLL, its deps.json and everything it needs. The loader reuses
+	the host's already-loaded assemblies for the shared ones.
+	-->
+	<Target Name="StageSampleModules" AfterTargets="Build">
+		<ItemGroup>
+			<SampleModuleFiles Include="..\OutWit.Common.MVVM.Navigation.Sample.Module.WPF\bin\$(Configuration)\$(TargetFramework)\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(SampleModuleFiles)"
+		      DestinationFolder="$(OutDir)@Modules\audit.module\%(RecursiveDir)"
+		      SkipUnchangedFiles="true" />
+	</Target>
 
 </Project>

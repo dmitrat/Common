@@ -81,6 +81,8 @@
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Modules.Tests/OutWit.Common.MVVM.Navigation.Modules.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Modules/OutWit.Common.MVVM.Navigation.Modules.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Sample.Core/OutWit.Common.MVVM.Navigation.Sample.Core.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Sample.Module.Avalonia/OutWit.Common.MVVM.Navigation.Sample.Module.Avalonia.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Sample.Module.WPF/OutWit.Common.MVVM.Navigation.Sample.Module.WPF.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Tests/OutWit.Common.MVVM.Navigation.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.WPF.Sample/OutWit.Common.MVVM.Navigation.WPF.Sample.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.WPF.Tests/OutWit.Common.MVVM.Navigation.WPF.Tests.csproj" />

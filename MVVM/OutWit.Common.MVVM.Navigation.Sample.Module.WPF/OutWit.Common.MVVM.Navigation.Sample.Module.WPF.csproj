@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<!--
+	A module references the contracts and the application's shared assembly, exactly as a
+	third-party module would. It is never referenced back: the sample application only copies
+	the build output into @Modules and lets the loader find it.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation.Modules\OutWit.Common.MVVM.Navigation.Modules.csproj" />
+		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation.WPF\OutWit.Common.MVVM.Navigation.WPF.csproj" />
+		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation.Sample.Core\OutWit.Common.MVVM.Navigation.Sample.Core.csproj" />
+	</ItemGroup>
+
+</Project>
