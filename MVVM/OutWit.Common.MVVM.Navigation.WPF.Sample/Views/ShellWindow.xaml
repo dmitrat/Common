@@ -59,7 +59,7 @@
 
     <!-- The outlet itself: the object, not a name. The control owns the views, so a Cached
          screen comes back with its scroll position intact. -->
-    <n:NavigationOutlet Outlet="{Binding Main}" Padding="16" />
+    <n:NavigationOutlet Outlet="{Binding Main}" Padding="16" TransitionDuration="0:0:0.2" />
 
   </DockPanel>
 

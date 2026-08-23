@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Headless.NUnit;
@@ -159,6 +160,67 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Tests.Controls
             window.Close();
         }
 
+        [AvaloniaTest]
+        public async Task SwappingOutletFollowsTheNewOneTest()
+        {
+            using var provider = Build(nav => nav.AddOutlet("Second"));
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var (window, control) = Show(provider, navigation.Outlet());
+            await navigation.NavigateAsync(SAMPLE);
+            await navigation.NavigateAsync(INJECTED, outlet: "Second");
+
+            control.Outlet = navigation.Outlet("Second");
+
+            Assert.That(control.Content, Is.InstanceOf<InjectedView>(), "the control must follow the outlet it was just given");
+
+            await navigation.NavigateAsync(TRANSIENT);
+
+            Assert.That(control.Content, Is.InstanceOf<InjectedView>(), "and stop following the old one");
+
+            window.Close();
+        }
+
+        #endregion
+
+        #region Transition Tests
+
+        [AvaloniaTest]
+        public async Task WithoutADurationTheSwapIsImmediateTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var (window, control) = Show(provider, navigation.Outlet());
+
+            Assert.That(control.TransitionDuration, Is.EqualTo(TimeSpan.Zero), "no animation unless asked for");
+
+            await navigation.NavigateAsync(SAMPLE);
+
+            Assert.That(control.Content, Is.InstanceOf<SampleView>());
+            Assert.That(control.Opacity, Is.EqualTo(1));
+
+            window.Close();
+        }
+
+        [AvaloniaTest]
+        public async Task AnOffScreenOutletDoesNotAnimateTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+
+            // never attached to a window: fading something nobody can see would only delay it
+            var control = new NavigationOutlet
+            {
+                ViewFactory = provider.GetRequiredService<ViewLocator>(),
+                Outlet = navigation.Outlet(),
+                TransitionDuration = TimeSpan.FromSeconds(5)
+            };
+
+            await navigation.NavigateAsync(SAMPLE);
+
+            Assert.That(control.Content, Is.InstanceOf<SampleView>(), "the content must be there at once, not in five seconds");
+            Assert.That(control.Opacity, Is.EqualTo(1));
+        }
+
         #endregion
 
         #region Lifecycle Tests
@@ -212,13 +274,14 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Tests.Controls
 
         #region Tools
 
-        private static ServiceProvider Build()
+        private static ServiceProvider Build(Action<Navigation.Utils.NavigationBuilder>? extra = null)
         {
             return AvaloniaTestHost.Build(nav =>
             {
                 nav.AddRoute<SampleViewModel>(SAMPLE);
                 nav.AddRoute<TransientSampleViewModel>(TRANSIENT, NavigationRouteMode.Transient);
                 nav.AddRoute<InjectedViewModel>(INJECTED);
+                extra?.Invoke(nav);
             });
         }
 

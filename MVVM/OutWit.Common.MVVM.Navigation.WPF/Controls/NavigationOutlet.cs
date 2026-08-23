@@ -1,7 +1,11 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using OutWit.Common.MVVM.Attributes;
 using OutWit.Common.MVVM.Navigation.Interfaces;
 using OutWit.Common.MVVM.Navigation.Model;
@@ -26,6 +30,7 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Controls
 
         private readonly ConditionalWeakTable<object, FrameworkElement> m_views = new();
 
+        private CancellationTokenSource? m_transition;
         private INavigationOutlet? m_subscribed;
 
         #endregion
@@ -62,7 +67,7 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Controls
 
             if (viewModel == null)
             {
-                Content = null;
+                Show(null);
                 return;
             }
 
@@ -75,13 +80,13 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Controls
             {
                 // no locator in sight: hand the view model to the ContentPresenter and let the
                 // application's DataTemplates do what they can — no view caching on this path
-                Content = viewModel;
+                Show(viewModel);
                 return;
             }
 
             if (KeepViews && m_views.TryGetValue(viewModel, out var cached))
             {
-                Content = cached;
+                Show(cached);
                 return;
             }
 
@@ -90,7 +95,93 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Controls
             if (KeepViews && Outlet?.Route?.Mode == NavigationRouteMode.Cached)
                 m_views.AddOrUpdate(viewModel, view);
 
-            Content = view;
+            Show(view);
+        }
+
+        /// <summary>
+        /// Puts the view up, fading through it when a duration is set. The fade is on this
+        /// control rather than between two presenters: a cached view is a single element that
+        /// cannot be in two places at once, and the second presenter is exactly what would
+        /// try to put it there.
+        /// </summary>
+        private void Show(object? view)
+        {
+            m_transition?.Cancel();
+            m_transition = null;
+
+            if (TransitionDuration <= TimeSpan.Zero || !IsVisible)
+            {
+                ClearFade();
+                Content = view;
+
+                return;
+            }
+
+            var cancellation = new CancellationTokenSource();
+            m_transition = cancellation;
+
+            _ = FadeAsync(view, cancellation);
+        }
+
+        private async Task FadeAsync(object? view, CancellationTokenSource cancellation)
+        {
+            var half = TimeSpan.FromMilliseconds(TransitionDuration.TotalMilliseconds / 2);
+
+            try
+            {
+                if (Content != null)
+                    await FadeAsync(1, 0, half, cancellation.Token);
+
+                if (cancellation.IsCancellationRequested)
+                    return;
+
+                Content = view;
+
+                await FadeAsync(0, 1, half, cancellation.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // a newer navigation took over mid-fade; it owns the opacity now
+            }
+            finally
+            {
+                if (ReferenceEquals(m_transition, cancellation))
+                {
+                    m_transition = null;
+                    ClearFade();
+                }
+
+                cancellation.Dispose();
+            }
+        }
+
+        private async Task FadeAsync(double from, double to, TimeSpan duration, CancellationToken cancellation)
+        {
+            var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var animation = new DoubleAnimation(from, to, new Duration(duration))
+            {
+                FillBehavior = FillBehavior.HoldEnd
+            };
+
+            animation.Completed += (_, _) => completion.TrySetResult(true);
+
+            using (cancellation.Register(() => completion.TrySetCanceled()))
+            {
+                BeginAnimation(OpacityProperty, animation);
+
+                await completion.Task;
+            }
+        }
+
+        /// <summary>
+        /// Releases the animation's hold on Opacity. Without this the property stays where the
+        /// animation left it and every later assignment is silently ignored.
+        /// </summary>
+        private void ClearFade()
+        {
+            BeginAnimation(OpacityProperty, null);
+            Opacity = 1;
         }
 
         #endregion
@@ -147,6 +238,14 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Controls
         /// </summary>
         [StyledProperty]
         public IViewFactory? ViewFactory { get; set; }
+
+        /// <summary>
+        /// How long to fade from one screen to the next. Zero — the default — swaps them
+        /// outright. Fast navigation is safe: a fade that is overtaken hands the opacity to
+        /// whichever navigation arrived last.
+        /// </summary>
+        [StyledProperty]
+        public TimeSpan TransitionDuration { get; set; }
 
         #endregion
     }

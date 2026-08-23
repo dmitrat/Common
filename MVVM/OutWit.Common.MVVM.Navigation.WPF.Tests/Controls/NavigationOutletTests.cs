@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -132,6 +133,40 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Tests.Controls
             await navigation.NavigateAsync(TRANSIENT);
 
             Assert.That(control.Content, Is.InstanceOf<InjectedView>());
+        }
+
+        #endregion
+
+        #region Transition Tests
+
+        [Test]
+        public async Task WithoutADurationTheSwapIsImmediateTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var control = Create(provider, navigation.Outlet());
+
+            Assert.That(control.TransitionDuration, Is.EqualTo(TimeSpan.Zero), "no animation unless asked for");
+
+            await navigation.NavigateAsync(SAMPLE);
+
+            Assert.That(control.Content, Is.InstanceOf<SampleView>());
+            Assert.That(control.Opacity, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task AnOffScreenOutletDoesNotAnimateTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var control = Create(provider, navigation.Outlet());
+            control.TransitionDuration = TimeSpan.FromSeconds(5);
+
+            // never shown in a window: fading something nobody can see would only delay it
+            await navigation.NavigateAsync(SAMPLE);
+
+            Assert.That(control.Content, Is.InstanceOf<SampleView>(), "the content must be there at once, not in five seconds");
+            Assert.That(control.Opacity, Is.EqualTo(1));
         }
 
         #endregion

@@ -9,7 +9,10 @@ Runnable sample: [OutWit.Common.MVVM.Navigation.Avalonia.Sample](../OutWit.Commo
   own assembly, so module assemblies are found. Created from DI so views may take dependencies.
 - **NavigationOutlet** — a control that hosts an `INavigationOutlet` and *owns the views*:
   for Cached routes the view of each view model survives navigations (scroll position, column
-  widths, expensive controls), for Transient routes it goes with the view model.
+  widths, expensive controls), for Transient routes it goes with the view model. Set
+  `TransitionDuration` to fade between screens; the fade is on the outlet itself, so a cached
+  view is never asked to be in two places at once, and a fade that is overtaken hands over
+  cleanly.
 - **DialogHostWindow** / **DialogHostOverlay** — `IDialogHost` implementations without external
   dependencies: modal windows (nest) or a dimmed overlay on the active window (one at a time).
 - **IApplicationResources** — lets a UI module add its styles and resource dictionaries.
