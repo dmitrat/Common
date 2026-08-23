@@ -28,6 +28,7 @@ Runnable sample, one set of view models bound from both frameworks:
 | **Zone** | a named, ordered, observable collection of contributions | a region used as `region.Add()` |
 | **ContributionItem** | a module's menu item / nav bar entry / toolbar button | a view added to a region |
 | **Dialog** | a modal view model with a typed result | `IDialogService` |
+| **Progress dialog** | a long operation behind a modal, with delay and minimum-duration rules | `RunLongProcess`-style helpers |
 
 Three principles: view models, never views, drive navigation; there is no service locator and
 no static entry point; everything is asynchronous and cancellable.
@@ -168,6 +169,43 @@ The base class is not decoration: a dialog's view is built **before** `OnOpenedA
 whatever that method sets reaches the screen as a change notification. A `[Notify]` property on
 a class that does not implement `INotifyPropertyChanged` binds once to its default and then
 goes quiet, with no error anywhere.
+
+## Long operations
+
+A progress dialog is a dialog with timing rules, so it has its own contract rather than being
+something every screen re-implements:
+
+```csharp
+var result = await progress.RunAsync(async (reporter, cancellation) =>
+{
+    for (var step = 1; step <= total; step++)
+    {
+        cancellation.ThrowIfCancellationRequested();
+        await ImportAsync(step, cancellation);
+        reporter.Report($"Importing {step} of {total}…", step / (double)total);
+    }
+
+    return total;
+}, new ProgressOptions { Title = "Import" });
+
+if (result.IsCompleted)      Show($"imported {result.Value}");
+else if (result.IsCancelled) Show("cancelled");
+else                         Show(result.Error!.Message);
+```
+
+The two durations are the point. An operation that finishes within `Delay` (400 ms by default)
+never shows a dialog at all; one that does show it keeps it up for at least `MinimumDuration`
+(600 ms), so a borderline operation does not flash. `RunAsync` never throws at the caller — a
+failure comes back as `Error`.
+
+Cancel, Escape and a click on the backdrop all mean the same thing: ask the operation to stop.
+The dialog stays up until it actually has, so a screen never appears before its work has let
+go of whatever it was holding. The work itself runs on the calling context — an operation that
+would block the UI thread must do its own `Task.Run`, because no dialog can repaint a thread
+that is busy.
+
+The platform packages ship a plain view for it; register your own for `ProgressDialogViewModel`
+and everything else stays the same.
 
 ## Start-up validation
 

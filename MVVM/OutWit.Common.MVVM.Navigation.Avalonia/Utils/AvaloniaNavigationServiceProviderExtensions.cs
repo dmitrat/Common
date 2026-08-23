@@ -1,7 +1,10 @@
 using System;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
+using OutWit.Common.MVVM.Navigation.Avalonia.Dialogs;
 using OutWit.Common.MVVM.Navigation.Avalonia.Services;
+using OutWit.Common.MVVM.Navigation.Interfaces;
+using OutWit.Common.MVVM.Navigation.ViewModels;
 
 namespace OutWit.Common.MVVM.Navigation.Avalonia.Utils
 {
@@ -34,6 +37,12 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Utils
 
             if (!target.DataTemplates.Contains(locator))
                 target.DataTemplates.Add(locator);
+
+            // the progress dialog works out of the box; an application that registered its own
+            // view for it before this call keeps it
+            var views = provider.GetRequiredService<IViewRegistry>();
+            if (!views.Contains(typeof(ProgressDialogViewModel)))
+                views.Register<ProgressDialogViewModel, ProgressDialogView>();
 
             return provider;
         }

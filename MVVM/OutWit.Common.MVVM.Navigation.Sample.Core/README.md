@@ -27,6 +27,7 @@ call and a list of view registrations.
 | **Back** / **Forward** | The outlet's journal. Going back to a `Transient` route builds a fresh view model with the old parameters; going back to a `Cached` one shows the instance that was already there. |
 | **Reports** in the rail, and **File → Open → Reports…** | Contributed by `ReportsModule`, compiled into the shared assembly. The shell's markup never names it: the module registered the route, the rail entry and the menu item. |
 | **Audit** in the rail | The same, from a DLL the application does not reference. Its build output is staged into `@Modules/audit.module/` and `OutWit.Common.Plugins` finds it there at start-up; the screen prints the path it was loaded from. |
+| **Import…** on Studies | `IProgressDialogService`: the dialog appears only because the work outlasts the delay, reports status and a fraction as it goes, and Cancel stops it. The result comes back as completed / cancelled / failed rather than as an exception. |
 | **Settings → Toggle navigation lock**, then click anything | A global guard — one service, asked about every navigation in every outlet. This is what replaces Prism-era `LockNavigation`. |
 
 ## The shape of it

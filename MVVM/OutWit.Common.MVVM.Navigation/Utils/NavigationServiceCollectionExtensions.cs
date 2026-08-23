@@ -23,8 +23,9 @@ namespace OutWit.Common.MVVM.Navigation.Utils
         /// <see cref="IDispatcher"/> is registered as <see cref="DispatcherImmediate"/> only if
         /// nothing else registered one — a platform package (AddAvaloniaNavigation,
         /// AddWpfNavigation) supplies the real one, before or after this call.
-        /// <see cref="IDialogService"/> resolves only once the platform package has supplied
-        /// <see cref="IViewFactory"/> and <see cref="IDialogHost"/>.
+        /// <see cref="IDialogService"/> and <see cref="IProgressDialogService"/> resolve only
+        /// once the platform package has supplied <see cref="IViewFactory"/> and
+        /// <see cref="IDialogHost"/>.
         /// </remarks>
         /// <param name="services">The service collection.</param>
         /// <param name="configure">Declares outlets, zones, routes, views and guards.</param>
@@ -56,6 +57,7 @@ namespace OutWit.Common.MVVM.Navigation.Utils
             services.TryAddSingleton<INavigationService, NavigationService>();
             services.TryAddSingleton<IContributionRegistry, ContributionRegistry>();
             services.TryAddSingleton<IDialogService, DialogService>();
+            services.TryAddSingleton<IProgressDialogService, ProgressDialogService>();
 
             return services;
         }

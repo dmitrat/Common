@@ -17,12 +17,14 @@ namespace OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels
         public ApplicationViewModel(INavigationService navigation,
                                     IContributionRegistry contributions,
                                     IDialogService dialogs,
+                                    IProgressDialogService progress,
                                     StudyStore studies)
             : base(null!)
         {
             Navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
             Contributions = contributions ?? throw new ArgumentNullException(nameof(contributions));
             Dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+            Progress = progress ?? throw new ArgumentNullException(nameof(progress));
             Studies = studies ?? throw new ArgumentNullException(nameof(studies));
 
             Shell = new ShellViewModel(this);
@@ -46,6 +48,8 @@ namespace OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels
         public IContributionRegistry Contributions { get; }
 
         public IDialogService Dialogs { get; }
+
+        public IProgressDialogService Progress { get; }
 
         public StudyStore Studies { get; }
 

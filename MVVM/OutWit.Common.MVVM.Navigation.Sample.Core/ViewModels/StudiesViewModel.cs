@@ -32,6 +32,7 @@ namespace OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels
         private void InitCommands()
         {
             OpenCommand = new RelayCommandAsync<Study>(OpenAsync, study => study != null);
+            ImportCommand = new RelayCommandAsync(ImportAsync);
         }
 
         #endregion
@@ -44,6 +45,37 @@ namespace OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels
                 return Task.CompletedTask;
 
             return ApplicationVm.Navigation.NavigateAsync(Routes.STUDY, new NavigationParameters(("id", study.Id)));
+        }
+
+        /// <summary>
+        /// A long operation behind a progress dialog. The dialog only appears because the work
+        /// outlasts the delay; it reports as it goes, and Cancel stops it. Nothing here knows
+        /// whether the dialog is a window or an overlay.
+        /// </summary>
+        private async Task ImportAsync()
+        {
+            var result = await ApplicationVm.Progress.RunAsync(async (reporter, cancellation) =>
+            {
+                var imported = 0;
+
+                for (var step = 1; step <= 20; step++)
+                {
+                    cancellation.ThrowIfCancellationRequested();
+
+                    await Task.Delay(250, cancellation);
+
+                    imported++;
+                    reporter.Report($"Importing study {step} of 20…", step / 20d);
+                }
+
+                return imported;
+            }, new ProgressOptions { Title = "Import", Status = "Preparing…" });
+
+            ImportSummary = result.IsCompleted
+                ? $"imported {result.Value} studies"
+                : result.IsCancelled
+                    ? "import cancelled"
+                    : $"import failed: {result.Error?.Message}";
         }
 
         #endregion
@@ -95,11 +127,20 @@ namespace OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels
         [Notify]
         public int LoadCount { get; set; }
 
+        /// <summary>
+        /// What the last import came to — the progress dialog returns a result rather than
+        /// throwing, so this is the whole error handling the screen needs.
+        /// </summary>
+        [Notify]
+        public string? ImportSummary { get; set; }
+
         #endregion
 
         #region Commands
 
         public RelayCommandAsync<Study> OpenCommand { get; private set; } = null!;
+
+        public RelayCommandAsync ImportCommand { get; private set; } = null!;
 
         #endregion
     }
