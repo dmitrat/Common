@@ -1,0 +1,8 @@
+using System.Windows.Controls;
+
+namespace OutWit.Common.MVVM.Navigation.WPF.Tests.Mock.Views
+{
+    public sealed class TransientSampleView : UserControl
+    {
+    }
+}

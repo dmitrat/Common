@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0-windows;net9.0-windows;net8.0-windows</TargetFrameworks>
+		<UseWPF>true</UseWPF>
+		<Nullable>enable</Nullable>
+
+		<Version>1.0.0</Version>
+
+		<Description>WPF half of OutWit.Common.MVVM.Navigation: ViewLocator (a DataTemplateSelector and IViewFactory over the view registry and a naming convention), the NavigationOutlet control that keeps views alive across navigations, ViewPresenter for nested content, a modal-window dialog host, and AddWpfNavigation(). Lets a WPF application drop Prism and Unity while staying on WPF.</Description>
+		<PackageTags>OutWit;Common;MVVM;Navigation;WPF;Regions;Dialogs;ViewLocator;Prism</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Navigation.WPF</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="OutWit.Common.MVVM.Navigation.WPF.Tests" />
+	</ItemGroup>
+
+	<!--
+	No direct package references: Microsoft.Extensions.DependencyInjection.Abstractions and
+	Logging.Abstractions arrive through the core project reference, which keeps the -windows
+	TFMs out of Directory.Packages.props.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation\OutWit.Common.MVVM.Navigation.csproj" />
+		<ProjectReference Include="..\OutWit.Common.MVVM.WPF\OutWit.Common.MVVM.WPF.csproj" />
+		<!--
+		The DependencyProperty source generator, for NavigationOutlet and ViewPresenter.
+		Consumers of the NuGet package receive it through OutWit.Common.MVVM.WPF's
+		buildTransitive props; this in-repo reference only feeds the build here.
+		-->
+		<ProjectReference Include="..\OutWit.Common.MVVM.WPF.Generator\OutWit.Common.MVVM.WPF.Generator.csproj"
+		                  OutputItemType="Analyzer"
+		                  ReferenceOutputAssembly="false"
+		                  PrivateAssets="all" />
+	</ItemGroup>
+
+</Project>
