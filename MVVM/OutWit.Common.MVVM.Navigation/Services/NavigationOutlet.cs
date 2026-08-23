@@ -185,18 +185,37 @@ namespace OutWit.Common.MVVM.Navigation.Services
             return token;
         }
 
+/// <summary>
+        /// Drops a cached view model, holding the outlet's slot while it does.
+        /// </summary>
+        /// <remarks>
+        /// The slot is the point. Without it an eviction can land between a navigation's
+        /// cache read and its commit: the pipeline is already holding the instance, this
+        /// method disposes it and removes it from the cache, and the commit then puts the
+        /// disposed instance back and shows it. Waiting for the slot costs an eviction
+        /// nothing — it is a maintenance call, not something a user is waiting on.
+        /// </remarks>
         public async ValueTask<bool> EvictAsync(string routeKey)
         {
-            if (!m_cache.TryGetValue(routeKey, out var handle))
-                return false;
+            await m_gate.WaitAsync();
 
-            if (ReferenceEquals(handle, Current))
-                return false;
+            try
+            {
+                if (!m_cache.TryGetValue(routeKey, out var handle))
+                    return false;
 
-            m_cache.Remove(routeKey);
-            await handle.DisposeAsync();
+                if (ReferenceEquals(handle, Current))
+                    return false;
 
-            return true;
+                m_cache.Remove(routeKey);
+                await handle.DisposeAsync();
+
+                return true;
+            }
+            finally
+            {
+                m_gate.Release();
+            }
         }
 
         #endregion

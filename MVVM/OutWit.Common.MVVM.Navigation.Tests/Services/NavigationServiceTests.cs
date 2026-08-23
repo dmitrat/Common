@@ -328,6 +328,35 @@ namespace OutWit.Common.MVVM.Navigation.Tests.Services
         }
 
         [Test]
+        public async Task EvictWaitsForAnInFlightNavigationInsteadOfDisposingItsTargetTest()
+        {
+            // prime the cache, then leave the route
+            await m_navigation.NavigateAsync(AWARE);
+            var cached = (AwareViewModel)m_navigation.Outlet().Content!;
+            await m_navigation.NavigateAsync(PLAIN);
+
+            // navigate back to it and stall inside the target's own guard, i.e. after the
+            // pipeline has taken the cached instance but before it commits
+            var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            cached.CanNavigateToGate = gate;
+            var pending = m_navigation.NavigateAsync(AWARE);
+
+            var evicting = m_navigation.EvictAsync(AWARE);
+
+            Assert.That(evicting.IsCompleted, Is.False, "eviction must wait for the outlet's slot");
+
+            gate.SetResult(true);
+            await pending;
+            var evicted = await evicting;
+
+            // the navigation won the slot; the instance it showed is alive, and by the time
+            // the eviction ran it was the current one, which is never evicted
+            Assert.That(evicted, Is.False);
+            Assert.That(cached.IsDisposed, Is.False);
+            Assert.That(m_navigation.Outlet().Content, Is.SameAs(cached));
+        }
+
+        [Test]
         public async Task EvictReturnsFalseWhenNothingIsCachedTest()
         {
             Assert.That(await m_navigation.EvictAsync(AWARE), Is.False);
