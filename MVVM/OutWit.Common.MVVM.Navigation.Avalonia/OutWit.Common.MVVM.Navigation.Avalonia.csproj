@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+
+		<Version>1.0.0</Version>
+
+		<Description>Avalonia half of OutWit.Common.MVVM.Navigation: ViewLocator (an IDataTemplate over the view registry and a naming convention), the NavigationOutlet control that keeps views alive across navigations, window and overlay dialog hosts, application resources for modules, and AddAvaloniaNavigation().</Description>
+		<PackageTags>OutWit;Common;MVVM;Navigation;Avalonia;Regions;Dialogs;ViewLocator</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Navigation.Avalonia</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="OutWit.Common.MVVM.Navigation.Avalonia.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation\OutWit.Common.MVVM.Navigation.csproj" />
+		<ProjectReference Include="..\OutWit.Common.MVVM.Avalonia\OutWit.Common.MVVM.Avalonia.csproj" />
+		<!--
+		The StyledProperty source generator, for NavigationOutlet. Consumers of the NuGet
+		package receive it through OutWit.Common.MVVM.Avalonia's buildTransitive props;
+		this in-repo reference only feeds the build here and is not a package dependency.
+		-->
+		<ProjectReference Include="..\OutWit.Common.MVVM.Avalonia.Generator\OutWit.Common.MVVM.Avalonia.Generator.csproj"
+		                  OutputItemType="Analyzer"
+		                  ReferenceOutputAssembly="false"
+		                  PrivateAssets="all" />
+	</ItemGroup>
+
+</Project>
