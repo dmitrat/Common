@@ -128,6 +128,15 @@
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
 	</ItemGroup>
 
+	<!-- WPF projects carry the -windows suffix and bind to the same Microsoft.Extensions line
+	     as their plain counterparts. Only what the WPF navigation tests reference directly; the
+	     WPF libraries themselves take these packages transitively through project references. -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0' or '$(TargetFramework)' == 'netstandard2.0'">
 		<PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.10" />
 		<PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.10" />

@@ -85,3 +85,6 @@ CLAUDE.md
 .github/copilot-instructions.md
 # Local NuGet config (credentials, dev-only sources). Use ~/AppData/Roaming/NuGet/NuGet.Config for credentials.
 nuget.config
+
+# Design documents (local only)
+@Design/

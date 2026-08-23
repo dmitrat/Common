@@ -75,6 +75,17 @@
     <Project Path="MVVM/OutWit.Common.MVVM.Avalonia/OutWit.Common.MVVM.Avalonia.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Blazor.Tests/OutWit.Common.MVVM.Blazor.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Blazor/OutWit.Common.MVVM.Blazor.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Avalonia.Sample/OutWit.Common.MVVM.Navigation.Avalonia.Sample.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Avalonia.Tests/OutWit.Common.MVVM.Navigation.Avalonia.Tests.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Avalonia/OutWit.Common.MVVM.Navigation.Avalonia.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Modules.Tests/OutWit.Common.MVVM.Navigation.Modules.Tests.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Modules/OutWit.Common.MVVM.Navigation.Modules.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Sample.Core/OutWit.Common.MVVM.Navigation.Sample.Core.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Tests/OutWit.Common.MVVM.Navigation.Tests.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.WPF.Sample/OutWit.Common.MVVM.Navigation.WPF.Sample.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.WPF.Tests/OutWit.Common.MVVM.Navigation.WPF.Tests.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.WPF/OutWit.Common.MVVM.Navigation.WPF.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation/OutWit.Common.MVVM.Navigation.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Tests/OutWit.Common.MVVM.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.WPF.Generator/OutWit.Common.MVVM.WPF.Generator.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.WPF.Sample/OutWit.Common.MVVM.WPF.Sample.csproj" />

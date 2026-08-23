@@ -28,6 +28,10 @@ on:
           - OutWit.Common.MVVM.Avalonia
           - OutWit.Common.MVVM.Avalonia.Generator
           - OutWit.Common.MVVM.Blazor
+          - OutWit.Common.MVVM.Navigation
+          - OutWit.Common.MVVM.Navigation.Avalonia
+          - OutWit.Common.MVVM.Navigation.WPF
+          - OutWit.Common.MVVM.Navigation.Modules
           - OutWit.Common.NUnit
           - OutWit.Common.Platform
           - OutWit.Common.Licensing

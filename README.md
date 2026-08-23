@@ -52,6 +52,22 @@ A collection of tools and helper classes to simplify serialization with protobuf
 
 A collection of essential helpers and components for WPF and the MVVM pattern. Includes a `ViewModelBase`, `DelegateCommand`, a thread-safe `SafeObservableCollection`, `SortedCollection`, powerful binding utilities, and an AOP `[Bindable]` attribute to easily create DependencyProperties.
 
+# [OutWit.Common.MVVM.Navigation](https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Navigation)
+
+ViewModel-first navigation for desktop applications — the regions, navigation and dialog part of Prism, without the container, the statics or the region adapters. Named **outlets** with a journal and guards; **zones** where modules contribute navigation bar entries and menu items; typed **dialogs**; start-up validation that reports a route with no view before a user finds it by clicking. View models are created through `ActivatorUtilities`, `Transient` routes get their own DI scope, and a screen that loads slowly never blocks the next navigation.
+
+# [OutWit.Common.MVVM.Navigation.Avalonia](https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Navigation.Avalonia)
+
+The Avalonia half: a `ViewLocator` that pairs view models with views through an explicit registry or a naming convention, a `NavigationOutlet` control that keeps a cached screen's view — and its scroll position — alive across navigations, and dialog hosts over modal windows or the overlay layer, with no external dependency.
+
+# [OutWit.Common.MVVM.Navigation.WPF](https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Navigation.WPF)
+
+The same for WPF, so a WPF application can drop Prism and Unity without leaving WPF: the locator doubles as a `DataTemplateSelector`, `ViewPresenter` shows the view of any view model, and dialogs are modal windows whose close button goes through the dialog's own `CanCloseAsync`.
+
+# [OutWit.Common.MVVM.Navigation.Modules](https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Navigation.Modules)
+
+UI modules over `OutWit.Common.Plugins`: a plugin that registers services, routes, views and contributions, loaded from a folder next to the application or compiled in. Same two-phase shape as every other OutWit plugin axis; a module that throws is recorded and logged while the rest carry on.
+
 # [OutWit.Common.NUnit](https://github.com/dmitrat/Common/tree/main/OutWit.Common.NUnit)
 
 An extension library for NUnit that provides fluent assertion helpers `(Assert.That(actual, Was.EqualTo(expected)))` for testing custom objects inheriting from `ModelBase` in the `OutWit.Common` framework. It simplifies semantic equality checks by integrating the `ModelBase.Is()` method directly into the NUnit constraint model for more readable and expressive tests.
