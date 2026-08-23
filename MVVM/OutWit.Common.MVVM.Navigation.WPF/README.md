@@ -50,7 +50,7 @@ protected override void OnStartup(StartupEventArgs e)
 
 ```xml
 <!-- ShellWindow.xaml -->
-<Window xmlns:n="clr-namespace:OutWit.Common.MVVM.Navigation.WPF.Controls;assembly=OutWit.Common.MVVM.Navigation.WPF">
+<Window xmlns:n="https://schemas.outwit.io/navigation">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" />

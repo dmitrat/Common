@@ -39,7 +39,7 @@ await provider.GetRequiredService<INavigationService>().NavigateAsync(Routes.STU
 
 ```xml
 <!-- ShellWindow.axaml -->
-<Window xmlns:n="clr-namespace:OutWit.Common.MVVM.Navigation.Avalonia.Controls;assembly=OutWit.Common.MVVM.Navigation.Avalonia">
+<Window xmlns:n="https://schemas.outwit.io/navigation">
   <Grid ColumnDefinitions="Auto,*">
     <ItemsControl ItemsSource="{Binding NavigationBar.Items}" />     <!-- a zone -->
     <n:NavigationOutlet Grid.Column="1" Outlet="{Binding Main}" />   <!-- the outlet object, not a name -->

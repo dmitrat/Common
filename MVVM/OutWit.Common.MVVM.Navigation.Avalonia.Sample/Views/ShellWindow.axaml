@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:n="clr-namespace:OutWit.Common.MVVM.Navigation.Avalonia.Controls;assembly=OutWit.Common.MVVM.Navigation.Avalonia"
+        xmlns:n="https://schemas.outwit.io/navigation"
         xmlns:nav="clr-namespace:OutWit.Common.MVVM.Navigation.Model;assembly=OutWit.Common.MVVM.Navigation"
         xmlns:vm="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels;assembly=OutWit.Common.MVVM.Navigation.Sample.Core"
         x:Class="OutWit.Common.MVVM.Navigation.Avalonia.Sample.Views.ShellWindow"
