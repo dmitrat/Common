@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels;assembly=OutWit.Common.MVVM.Navigation.Sample.Core"
+             x:Class="OutWit.Common.MVVM.Navigation.Avalonia.Sample.Views.StudyView"
+             x:DataType="vm:StudyViewModel">
+
+  <StackPanel Spacing="12">
+
+    <TextBlock Text="{Binding Study.Patient, StringFormat='Study — {0}'}" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Foreground="#666" TextWrapping="Wrap"
+               Text="Transient route: a new view model in its own DI scope on every navigation, disposed when the next screen arrives." />
+    <TextBlock Text="{Binding Study.RecordedUtc, StringFormat='recorded {0:yyyy-MM-dd}'}" />
+
+    <TextBlock Text="Notes" FontWeight="SemiBold" Margin="0,8,0,0" />
+    <TextBox Text="{Binding Notes}" AcceptsReturn="True" Height="120" />
+
+    <CheckBox IsChecked="{Binding IsDirty}" Content="unsaved changes (tick this, then try to leave)" />
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Content="Save" Command="{Binding SaveCommand}" />
+      <Button Content="◀ Back" Command="{Binding BackCommand}" />
+    </StackPanel>
+
+    <TextBlock Foreground="#666" TextWrapping="Wrap"
+               Text="With unsaved changes the screen's guard asks before letting go — the question is a dialog, awaited from inside CanNavigateFromAsync." />
+
+  </StackPanel>
+
+</UserControl>

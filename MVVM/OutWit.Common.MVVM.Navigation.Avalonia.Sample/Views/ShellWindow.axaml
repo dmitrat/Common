@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:n="clr-namespace:OutWit.Common.MVVM.Navigation.Avalonia.Controls;assembly=OutWit.Common.MVVM.Navigation.Avalonia"
+        xmlns:nav="clr-namespace:OutWit.Common.MVVM.Navigation.Model;assembly=OutWit.Common.MVVM.Navigation"
+        xmlns:vm="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels;assembly=OutWit.Common.MVVM.Navigation.Sample.Core"
+        x:Class="OutWit.Common.MVVM.Navigation.Avalonia.Sample.Views.ShellWindow"
+        x:DataType="vm:ShellViewModel"
+        Title="{Binding Title}"
+        Width="900" Height="620">
+
+  <DockPanel>
+
+    <!-- A menu built entirely from a zone: the shell put two items there, the Reports module
+         added a third, and this markup names none of them. -->
+    <Menu DockPanel.Dock="Top" ItemsSource="{Binding MenuFile.Items}">
+      <Menu.Styles>
+        <Style Selector="MenuItem" x:DataType="nav:ContributionItem">
+          <Setter Property="Header" Value="{Binding Header}" />
+          <Setter Property="Command" Value="{Binding Command}" />
+          <Setter Property="ItemsSource" Value="{Binding Children}" />
+          <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+        </Style>
+      </Menu.Styles>
+    </Menu>
+
+    <Border DockPanel.Dock="Bottom" Background="#F3F3F3" Padding="12,6">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="◀ Back" Command="{Binding BackCommand}" />
+        <Button Content="Forward ▶" Command="{Binding ForwardCommand}" />
+        <Button Content="⟳ Refresh" Command="{Binding RefreshCommand}" />
+        <TextBlock VerticalAlignment="Center" Text="{Binding Main.RouteKey, StringFormat='route: {0}'}" />
+        <TextBlock VerticalAlignment="Center" Foreground="#B45309"
+                   IsVisible="{Binding IsBusy}" Text="navigating…" />
+      </StackPanel>
+    </Border>
+
+    <!-- The navigation rail. Each item is a contribution; the highlight follows the outlet. -->
+    <Border DockPanel.Dock="Left" Width="190" Background="#FAFAFA" Padding="8">
+      <ItemsControl ItemsSource="{Binding NavigationBar.Items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="nav:ContributionItem">
+            <Button Classes="nav"
+                    Classes.selected="{Binding IsSelected}"
+                    Command="{Binding Command}"
+                    IsEnabled="{Binding IsEnabled}"
+                    IsVisible="{Binding IsVisible}">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="{Binding Icon}" />
+                <TextBlock Text="{Binding Header}" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Border>
+
+    <!-- The outlet itself: the object, not a name. The control owns the views, so a Cached
+         screen comes back with its scroll position intact. -->
+    <n:NavigationOutlet Outlet="{Binding Main}" Padding="16" />
+
+  </DockPanel>
+
+</Window>

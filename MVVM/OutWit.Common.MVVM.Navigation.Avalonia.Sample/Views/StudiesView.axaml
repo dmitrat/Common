@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:model="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Core.Models;assembly=OutWit.Common.MVVM.Navigation.Sample.Core"
+             xmlns:vm="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels;assembly=OutWit.Common.MVVM.Navigation.Sample.Core"
+             x:Class="OutWit.Common.MVVM.Navigation.Avalonia.Sample.Views.StudiesView"
+             x:DataType="vm:StudiesViewModel">
+
+  <DockPanel>
+
+    <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,12">
+      <TextBlock Text="Studies" FontSize="22" FontWeight="SemiBold" />
+      <TextBlock Foreground="#666" TextWrapping="Wrap"
+                 Text="Cached route: one view model, one view. Leave and come back — the scroll position is still here, and the list does not reload." />
+      <TextBlock Foreground="#666" Text="{Binding LoadCount, StringFormat='loaded {0} time(s) — Refresh reloads it'}" />
+      <TextBlock Foreground="#B45309" IsVisible="{Binding IsLoading}"
+                 Text="loading… the navigation bar stays live while this runs" />
+    </StackPanel>
+
+    <ListBox ItemsSource="{Binding Studies}">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="model:Study">
+          <Grid ColumnDefinitions="60,*,140,Auto" Margin="0,4">
+            <TextBlock Grid.Column="0" Text="{Binding Id}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding Patient}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2" Text="{Binding RecordedUtc, StringFormat='{}{0:yyyy-MM-dd}'}" VerticalAlignment="Center" />
+            <Button Grid.Column="3" Content="Open"
+                    Command="{Binding $parent[ListBox].((vm:StudiesViewModel)DataContext).OpenCommand}"
+                    CommandParameter="{Binding}" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+  </DockPanel>
+
+</UserControl>

@@ -1,0 +1,32 @@
+<Application x:Class="OutWit.Common.MVVM.Navigation.WPF.Sample.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+  <Application.Resources>
+
+    <!-- The wrapper window the dialog host builds takes this style when it is defined. -->
+    <Style x:Key="OutWit.Navigation.DialogWindow" TargetType="Window">
+      <Setter Property="WindowStyle" Value="ToolWindow" />
+      <Setter Property="Background" Value="White" />
+      <Setter Property="Title" Value="Confirm" />
+    </Style>
+
+    <!-- The navigation rail: a button per contribution, highlighted while its route is shown. -->
+    <Style x:Key="NavigationButton" TargetType="Button">
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="12,10" />
+      <Setter Property="Margin" Value="0,0,0,4" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+          <Setter Property="Background" Value="#D6E4FF" />
+          <Setter Property="FontWeight" Value="SemiBold" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
+  </Application.Resources>
+
+</Application>

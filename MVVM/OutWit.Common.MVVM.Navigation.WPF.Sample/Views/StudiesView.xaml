@@ -1,0 +1,50 @@
+<UserControl x:Class="OutWit.Common.MVVM.Navigation.WPF.Sample.Views.StudiesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <DockPanel>
+
+    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+      <TextBlock Text="Studies" FontSize="22" FontWeight="SemiBold" />
+      <TextBlock Foreground="#666" TextWrapping="Wrap" Margin="0,4,0,0"
+                 Text="Cached route: one view model, one view. Leave and come back — the scroll position is still here, and the list does not reload." />
+      <TextBlock Foreground="#666" Margin="0,4,0,0"
+                 Text="{Binding LoadCount, StringFormat='loaded {0} time(s) — Refresh reloads it'}" />
+      <TextBlock Foreground="#B45309" Margin="0,4,0,0" Text="loading… the navigation bar stays live while this runs">
+        <TextBlock.Style>
+          <Style TargetType="TextBlock">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                <Setter Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
+    </StackPanel>
+
+    <ListBox ItemsSource="{Binding Studies}" HorizontalContentAlignment="Stretch">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <Grid Margin="0,4">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="60" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="140" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding Id}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding Patient}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2" Text="{Binding RecordedUtc, StringFormat=yyyy-MM-dd}" VerticalAlignment="Center" />
+            <Button Grid.Column="3" Content="Open" Padding="10,3"
+                    Command="{Binding DataContext.OpenCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                    CommandParameter="{Binding}" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+  </DockPanel>
+
+</UserControl>

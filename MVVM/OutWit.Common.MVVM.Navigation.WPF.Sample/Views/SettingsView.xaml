@@ -1,0 +1,25 @@
+<UserControl x:Class="OutWit.Common.MVVM.Navigation.WPF.Sample.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <StackPanel>
+
+    <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Foreground="#666" TextWrapping="Wrap" Margin="0,8,0,0"
+               Text="{Binding VisitCount, StringFormat='visited {0} time(s) — same instance every time, because the route is Cached'}" />
+
+    <Border BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,16,0,0">
+      <StackPanel>
+        <TextBlock Text="Global guard" FontWeight="SemiBold" />
+        <TextBlock TextWrapping="Wrap" Foreground="#666" Margin="0,8,0,0"
+                   Text="One service, registered once, asked about every navigation in every outlet. While it is locked, nothing moves — this is what replaces LockNavigation on a service locator." />
+        <CheckBox IsChecked="{Binding IsNavigationLocked, Mode=OneWay}" IsHitTestVisible="False"
+                  Margin="0,8,0,0" Content="navigation is locked" />
+        <Button Content="Toggle navigation lock" Command="{Binding ToggleLockCommand}"
+                HorizontalAlignment="Left" Padding="12,4" Margin="0,8,0,0" />
+      </StackPanel>
+    </Border>
+
+  </StackPanel>
+
+</UserControl>

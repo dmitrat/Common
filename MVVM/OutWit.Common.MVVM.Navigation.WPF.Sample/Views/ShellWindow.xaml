@@ -1,0 +1,66 @@
+<Window x:Class="OutWit.Common.MVVM.Navigation.WPF.Sample.Views.ShellWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:n="clr-namespace:OutWit.Common.MVVM.Navigation.WPF.Controls;assembly=OutWit.Common.MVVM.Navigation.WPF"
+        Title="{Binding Title}" Height="620" Width="900">
+
+  <DockPanel>
+
+    <!-- A menu built entirely from a zone: the shell put two items there, the Reports module
+         added a third, and this markup names none of them. -->
+    <Menu DockPanel.Dock="Top" ItemsSource="{Binding MenuFile.Items}">
+      <Menu.ItemContainerStyle>
+        <Style TargetType="MenuItem">
+          <Setter Property="Header" Value="{Binding Header}" />
+          <Setter Property="Command" Value="{Binding Command}" />
+          <Setter Property="ItemsSource" Value="{Binding Children}" />
+          <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+        </Style>
+      </Menu.ItemContainerStyle>
+    </Menu>
+
+    <Border DockPanel.Dock="Bottom" Background="#F3F3F3" Padding="12,6">
+      <StackPanel Orientation="Horizontal">
+        <Button Content="◀ Back" Command="{Binding BackCommand}" Margin="0,0,12,0" Padding="10,4" />
+        <Button Content="Forward ▶" Command="{Binding ForwardCommand}" Margin="0,0,12,0" Padding="10,4" />
+        <Button Content="⟳ Refresh" Command="{Binding RefreshCommand}" Margin="0,0,12,0" Padding="10,4" />
+        <TextBlock VerticalAlignment="Center" Margin="0,0,12,0"
+                   Text="{Binding Main.RouteKey, StringFormat='route: {0}'}" />
+        <TextBlock VerticalAlignment="Center" Foreground="#B45309" Text="navigating…">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+      </StackPanel>
+    </Border>
+
+    <!-- The navigation rail. Each item is a contribution; the highlight follows the outlet. -->
+    <Border DockPanel.Dock="Left" Width="190" Background="#FAFAFA" Padding="8">
+      <ItemsControl ItemsSource="{Binding NavigationBar.Items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Button Style="{StaticResource NavigationButton}" Command="{Binding Command}">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Icon}" Margin="0,0,10,0" />
+                <TextBlock Text="{Binding Header}" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Border>
+
+    <!-- The outlet itself: the object, not a name. The control owns the views, so a Cached
+         screen comes back with its scroll position intact. -->
+    <n:NavigationOutlet Outlet="{Binding Main}" Padding="16" />
+
+  </DockPanel>
+
+</Window>

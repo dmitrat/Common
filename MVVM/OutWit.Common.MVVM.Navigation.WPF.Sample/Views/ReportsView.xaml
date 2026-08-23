@@ -1,0 +1,12 @@
+<UserControl x:Class="OutWit.Common.MVVM.Navigation.WPF.Sample.Views.ReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <StackPanel>
+    <TextBlock Text="Reports" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Foreground="#666" TextWrapping="Wrap" Margin="0,8,0,0"
+               Text="This screen belongs to a module. The shell's markup never mentions it: the module registered the route, put the entry in the navigation bar and added the menu item under File → Open." />
+    <TextBlock Margin="0,8,0,0" Text="{Binding GeneratedUtc, StringFormat='generated {0:HH:mm:ss} UTC'}" />
+  </StackPanel>
+
+</UserControl>

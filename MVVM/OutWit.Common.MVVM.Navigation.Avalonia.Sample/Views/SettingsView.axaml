@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels;assembly=OutWit.Common.MVVM.Navigation.Sample.Core"
+             x:Class="OutWit.Common.MVVM.Navigation.Avalonia.Sample.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <StackPanel Spacing="12">
+
+    <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Foreground="#666" TextWrapping="Wrap"
+               Text="{Binding VisitCount, StringFormat='visited {0} time(s) — same instance every time, because the route is Cached'}" />
+
+    <Border BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="12">
+      <StackPanel Spacing="8">
+        <TextBlock Text="Global guard" FontWeight="SemiBold" />
+        <TextBlock TextWrapping="Wrap" Foreground="#666"
+                   Text="One service, registered once, asked about every navigation in every outlet. While it is locked, nothing moves — this is what replaces LockNavigation on a service locator." />
+        <CheckBox IsChecked="{Binding IsNavigationLocked, Mode=OneWay}" IsHitTestVisible="False"
+                  Content="navigation is locked" />
+        <Button Content="Toggle navigation lock" Command="{Binding ToggleLockCommand}" />
+      </StackPanel>
+    </Border>
+
+  </StackPanel>
+
+</UserControl>

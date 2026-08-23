@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels;assembly=OutWit.Common.MVVM.Navigation.Sample.Core"
+             x:Class="OutWit.Common.MVVM.Navigation.Avalonia.Sample.Views.ConfirmDialogView"
+             x:DataType="vm:ConfirmDialogViewModel"
+             Width="380">
+
+  <Border Background="White" CornerRadius="8" Padding="20" BoxShadow="0 8 24 0 #40000000">
+    <StackPanel Spacing="16">
+      <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" />
+      <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+        <Button Content="Cancel" Command="{Binding CancelCommand}" />
+        <Button Content="Leave anyway" Command="{Binding ConfirmCommand}" />
+      </StackPanel>
+    </StackPanel>
+  </Border>
+
+</UserControl>

@@ -1,0 +1,23 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="OutWit.Common.MVVM.Navigation.Avalonia.Sample.App"
+             RequestedThemeVariant="Light">
+
+  <Application.Styles>
+    <FluentTheme />
+
+    <!-- The navigation rail: a button per contribution, highlighted while its route is shown. -->
+    <Style Selector="Button.nav">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="12,10" />
+      <Setter Property="Margin" Value="0,0,0,4" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.nav.selected">
+      <Setter Property="Background" Value="#D6E4FF" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </Application.Styles>
+
+</Application>

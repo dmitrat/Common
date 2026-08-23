@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:OutWit.Common.MVVM.Navigation.Sample.Core.ViewModels;assembly=OutWit.Common.MVVM.Navigation.Sample.Core"
+             x:Class="OutWit.Common.MVVM.Navigation.Avalonia.Sample.Views.ReportsView"
+             x:DataType="vm:ReportsViewModel">
+
+  <StackPanel Spacing="12">
+    <TextBlock Text="Reports" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Foreground="#666" TextWrapping="Wrap"
+               Text="This screen belongs to a module. The shell's markup never mentions it: the module registered the route, put the entry in the navigation bar and added the menu item under File → Open." />
+    <TextBlock Text="{Binding GeneratedUtc, StringFormat='generated {0:HH:mm:ss} UTC'}" />
+  </StackPanel>
+
+</UserControl>
