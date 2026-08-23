@@ -88,3 +88,11 @@ nuget.config
 
 # Design documents (local only)
 @Design/
+
+# Editor workspace files (per-developer, not shared)
+*.code-workspace
+
+# Databases created by running the samples (SharedDatabaseModule writes these
+# next to the working directory; they are not Content and ship with nothing).
+*.witdb
+*.witdb_indexes/
