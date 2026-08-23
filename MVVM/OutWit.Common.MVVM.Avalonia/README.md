@@ -109,7 +109,10 @@ public static void SetIsHighlighted(AvaloniaObject obj, bool value) => obj.SetVa
 
 ### Convention-Based Callbacks
 
-The generator automatically discovers callback methods by naming convention:
+The generator discovers callback methods by naming convention **and subscribes them for you**.
+Avalonia, unlike WPF, has no changed-callback parameter on `AvaloniaProperty.Register` — the
+notification arrives through the property's `Changed` observable — so the generated code
+registers the property and subscribes in one step. Nothing is needed in your constructor:
 
 ```csharp
 public partial class SmartControl : Control
@@ -224,6 +227,23 @@ await dispatcher.InvokeAsync(() => UpdateUI());
 - `OutWit.Common.MVVM` - Cross-platform base classes
 - `OutWit.Common.MVVM.WPF` - WPF-specific implementation
 - `OutWit.Common.MVVM.Blazor` - Blazor-specific implementation
+
+## Upgrading to 3.1.0
+
+Two things that used to be silent now work, and both can change behaviour in an existing
+control.
+
+**`On{Property}Changed` is actually called.** Before 3.1.0 the generator found the method and
+emitted a comment suggesting you subscribe to it yourself, so the callbacks never ran. If your
+control subscribed by hand — a static constructor with
+`XProperty.Changed.AddClassHandler<T>(…)` — and the handler it calls is named by the
+convention, it will now run **twice**. Delete the manual subscription; the generated one
+replaces it.
+
+**A `[DirectProperty]` raises change notifications.** Its generated setter used to write the
+backing field directly, which meant no callback, no `PropertyChanged`, and no binding out of
+it ever updated. It now goes through `SetAndRaise`. Nothing to change on your side — but code
+that relied on a direct property staying quiet will start seeing notifications.
 
 ## License
 

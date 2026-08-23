@@ -6,6 +6,14 @@ namespace OutWit.Common.MVVM.Avalonia.Generator.Generators
 {
     internal sealed class StyledPropertyGenerator
     {
+        #region Constants
+
+        private const string ARGS_TYPE = "AvaloniaPropertyChangedEventArgs";
+        private const string OWNER_TYPE = "AvaloniaObject";
+        private const string AVALONIA_OBJECT = "global::Avalonia.AvaloniaObject";
+
+        #endregion
+
         #region Fields
 
         private readonly IPropertySymbol m_propertySymbol;
@@ -49,7 +57,7 @@ namespace OutWit.Common.MVVM.Avalonia.Generator.Generators
             var inherits = GetAttributeValue<bool>("Inherits");
 
             // Convention-based callback discovery
-            var onChanged = GetAttributeValue<string>("OnChanged") ?? FindCallbackMethod($"On{propertyName}Changed");
+            var onChanged = FindChangedCallback(propertyName);
             var coerce = GetAttributeValue<string>("Coerce") ?? FindCoerceMethod($"{propertyName}Coerce");
 
             var sb = new StringBuilder();
@@ -98,13 +106,17 @@ namespace OutWit.Common.MVVM.Avalonia.Generator.Generators
             return sb.ToString();
         }
 
-        private string? FindCallbackMethod(string conventionName)
+        /// <summary>
+        /// The method the property's changes are reported to: the one named by
+        /// <c>OnChanged</c>, or <c>On{Property}Changed</c> by convention.
+        /// </summary>
+        private IMethodSymbol? FindChangedCallback(string propertyName)
         {
-            var method = m_containingType.GetMembers(conventionName)
-                .OfType<IMethodSymbol>()
-                .FirstOrDefault(m => IsPropertyChangedCallback(m));
+            var name = GetAttributeValue<string>("OnChanged") ?? $"On{propertyName}Changed";
 
-            return method?.Name;
+            return m_containingType.GetMembers(name)
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(IsPropertyChangedCallback);
         }
 
         private string? FindCoerceMethod(string conventionName)
@@ -125,14 +137,14 @@ namespace OutWit.Common.MVVM.Avalonia.Generator.Generators
                 if (method.Parameters.Length == 1)
                 {
                     var paramType = method.Parameters[0].Type.ToDisplayString();
-                    return paramType.Contains("AvaloniaPropertyChangedEventArgs");
+                    return paramType.Contains(ARGS_TYPE);
                 }
                 if (method.Parameters.Length == 2)
                 {
                     var firstParam = method.Parameters[0].Type.ToDisplayString();
                     var secondParam = method.Parameters[1].Type.ToDisplayString();
-                    return firstParam.Contains("AvaloniaObject") &&
-                           secondParam.Contains("AvaloniaPropertyChangedEventArgs");
+                    return firstParam.Contains(OWNER_TYPE) &&
+                           secondParam.Contains(ARGS_TYPE);
                 }
             }
 
@@ -145,7 +157,7 @@ namespace OutWit.Common.MVVM.Avalonia.Generator.Generators
             if (!method.ReturnsVoid && method.Parameters.Length == 2)
             {
                 var firstParam = method.Parameters[0].Type.ToDisplayString();
-                return firstParam.Contains("AvaloniaObject");
+                return firstParam.Contains(OWNER_TYPE);
             }
 
             return false;
@@ -160,43 +172,40 @@ namespace OutWit.Common.MVVM.Avalonia.Generator.Generators
             object? defaultValue,
             bool inherits,
             bool bindsTwoWayByDefault,
-            string? onChanged,
+            IMethodSymbol? onChanged,
             string? coerce)
         {
             var defaultBindingMode = bindsTwoWayByDefault ? "global::Avalonia.Data.BindingMode.TwoWay" : "default";
+            var fieldType = $"global::Avalonia.StyledProperty<{propertyType}>";
 
-            sb.AppendLine($"{indent}    public static readonly global::Avalonia.StyledProperty<{propertyType}> {dpPropertyName} =");
-            sb.Append($"{indent}        global::Avalonia.AvaloniaProperty.Register<{m_containingType.Name}, {propertyType}>(");
-            sb.Append($"nameof({propertyName})");
+            var registration = new StringBuilder();
+            registration.Append($"global::Avalonia.AvaloniaProperty.Register<{m_containingType.Name}, {propertyType}>(");
+            registration.Append($"nameof({propertyName})");
 
             if (defaultValue != null)
             {
-                sb.Append($", defaultValue: {FormatDefaultValue(defaultValue, propertyType)}");
+                registration.Append($", defaultValue: {FormatDefaultValue(defaultValue, propertyType)}");
             }
 
             if (inherits)
             {
-                sb.Append(", inherits: true");
+                registration.Append(", inherits: true");
             }
 
             if (bindsTwoWayByDefault)
             {
-                sb.Append($", defaultBindingMode: {defaultBindingMode}");
+                registration.Append($", defaultBindingMode: {defaultBindingMode}");
             }
 
             if (!string.IsNullOrEmpty(coerce))
             {
-                sb.Append($", coerce: {coerce}");
+                registration.Append($", coerce: {coerce}");
             }
 
-            sb.AppendLine(");");
-            sb.AppendLine();
+            registration.Append(")");
 
-            // Generate property changed registration if callback exists
-            if (onChanged is not null)
-            {
-                GeneratePropertyChangedSubscription(sb, indent, dpPropertyName, onChanged);
-            }
+            AppendPropertyField(sb, indent, dpPropertyName, fieldType, registration.ToString(),
+                onChanged, m_containingType.Name, propertyType);
         }
 
         private void GenerateDirectProperty(
@@ -207,33 +216,41 @@ namespace OutWit.Common.MVVM.Avalonia.Generator.Generators
             string propertyType,
             object? defaultValue,
             bool bindsTwoWayByDefault,
-            string? onChanged)
+            IMethodSymbol? onChanged)
         {
             var backingFieldName = $"m_{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
             var defaultBindingMode = bindsTwoWayByDefault ? "global::Avalonia.Data.BindingMode.TwoWay" : "default";
+            var fieldType = $"global::Avalonia.DirectProperty<{m_containingType.Name}, {propertyType}>";
 
             // Generate backing field
             sb.AppendLine($"{indent}    private {propertyType} {backingFieldName} = {FormatDefaultValue(defaultValue, propertyType)};");
             sb.AppendLine();
 
-            sb.AppendLine($"{indent}    public static readonly global::Avalonia.DirectProperty<{m_containingType.Name}, {propertyType}> {dpPropertyName} =");
-            sb.Append($"{indent}        global::Avalonia.AvaloniaProperty.RegisterDirect<{m_containingType.Name}, {propertyType}>(");
-            sb.Append($"nameof({propertyName}), ");
-            sb.Append($"o => o.{backingFieldName}, ");
-            sb.Append($"(o, v) => o.{backingFieldName} = v");
+            var registration = new StringBuilder();
+            registration.Append($"global::Avalonia.AvaloniaProperty.RegisterDirect<{m_containingType.Name}, {propertyType}>(");
+            registration.Append($"nameof({propertyName}), ");
+            registration.Append($"o => o.{backingFieldName}, ");
+
+            // SetAndRaise, not a plain assignment. Avalonia raises nothing of its own for a
+            // direct property — the notification is the setter's job — so a generated setter
+            // that only wrote the field left the property silent: no callbacks, no bindings
+            // out of it, and no sign that anything was wrong.
+            registration.Append($"(o, v) => o.SetAndRaise({dpPropertyName}, ref o.{backingFieldName}, v)");
 
             if (defaultValue != null)
             {
-                sb.Append($", unsetValue: {FormatDefaultValue(defaultValue, propertyType)}");
+                registration.Append($", unsetValue: {FormatDefaultValue(defaultValue, propertyType)}");
             }
 
             if (bindsTwoWayByDefault)
             {
-                sb.Append($", defaultBindingMode: {defaultBindingMode}");
+                registration.Append($", defaultBindingMode: {defaultBindingMode}");
             }
 
-            sb.AppendLine(");");
-            sb.AppendLine();
+            registration.Append(")");
+
+            AppendPropertyField(sb, indent, dpPropertyName, fieldType, registration.ToString(),
+                onChanged, m_containingType.Name, propertyType);
         }
 
         private void GenerateAttachedProperty(
@@ -244,63 +261,125 @@ namespace OutWit.Common.MVVM.Avalonia.Generator.Generators
             string propertyType,
             object? defaultValue,
             bool inherits,
-            string? onChanged,
+            IMethodSymbol? onChanged,
             string? coerce)
         {
+            var fieldType = $"global::Avalonia.AttachedProperty<{propertyType}>";
+
             // For attached properties, we use the non-generic RegisterAttached overload
             // that doesn't require TOwner type argument (which can't be static)
-            sb.AppendLine($"{indent}    public static readonly global::Avalonia.AttachedProperty<{propertyType}> {dpPropertyName} =");
-            sb.Append($"{indent}        global::Avalonia.AvaloniaProperty.RegisterAttached<global::Avalonia.AvaloniaObject, {propertyType}>(");
-            sb.Append($"\"{propertyName}\", typeof({m_containingType.Name})");
+            var registration = new StringBuilder();
+            registration.Append($"global::Avalonia.AvaloniaProperty.RegisterAttached<{AVALONIA_OBJECT}, {propertyType}>(");
+            registration.Append($"\"{propertyName}\", typeof({m_containingType.Name})");
 
             if (defaultValue != null)
             {
-                sb.Append($", defaultValue: {FormatDefaultValue(defaultValue, propertyType)}");
+                registration.Append($", defaultValue: {FormatDefaultValue(defaultValue, propertyType)}");
             }
 
             if (inherits)
             {
-                sb.Append(", inherits: true");
+                registration.Append(", inherits: true");
             }
 
             if (!string.IsNullOrEmpty(coerce))
             {
-                sb.Append($", coerce: {coerce}");
+                registration.Append($", coerce: {coerce}");
             }
 
-            sb.AppendLine(");");
-            sb.AppendLine();
+            registration.Append(")");
+
+            // An attached property belongs to no instance, so its callback has to be static.
+            // An instance one would be handed an AvaloniaObject it has no relationship with.
+            var callback = onChanged is { IsStatic: true } ? onChanged : null;
+
+            AppendPropertyField(sb, indent, dpPropertyName, fieldType, registration.ToString(),
+                callback, AVALONIA_OBJECT, propertyType);
+
+            if (onChanged != null && callback == null)
+            {
+                sb.AppendLine($"{indent}    // '{onChanged.Name}' is not subscribed: an attached property's callback must be static,");
+                sb.AppendLine($"{indent}    // because the object it fires for is not an instance of {m_containingType.Name}.");
+                sb.AppendLine();
+            }
 
             // Generate Get method
-            sb.AppendLine($"{indent}    public static {propertyType} Get{propertyName}(global::Avalonia.AvaloniaObject obj)");
+            sb.AppendLine($"{indent}    public static {propertyType} Get{propertyName}({AVALONIA_OBJECT} obj)");
             sb.AppendLine($"{indent}    {{");
             sb.AppendLine($"{indent}        return obj.GetValue({dpPropertyName});");
             sb.AppendLine($"{indent}    }}");
             sb.AppendLine();
 
             // Generate Set method
-            sb.AppendLine($"{indent}    public static void Set{propertyName}(global::Avalonia.AvaloniaObject obj, {propertyType} value)");
+            sb.AppendLine($"{indent}    public static void Set{propertyName}({AVALONIA_OBJECT} obj, {propertyType} value)");
             sb.AppendLine($"{indent}    {{");
             sb.AppendLine($"{indent}        obj.SetValue({dpPropertyName}, value);");
             sb.AppendLine($"{indent}    }}");
             sb.AppendLine();
-
-            // Generate property changed registration if callback exists
-            if (onChanged is not null)
-            {
-                GeneratePropertyChangedSubscription(sb, indent, dpPropertyName, onChanged);
-            }
         }
 
-        private void GeneratePropertyChangedSubscription(
+        /// <summary>
+        /// Emits the property field. Without a callback that is a plain initializer; with one
+        /// the initializer calls a factory that registers the property and subscribes to its
+        /// changes in the same breath.
+        /// </summary>
+        /// <remarks>
+        /// A factory rather than a static constructor, and deliberately. Avalonia has no
+        /// changed-callback parameter on Register — notification arrives through the
+        /// property's Changed observable — so somebody has to subscribe, and a generated
+        /// static constructor would collide with the hand-written one that authors of these
+        /// controls have had to write until now. A field initializer composes with theirs.
+        /// </remarks>
+        private void AppendPropertyField(
             StringBuilder sb,
             string indent,
             string dpPropertyName,
-            string callbackName)
+            string fieldType,
+            string registration,
+            IMethodSymbol? onChanged,
+            string ownerType,
+            string propertyType)
         {
-            sb.AppendLine($"{indent}    // Note: Subscribe to {dpPropertyName}.Changed in constructor to handle property changes");
-            sb.AppendLine($"{indent}    // {dpPropertyName}.Changed.Subscribe(e => {callbackName}(e));");
+            if (onChanged == null)
+            {
+                sb.AppendLine($"{indent}    public static readonly {fieldType} {dpPropertyName} =");
+                sb.AppendLine($"{indent}        {registration};");
+                sb.AppendLine();
+
+                return;
+            }
+
+            var factoryName = $"Register{dpPropertyName}";
+
+            sb.AppendLine($"{indent}    public static readonly {fieldType} {dpPropertyName} = {factoryName}();");
             sb.AppendLine();
+
+            sb.AppendLine($"{indent}    private static {fieldType} {factoryName}()");
+            sb.AppendLine($"{indent}    {{");
+            sb.AppendLine($"{indent}        var property =");
+            sb.AppendLine($"{indent}            {registration};");
+            sb.AppendLine();
+            // Called in its static form: an extension method would need a using directive, and
+            // generated code cannot assume what the file it lands next to has imported.
+            sb.AppendLine($"{indent}        global::Avalonia.AvaloniaObjectExtensions.AddClassHandler<{ownerType}, {propertyType}>(");
+            sb.AppendLine($"{indent}            property.Changed, (owner, args) => {Invocation(onChanged)});");
+            sb.AppendLine();
+            sb.AppendLine($"{indent}        return property;");
+            sb.AppendLine($"{indent}    }}");
+            sb.AppendLine();
+        }
+
+        /// <summary>
+        /// How the callback is called from the subscription, given its shape: an instance
+        /// method is called on the object that changed, a static one is handed it.
+        /// </summary>
+        private static string Invocation(IMethodSymbol callback)
+        {
+            var arguments = callback.Parameters.Length == 2 ? "owner, args" : "args";
+
+            return callback.IsStatic
+                ? $"{callback.Name}({arguments})"
+                : $"owner.{callback.Name}({arguments})";
         }
 
         private string FormatDefaultValue(object? value, string propertyType)

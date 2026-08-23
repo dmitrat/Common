@@ -27,24 +27,6 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Controls
     /// </example>
     public partial class NavigationOutlet : ContentControl
     {
-        #region Constructors
-
-        /// <summary>
-        /// Wires the Outlet property's change notification.
-        /// </summary>
-        /// <remarks>
-        /// By hand, because the StyledProperty generator emits the property and leaves the
-        /// subscription to the author — unlike its WPF counterpart, which puts the callback
-        /// into the property metadata. Without this the control only ever notices the outlet
-        /// it was given before it was attached, and an outlet swapped at run time is ignored.
-        /// </remarks>
-        static NavigationOutlet()
-        {
-            OutletProperty.Changed.AddClassHandler<NavigationOutlet>((control, e) => control.OnOutletChanged(e));
-        }
-
-        #endregion
-
         #region Fields
 
         private readonly ConditionalWeakTable<object, Control> m_views = new();
