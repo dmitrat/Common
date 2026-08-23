@@ -10,6 +10,7 @@ contracts and the platform-neutral implementation.
 | [OutWit.Common.MVVM.Navigation.Avalonia](../OutWit.Common.MVVM.Navigation.Avalonia/README.md) | view locator, `NavigationOutlet` control, window/overlay dialog hosts |
 | [OutWit.Common.MVVM.Navigation.WPF](../OutWit.Common.MVVM.Navigation.WPF/README.md) | the same for WPF: locator + template selector, outlet control, `ViewPresenter`, modal-window host |
 | [OutWit.Common.MVVM.Navigation.Modules](../OutWit.Common.MVVM.Navigation.Modules/README.md) | UI modules loaded from a folder or compiled in |
+| [OutWit.Common.MVVM.Navigation.Avalonia.DialogHost](../OutWit.Common.MVVM.Navigation.Avalonia.DialogHost/README.md) | optional: dialogs through DialogHost.Avalonia, for Material.Avalonia applications |
 
 Runnable sample, one set of view models bound from both frameworks:
 [Sample.Core](../OutWit.Common.MVVM.Navigation.Sample.Core/README.md) ·

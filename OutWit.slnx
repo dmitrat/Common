@@ -75,6 +75,7 @@
     <Project Path="MVVM/OutWit.Common.MVVM.Avalonia/OutWit.Common.MVVM.Avalonia.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Blazor.Tests/OutWit.Common.MVVM.Blazor.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Blazor/OutWit.Common.MVVM.Blazor.csproj" />
+    <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Avalonia.DialogHost/OutWit.Common.MVVM.Navigation.Avalonia.DialogHost.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Avalonia.Sample/OutWit.Common.MVVM.Navigation.Avalonia.Sample.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Avalonia.Tests/OutWit.Common.MVVM.Navigation.Avalonia.Tests.csproj" />
     <Project Path="MVVM/OutWit.Common.MVVM.Navigation.Avalonia/OutWit.Common.MVVM.Navigation.Avalonia.csproj" />

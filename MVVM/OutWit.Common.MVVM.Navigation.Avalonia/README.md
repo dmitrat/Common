@@ -74,8 +74,10 @@ to be registered explicitly. That is also the only path that survives trimming.
 Both hosts route every UI-initiated close — the window's close button, a click on the
 overlay backdrop, Escape — through the dialog's `CanCloseAsync`. Style the generated window
 with the `navigation-dialog` class and the overlay with `navigation-dialog-overlay`.
-For Material.Avalonia / DialogHost.Avalonia, implement `IDialogHost` and pass it to
-`UseDialogHost<T>()`.
+For Material.Avalonia there is a ready adapter:
+[OutWit.Common.MVVM.Navigation.Avalonia.DialogHost](../OutWit.Common.MVVM.Navigation.Avalonia.DialogHost/README.md),
+kept in its own package so this one carries no dependency on it. Any other dialog library is
+an `IDialogHost` of your own passed to `UseDialogHost<T>()`.
 
 ## License
 

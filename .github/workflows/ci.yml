@@ -101,6 +101,10 @@ jobs:
               - 'MVVM/OutWit.Common.MVVM.Navigation/**'
               - 'MVVM/OutWit.Common.MVVM.Avalonia/**'
               - 'MVVM/OutWit.Common.MVVM.Avalonia.Generator/**'
+            OutWit.Common.MVVM.Navigation.Avalonia.DialogHost:
+              - 'MVVM/OutWit.Common.MVVM.Navigation.Avalonia.DialogHost/**'
+              - 'MVVM/OutWit.Common.MVVM.Navigation.Avalonia/**'
+              - 'MVVM/OutWit.Common.MVVM.Navigation/**'
             OutWit.Common.MVVM.Navigation.WPF:
               - 'MVVM/OutWit.Common.MVVM.Navigation.WPF/**'
               - 'MVVM/OutWit.Common.MVVM.Navigation.WPF.Tests/**'

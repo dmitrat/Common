@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+
+		<Version>1.0.0</Version>
+
+		<Description>Shows OutWit.Common.MVVM.Navigation dialogs through DialogHost.Avalonia, for applications already themed with Material.Avalonia. A separate package so that the navigation packages themselves keep no dependency on it: pick this host with UseDialogHost&lt;DialogHostAvaloniaAdapter&gt;() and nothing else changes.</Description>
+		<PackageTags>OutWit;Common;MVVM;Navigation;Avalonia;Dialogs;DialogHost;Material</PackageTags>
+
+		<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/MVVM/OutWit.Common.MVVM.Navigation.Avalonia.DialogHost</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="OutWit.Common.MVVM.Navigation.Avalonia.DialogHost.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DialogHost.Avalonia" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation\OutWit.Common.MVVM.Navigation.csproj" />
+		<ProjectReference Include="..\OutWit.Common.MVVM.Navigation.Avalonia\OutWit.Common.MVVM.Navigation.Avalonia.csproj" />
+	</ItemGroup>
+
+</Project>

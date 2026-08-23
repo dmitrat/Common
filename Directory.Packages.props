@@ -30,6 +30,9 @@
 		<PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.1" />
 		<PackageVersion Include="CommandLineParser" Version="2.9.1" />
 		<PackageVersion Include="CsvHelper" Version="33.1.0" />
+		<!-- Only the navigation dialog-host adapter uses it; the navigation packages themselves
+		     ship hosts that cost no external dependency. -->
+		<PackageVersion Include="DialogHost.Avalonia" Version="0.12.3" />
 		<PackageVersion Include="MaterialDesignThemes" Version="5.3.2" />
 		<PackageVersion Include="MemoryPack" Version="1.21.4" />
 		<PackageVersion Include="MessagePack" Version="3.1.8" />
