@@ -13,7 +13,7 @@ Cross-platform MVVM library providing base components for building modern .NET a
   - `ObservableSortedCollection<TKey, TValue>`: Sorted collection observing item property changes
   - `SafeObservableCollection<T>`: Thread-safe observable collection
 - **Table Models**: Data models for table views (`TableView`, `TableViewPage`, `TableViewRow`, etc.)
-- **Abstractions**: `IDispatcher` for cross-platform thread marshalling
+- **Abstractions**: `IDispatcher` for cross-platform thread marshalling, and `DispatcherImmediate` — an inline implementation for tests and console hosts
 
 ## Installation
 
