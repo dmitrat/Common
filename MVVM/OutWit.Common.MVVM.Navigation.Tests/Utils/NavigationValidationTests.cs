@@ -144,5 +144,58 @@ namespace OutWit.Common.MVVM.Navigation.Tests.Utils
         }
 
         #endregion
+
+        #region Group Tests
+
+        [Test]
+        public void ValidateAcceptsAContributionPointingAtAGroupTest()
+        {
+            using var provider = NavigationTestHost.Build(nav =>
+            {
+                nav.AddRoute<PlainViewModel>("general");
+                nav.AddView<PlainViewModel, FakeView>();
+                nav.AddGroup("section", "general");
+                nav.AddZone("Bar");
+            });
+
+            provider.GetRequiredService<IContributionRegistry>()
+                .Add(new ContributionItem { Zone = "Bar", Key = "section", RouteKey = "section" });
+
+            Assert.That(provider.ValidateNavigation(), Is.Empty);
+        }
+
+        [Test]
+        public void ValidateReportsAGroupListingAnUnregisteredRouteTest()
+        {
+            using var provider = NavigationTestHost.Build(nav =>
+            {
+                nav.AddRoute<PlainViewModel>("general");
+                nav.AddView<PlainViewModel, FakeView>();
+                nav.AddGroup("section", "general", new[] { "general", "diary" });
+            });
+
+            var problems = provider.ValidateNavigation();
+
+            Assert.That(problems, Has.Count.EqualTo(1));
+            Assert.That(problems[0], Does.Contain("section").And.Contain("diary").And.Contain("not registered"));
+        }
+
+        [Test]
+        public void ValidateReportsAGroupInAnUndeclaredOutletTest()
+        {
+            using var provider = NavigationTestHost.Build(nav =>
+            {
+                nav.AddRoute<PlainViewModel>("general");
+                nav.AddView<PlainViewModel, FakeView>();
+                nav.AddGroup("section", "general", outlet: "Nowhere");
+            });
+
+            var problems = provider.ValidateNavigation();
+
+            Assert.That(problems, Has.Count.EqualTo(1));
+            Assert.That(problems[0], Does.Contain("section").And.Contain("Nowhere"));
+        }
+
+        #endregion
     }
 }

@@ -61,14 +61,26 @@ namespace OutWit.Common.MVVM.Navigation.Utils
                     problems.Add($"Route '{route.Key}': {route.ViewModelType.FullName} marks '{property}' with [Notify] but does not implement INotifyPropertyChanged, so the property will never reach a binding. Derive from NotifyPropertyChangedBase or ModelBase.");
             }
 
+            foreach (var group in routes.Groups)
+            {
+                if (!navigation.HasOutlet(group.Outlet))
+                    problems.Add($"Group '{group.Key}' targets outlet '{group.Outlet}', which is not declared.");
+
+                foreach (var routeKey in group.RouteKeys)
+                {
+                    if (!routes.Contains(routeKey))
+                        problems.Add($"Group '{group.Key}' lists route '{routeKey}', which is not registered.");
+                }
+            }
+
             if (contributions != null)
             {
                 foreach (var zoneName in contributions.Zones)
                 {
                     foreach (var item in Flatten(contributions.Zone(zoneName).Items))
                     {
-                        if (item.RouteKey != null && !routes.Contains(item.RouteKey))
-                            problems.Add($"Contribution '{item.Zone}/{item.Key}' navigates to route '{item.RouteKey}', which is not registered.");
+                        if (item.RouteKey != null && !routes.Contains(item.RouteKey) && !routes.ContainsGroup(item.RouteKey))
+                            problems.Add($"Contribution '{item.Zone}/{item.Key}' navigates to '{item.RouteKey}', which is neither a route nor a group.");
 
                         if (item.Outlet != null && !navigation.HasOutlet(item.Outlet))
                             problems.Add($"Contribution '{item.Zone}/{item.Key}' targets outlet '{item.Outlet}', which is not declared.");

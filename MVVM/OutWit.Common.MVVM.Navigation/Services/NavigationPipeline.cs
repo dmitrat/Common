@@ -200,7 +200,7 @@ namespace OutWit.Common.MVVM.Navigation.Services
                     outlet.End(ticket);
                     released = true;
 
-                    m_navigated(outlet, new NavigationResult(NavigationStatus.Success, route.Key, outlet.Name));
+                    m_navigated(outlet, new NavigationResult(NavigationStatus.Success, route.Key, outlet.Name, null, request.RequestedKey));
 
                     if (leaveError != null)
                         return Result(request, NavigationStatus.Failed, leaveError);
@@ -332,7 +332,7 @@ namespace OutWit.Common.MVVM.Navigation.Services
 
         private static NavigationResult Result(NavigationRequest request, NavigationStatus status, Exception? error = null)
         {
-            return new NavigationResult(status, request.Route.Key, request.Outlet.Name, error);
+            return new NavigationResult(status, request.Route.Key, request.Outlet.Name, error, request.RequestedKey);
         }
 
         #endregion

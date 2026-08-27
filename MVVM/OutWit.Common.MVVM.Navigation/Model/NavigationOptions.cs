@@ -29,6 +29,7 @@ namespace OutWit.Common.MVVM.Navigation.Model
             Outlets = new List<string> { NavigationOutlets.MAIN };
             Zones = new List<string>();
             Routes = new List<NavigationRoute>();
+            Groups = new List<NavigationGroup>();
             Views = new List<KeyValuePair<Type, Type>>();
             HistoryDepth = DEFAULT_HISTORY_DEPTH;
         }
@@ -52,6 +53,11 @@ namespace OutWit.Common.MVVM.Navigation.Model
         /// Routes registered up front. Modules register more in their OnInitialized.
         /// </summary>
         public List<NavigationRoute> Routes { get; }
+
+        /// <summary>
+        /// Groups declared up front. Modules declare more in their OnInitialized.
+        /// </summary>
+        public List<NavigationGroup> Groups { get; }
 
         /// <summary>
         /// View model type to view type pairs registered up front.

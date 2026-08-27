@@ -21,10 +21,11 @@ namespace OutWit.Common.MVVM.Navigation.Model
         /// <param name="routeKey">The requested route key.</param>
         /// <param name="outlet">The outlet the request targeted; empty when it could not be resolved.</param>
         /// <param name="error">The exception behind a <see cref="NavigationStatus.Failed"/> outcome.</param>
-        public NavigationResult(NavigationStatus status, string routeKey, string outlet, Exception? error = null)
+        public NavigationResult(NavigationStatus status, string routeKey, string outlet, Exception? error = null, string? requestedKey = null)
         {
             Status = status;
             RouteKey = routeKey ?? string.Empty;
+            RequestedKey = requestedKey ?? RouteKey;
             Outlet = outlet ?? string.Empty;
             Error = error;
         }
@@ -40,13 +41,14 @@ namespace OutWit.Common.MVVM.Navigation.Model
 
             return Status.Is(other.Status)
                    && RouteKey.Is(other.RouteKey)
+                   && RequestedKey.Is(other.RequestedKey)
                    && Outlet.Is(other.Outlet)
                    && ReferenceEquals(Error, other.Error);
         }
 
         public override ModelBase Clone()
         {
-            return new NavigationResult(Status, RouteKey, Outlet, Error);
+            return new NavigationResult(Status, RouteKey, Outlet, Error, RequestedKey);
         }
 
         #endregion
@@ -64,6 +66,13 @@ namespace OutWit.Common.MVVM.Navigation.Model
         /// </summary>
         [ToString]
         public string RouteKey { get; }
+
+        /// <summary>
+        /// The key the caller asked for. Equals <see cref="RouteKey"/> unless the caller named
+        /// a group — then this is the group and <see cref="RouteKey"/> the page it resolved to.
+        /// </summary>
+        [ToString]
+        public string RequestedKey { get; }
 
         /// <summary>
         /// The outlet the request targeted.

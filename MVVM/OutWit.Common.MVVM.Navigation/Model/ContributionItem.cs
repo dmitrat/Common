@@ -66,8 +66,9 @@ namespace OutWit.Common.MVVM.Navigation.Model
         public double Order { get; init; }
 
         /// <summary>
-        /// Route to navigate to when the item is activated. When set, the registry
-        /// supplies <see cref="Command"/>.
+        /// Route — or group — to navigate to when the item is activated. When set, the
+        /// registry supplies <see cref="Command"/>. An item pointing at a group is selected
+        /// for any page of that group, and opens the page the group was left at.
         /// </summary>
         public string? RouteKey { get; init; }
 

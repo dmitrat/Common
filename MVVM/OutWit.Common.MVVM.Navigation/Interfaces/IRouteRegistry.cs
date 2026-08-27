@@ -56,6 +56,55 @@ namespace OutWit.Common.MVVM.Navigation.Interfaces
         bool TryGetFor<TViewModel>([NotNullWhen(true)] out NavigationRoute? route)
             where TViewModel : class;
 
+        /// <summary>
+        /// Declares a group of routes with a default. Declaring a key again replaces the
+        /// default, the outlet and the metadata; members already added stay, because modules
+        /// register in whichever order they load. Group keys and route keys share one
+        /// namespace, and a group lists routes only — never another group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <exception cref="InvalidOperationException">The key is a route, a member of another group, or a member is itself a group.</exception>
+        void RegisterGroup(NavigationGroup group);
+
+        /// <summary>
+        /// Declares a group of routes with a default. See <see cref="RegisterGroup(NavigationGroup)"/>.
+        /// </summary>
+        /// <param name="key">The group key.</param>
+        /// <param name="defaultRouteKey">The route opened when nothing is remembered for the outlet.</param>
+        /// <param name="routeKeys">The member routes; the default is always one of them.</param>
+        /// <param name="outlet">The outlet the group targets when the caller names none.</param>
+        /// <param name="metadata">Opaque data for guards, zones and the application.</param>
+        /// <exception cref="InvalidOperationException">The key is a route, a member of another group, or a member is itself a group.</exception>
+        void RegisterGroup(string key,
+                           string defaultRouteKey,
+                           IEnumerable<string>? routeKeys = null,
+                           string outlet = NavigationOutlets.MAIN,
+                           object? metadata = null);
+
+        /// <summary>
+        /// Adds a route to a group. A group not declared yet is created with the route as its
+        /// default, so a module can extend a section before the section's owner has loaded.
+        /// </summary>
+        /// <param name="key">The group key.</param>
+        /// <param name="routeKey">The route to add; adding a member again does nothing.</param>
+        /// <exception cref="InvalidOperationException">The key is a route, or the route is a group.</exception>
+        void AddToGroup(string key, string routeKey);
+
+        /// <summary>
+        /// Tells whether a group with the given key is declared.
+        /// </summary>
+        /// <param name="key">The group key.</param>
+        /// <returns>True when declared.</returns>
+        bool ContainsGroup(string key);
+
+        /// <summary>
+        /// Looks a group up by key.
+        /// </summary>
+        /// <param name="key">The group key.</param>
+        /// <param name="group">The group.</param>
+        /// <returns>True when found.</returns>
+        bool TryGetGroup(string key, [NotNullWhen(true)] out NavigationGroup? group);
+
         #endregion
 
         #region Properties
@@ -64,6 +113,11 @@ namespace OutWit.Common.MVVM.Navigation.Interfaces
         /// All routes, in registration order.
         /// </summary>
         IReadOnlyList<NavigationRoute> Routes { get; }
+
+        /// <summary>
+        /// All groups, in declaration order.
+        /// </summary>
+        IReadOnlyList<NavigationGroup> Groups { get; }
 
         #endregion
     }

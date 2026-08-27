@@ -118,20 +118,23 @@ namespace OutWit.Common.MVVM.Navigation.Services
 
         /// <summary>
         /// Aligns IsSelected of every item targeting the outlet with what the outlet shows.
+        /// An item pointing at a group is selected for any page of that group.
         /// </summary>
-        public void UpdateSelection(INavigationOutlet outlet, Func<string, string?> defaultOutletOf)
+        public void UpdateSelection(INavigationOutlet outlet, IRouteFacts routes)
         {
             foreach (var item in m_all.Values)
             {
                 if (item.RouteKey == null)
                     continue;
 
-                var itemOutlet = item.Outlet ?? defaultOutletOf(item.RouteKey) ?? NavigationOutlets.MAIN;
+                var itemOutlet = item.Outlet ?? routes.DefaultOutletOf(item.RouteKey) ?? NavigationOutlets.MAIN;
                 if (itemOutlet != outlet.Name)
                     continue;
 
-                item.IsSelected = item.RouteKey == outlet.RouteKey
-                                  && (item.Parameters == null || item.Parameters.Is(outlet.Parameters));
+                var shown = outlet.RouteKey != null
+                            && (item.RouteKey == outlet.RouteKey || routes.GroupContains(item.RouteKey, outlet.RouteKey));
+
+                item.IsSelected = shown && (item.Parameters == null || item.Parameters.Is(outlet.Parameters));
             }
 
             UpdateSelected();

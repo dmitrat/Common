@@ -25,7 +25,7 @@ namespace OutWit.Common.MVVM.Navigation.Services
         private readonly Dictionary<ContributionItem, PropertyChangedEventHandler> m_subscriptions = new();
 
         private readonly INavigationService m_navigation;
-        private readonly IRouteRegistry m_routes;
+        private readonly IRouteFacts m_routes;
         private readonly IDispatcher m_dispatcher;
         private readonly ILogger<ContributionRegistry>? m_logger;
 
@@ -37,7 +37,7 @@ namespace OutWit.Common.MVVM.Navigation.Services
         /// Creates the registry. Resolved from DI by <c>services.AddNavigation()</c>.
         /// </summary>
         /// <param name="navigation">The navigation service; commands navigate through it and selection follows its events.</param>
-        /// <param name="routes">The route registry; resolves an item's default outlet.</param>
+        /// <param name="routes">The route registry; resolves an item's default outlet and group membership.</param>
         /// <param name="dispatcher">The UI-thread dispatcher.</param>
         /// <param name="options">What AddNavigation collected; null means no pre-created zones.</param>
         /// <param name="logger">Optional logger.</param>
@@ -48,7 +48,7 @@ namespace OutWit.Common.MVVM.Navigation.Services
                                     ILogger<ContributionRegistry>? logger = null)
         {
             m_navigation = navigation ?? throw new ArgumentNullException(nameof(navigation));
-            m_routes = routes ?? throw new ArgumentNullException(nameof(routes));
+            m_routes = new RouteFacts(routes ?? throw new ArgumentNullException(nameof(routes)));
             m_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             m_logger = logger;
 
@@ -152,7 +152,7 @@ namespace OutWit.Common.MVVM.Navigation.Services
                 DetachCommand(replaced);
 
             foreach (var outlet in m_navigation.Outlets)
-                zone.UpdateSelection(outlet, DefaultOutletOf);
+                zone.UpdateSelection(outlet, m_routes);
         }
 
         private void AttachCommand(ContributionItem item)
@@ -212,11 +212,6 @@ namespace OutWit.Common.MVVM.Navigation.Services
                 return m_zones.TryGetValue(name, out var zone) ? zone : null;
         }
 
-        private string? DefaultOutletOf(string routeKey)
-        {
-            return m_routes.TryGet(routeKey, out var route) ? route.Outlet : null;
-        }
-
         private static void Validate(ContributionItem item)
         {
             if (item == null)
@@ -245,7 +240,7 @@ namespace OutWit.Common.MVVM.Navigation.Services
             try
             {
                 foreach (var zone in zones)
-                    zone.UpdateSelection(outlet, DefaultOutletOf);
+                    zone.UpdateSelection(outlet, m_routes);
             }
             catch (Exception e)
             {

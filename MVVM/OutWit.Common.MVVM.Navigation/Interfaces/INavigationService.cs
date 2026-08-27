@@ -147,6 +147,29 @@ namespace OutWit.Common.MVVM.Navigation.Interfaces
 
         #endregion
 
+        #region Groups
+
+        /// <summary>
+        /// Forgets where an outlet was in a group, so the next navigation to the group opens
+        /// its default. Null narrows nothing: no group means every group, no outlet means
+        /// every outlet. Not called by <see cref="ClearHistory"/> — where a section was left
+        /// is not history.
+        /// </summary>
+        /// <param name="groupKey">The group; null means all.</param>
+        /// <param name="outlet">The outlet; null means all.</param>
+        void ForgetGroup(string? groupKey = null, string? outlet = null);
+
+        /// <summary>
+        /// What navigating to the group would open right now: the page remembered for the
+        /// outlet, else the group's default. For hints and tests.
+        /// </summary>
+        /// <param name="groupKey">The group key.</param>
+        /// <param name="outlet">The outlet; null means the group's own.</param>
+        /// <returns>The page and its parameters; null when the key is not a group, or neither the remembered page nor the default is registered.</returns>
+        NavigationEntry? ResolveGroup(string groupKey, string? outlet = null);
+
+        #endregion
+
         #region Properties
 
         /// <summary>

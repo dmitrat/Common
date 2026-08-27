@@ -12,8 +12,8 @@ using OutWit.Common.MVVM.Navigation.Model;
 namespace OutWit.Common.MVVM.Navigation.Services
 {
     /// <summary>
-    /// Default <see cref="INavigationService"/>. Holds the outlets, resolves routes, hops to
-    /// the UI thread once and hands the work to <see cref="NavigationPipeline"/>.
+    /// Default <see cref="INavigationService"/>. Holds the outlets, resolves routes and groups,
+    /// hops to the UI thread once and hands the work to <see cref="NavigationPipeline"/>.
     /// </summary>
     public sealed class NavigationService : INavigationService
     {
@@ -29,6 +29,7 @@ namespace OutWit.Common.MVVM.Navigation.Services
         private readonly object m_sync = new();
         private readonly Dictionary<string, NavigationOutlet> m_outlets = new(StringComparer.Ordinal);
         private readonly List<NavigationOutlet> m_outletsOrder = new();
+        private readonly NavigationGroupMemory m_groups = new();
 
         private readonly IServiceProvider m_provider;
         private readonly IRouteRegistry m_routes;
@@ -122,10 +123,11 @@ namespace OutWit.Common.MVVM.Navigation.Services
             if (routeKey == null)
                 throw new ArgumentNullException(nameof(routeKey));
 
-            if (!m_routes.TryGet(routeKey, out var route))
+            var target = Resolve(routeKey, outlet);
+            if (target == null)
                 return Task.FromResult(Fail(null, NavigationStatus.RouteNotFound, routeKey, outlet ?? string.Empty));
 
-            return NavigateAsync(route, parameters, outlet, cancellation);
+            return NavigateAsync(target.Route, parameters ?? target.Remembered, target.Outlet, routeKey, cancellation);
         }
 
         public Task<NavigationResult> NavigateAsync<TViewModel>(NavigationParameters? parameters = null,
@@ -136,19 +138,19 @@ namespace OutWit.Common.MVVM.Navigation.Services
             if (!m_routes.TryGetFor<TViewModel>(out var route))
                 return Task.FromResult(Fail(null, NavigationStatus.RouteNotFound, typeof(TViewModel).FullName ?? typeof(TViewModel).Name, outlet ?? string.Empty));
 
-            return NavigateAsync(route, parameters, outlet, cancellation);
+            return NavigateAsync(route, parameters, outlet, route.Key, cancellation);
         }
 
-        private Task<NavigationResult> NavigateAsync(NavigationRoute route, NavigationParameters? parameters, string? outlet, CancellationToken cancellation)
+        private Task<NavigationResult> NavigateAsync(NavigationRoute route, NavigationParameters? parameters, string? outlet, string requestedKey, CancellationToken cancellation)
         {
             var outletName = outlet ?? route.Outlet;
             var target = GetOutlet(outletName);
 
             if (target == null)
-                return Task.FromResult(Fail(null, NavigationStatus.OutletNotFound, route.Key, outletName));
+                return Task.FromResult(Fail(null, NavigationStatus.OutletNotFound, route.Key, outletName, requestedKey));
 
             return RunAsync(target, () => Task.FromResult<NavigationRequest?>(
-                new NavigationRequest(target, route, parameters ?? NavigationParameters.EMPTY, NavigationKind.New, -1, cancellation)));
+                new NavigationRequest(target, route, parameters ?? NavigationParameters.EMPTY, NavigationKind.New, -1, cancellation, requestedKey)));
         }
 
         public Task<bool> CanNavigateAsync(string routeKey,
@@ -159,18 +161,22 @@ namespace OutWit.Common.MVVM.Navigation.Services
             if (routeKey == null)
                 throw new ArgumentNullException(nameof(routeKey));
 
-            if (!m_routes.TryGet(routeKey, out var route))
+            var resolved = Resolve(routeKey, outlet);
+            if (resolved == null)
                 return Task.FromResult(false);
 
-            var target = GetOutlet(outlet ?? route.Outlet);
+            var target = GetOutlet(resolved.Outlet);
             if (target == null)
                 return Task.FromResult(false);
+
+            var route = resolved.Route;
+            var effective = parameters ?? resolved.Remembered ?? NavigationParameters.EMPTY;
 
             return RunOnDispatcherAsync(async () =>
             {
                 try
                 {
-                    return await m_pipeline.CanNavigateAsync(target, route, parameters ?? NavigationParameters.EMPTY, cancellation);
+                    return await m_pipeline.CanNavigateAsync(target, route, effective, cancellation);
                 }
                 catch (Exception e)
                 {
@@ -262,6 +268,58 @@ namespace OutWit.Common.MVVM.Navigation.Services
 
         #endregion
 
+        #region Groups
+
+        public void ForgetGroup(string? groupKey = null, string? outlet = null)
+        {
+            m_groups.Forget(groupKey, outlet);
+        }
+
+        public NavigationEntry? ResolveGroup(string groupKey, string? outlet = null)
+        {
+            if (groupKey == null)
+                throw new ArgumentNullException(nameof(groupKey));
+
+            if (!m_routes.TryGetGroup(groupKey, out var group))
+                return null;
+
+            return Recall(group, outlet ?? group.Outlet);
+        }
+
+        /// <summary>
+        /// A key names a route or a group. A route is itself. A group is the page remembered
+        /// for the outlet, else its default — whichever of the two is registered.
+        /// </summary>
+        private Target? Resolve(string key, string? outlet)
+        {
+            if (m_routes.TryGet(key, out var route))
+                return new Target(route, outlet ?? route.Outlet, null);
+
+            if (!m_routes.TryGetGroup(key, out var group))
+                return null;
+
+            var outletName = outlet ?? group.Outlet;
+            var entry = Recall(group, outletName);
+
+            if (entry == null || !m_routes.TryGet(entry.RouteKey, out route))
+                return null;
+
+            return new Target(route, outletName, entry.Parameters);
+        }
+
+        private NavigationEntry? Recall(NavigationGroup group, string outlet)
+        {
+            var remembered = m_groups.Recall(outlet, group.Key);
+            if (remembered != null && group.Contains(remembered.RouteKey) && m_routes.Contains(remembered.RouteKey))
+                return remembered;
+
+            return m_routes.Contains(group.DefaultRouteKey)
+                ? new NavigationEntry(group.DefaultRouteKey, null)
+                : null;
+        }
+
+        #endregion
+
         #region Tools
 
         /// <summary>
@@ -299,12 +357,16 @@ namespace OutWit.Common.MVVM.Navigation.Services
 
         private void RaiseNavigated(NavigationOutlet outlet, NavigationResult result)
         {
+            // the page has committed, whatever the kind of navigation brought it in — a page
+            // reached by going Back is the page the section is at now
+            m_groups.Remember(outlet.Name, result.RouteKey, outlet.Parameters, m_routes.Groups);
+
             Navigated?.Invoke(outlet, result);
         }
 
-        private NavigationResult Fail(NavigationOutlet? outlet, NavigationStatus status, string routeKey, string outletName)
+        private NavigationResult Fail(NavigationOutlet? outlet, NavigationStatus status, string routeKey, string outletName, string? requestedKey = null)
         {
-            var result = new NavigationResult(status, routeKey, outletName);
+            var result = new NavigationResult(status, routeKey, outletName, null, requestedKey);
 
             m_logger?.LogWarning("Navigation to {Route} in {Outlet}: {Status}", routeKey, outletName, status);
             NavigationFailed?.Invoke(outlet, result);
@@ -348,6 +410,12 @@ namespace OutWit.Common.MVVM.Navigation.Services
         #endregion
 
         #region Classes
+
+        /// <summary>
+        /// What a key resolved to: the route, the outlet it goes in, and — for a group — the
+        /// parameters the remembered page was shown with, for the caller to fall back on.
+        /// </summary>
+        private sealed record Target(NavigationRoute Route, string Outlet, NavigationParameters? Remembered);
 
         private sealed class NavigationRouteMissingException : Exception
         {

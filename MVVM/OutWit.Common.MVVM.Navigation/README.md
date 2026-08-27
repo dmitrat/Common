@@ -23,6 +23,7 @@ Runnable sample, one set of view models bound from both frameworks:
 |---|---|---|
 | **Outlet** | a named place showing one view model, with a journal | region + `RequestNavigate` |
 | **Route** | key → view model type, creation mode, default outlet, metadata | `RegisterForNavigation` |
+| **Group** | a named set of routes with a default; navigating to it reopens the page last shown | — |
 | **NavigationParameters** | immutable parameter set | `NavigationParameters` |
 | **NavigationContext** | outlet, route, parameters and why (New/Back/Forward/Refresh) | `NavigationContext` |
 | **Guard** | the right to refuse — on a view model, or a global service | `IConfirmNavigationRequest` |
@@ -142,6 +143,45 @@ contributions.Add(new ContributionItem
 An item with a `RouteKey` gets a `Command` that navigates; `IsSelected` follows what the
 outlet shows; `ParentKey` nests items into menus whichever order the modules arrive in.
 Presentation state (`Header`, `IsEnabled`, `IsChecked`, …) belongs to the module and notifies.
+
+## Route groups
+
+A section of a navigation bar usually has several pages, and it should open on the one the
+user was last at — not always on the first. A **group** is a named set of routes with a
+default, and its key is an ordinary navigation key:
+
+```csharp
+routes.RegisterGroup("record-info", RecordRoutes.GENERAL,
+    new[] { RecordRoutes.GENERAL, RecordRoutes.DIARY });
+
+contributions.Add(new ContributionItem
+{
+    Zone = Zones.NAVIGATION_BAR,
+    Key = "RecordInfo",
+    RouteKey = "record-info"          // the group, not a page
+});
+
+await navigation.NavigateAsync("record-info");   // last page shown, or General
+```
+
+Navigating to a group opens the page of it last shown in that outlet, with the parameters it
+was shown with — or the default when the outlet has not shown one yet. The service remembers
+on every committed navigation, whatever brought the page in: going Back to a page is being at
+that page. A refused navigation remembers nothing. The section's item is selected for any
+page of its group, so it stays lit while the user moves inside the section.
+
+The memory is not the journal: `ClearHistory` leaves it alone, because where a section was
+left is not history. `ForgetGroup(key)` resets one group to its default, `ForgetGroup()` all
+of them; both take an outlet, and null means every outlet. `ResolveGroup(key)` tells what a
+navigation would open, for hints and tests. `NavigationResult.RequestedKey` is the key the
+caller asked for — the group — and `RouteKey` the page it resolved to.
+
+Rules: route keys and group keys share one namespace, and a group lists routes only — the
+registry throws on both, in either order. A group only grows: `AddToGroup` before the owner's
+`RegisterGroup` creates it with that route as default, and the declaration keeps every member
+already added, because modules register in whichever order they load and never unload. The
+group's own `Outlet` is where its key navigates when the caller names none, exactly as a
+route's is; the members' outlets do not enter into it.
 
 ## Dialogs
 

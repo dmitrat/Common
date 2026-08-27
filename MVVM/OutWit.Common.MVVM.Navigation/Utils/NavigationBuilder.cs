@@ -87,6 +87,26 @@ namespace OutWit.Common.MVVM.Navigation.Utils
         }
 
         /// <summary>
+        /// Declares a group of routes with a default. Navigating to the group opens the page
+        /// of it last shown in the outlet, or the default.
+        /// </summary>
+        /// <param name="key">The group key. Shares one namespace with route keys.</param>
+        /// <param name="defaultRouteKey">The route opened when nothing is remembered.</param>
+        /// <param name="routeKeys">The member routes; the default is always one of them.</param>
+        /// <param name="outlet">The outlet the group targets when the caller names none.</param>
+        /// <param name="metadata">Opaque data for guards, zones and the application.</param>
+        /// <returns>This builder.</returns>
+        public NavigationBuilder AddGroup(string key,
+                                          string defaultRouteKey,
+                                          IEnumerable<string>? routeKeys = null,
+                                          string outlet = NavigationOutlets.MAIN,
+                                          object? metadata = null)
+        {
+            Options.Groups.Add(new NavigationGroup(key, defaultRouteKey, routeKeys, outlet, metadata));
+            return this;
+        }
+
+        /// <summary>
         /// Maps a view model type to a view type. Optional where the platform's naming
         /// convention finds the view; required under trimming or AOT.
         /// </summary>
