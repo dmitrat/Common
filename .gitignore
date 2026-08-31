@@ -86,8 +86,9 @@ CLAUDE.md
 # Local NuGet config (credentials, dev-only sources). Use ~/AppData/Roaming/NuGet/NuGet.Config for credentials.
 nuget.config
 
-# Design documents (local only)
-@Design/
+# Local working folders (roadmaps, design notes, package drops, etc.).
+# A directory whose name starts with @ is intentionally not committed.
+@*/
 
 # Editor workspace files (per-developer, not shared)
 *.code-workspace
