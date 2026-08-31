@@ -13,7 +13,8 @@ namespace OutWit.Common.Settings.Tests
     {
         #region Constants
 
-        private const int BUILT_IN_TYPE_COUNT = 14;
+        // 15 since 2.1.0: SecretValue joined the built-in value types (ValueKind "Secret").
+        private const int BUILT_IN_TYPE_COUNT = 15;
 
         #endregion
 

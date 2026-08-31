@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using OutWit.Common.Settings.Interfaces;
 using OutWit.Common.Settings.Serialization;
 using OutWit.Common.Settings.Tests.Utils;
+using OutWit.Common.Settings.Values;
 
 namespace OutWit.Common.Settings.Tests.Serialization
 {
@@ -1039,6 +1040,68 @@ namespace OutWit.Common.Settings.Tests.Serialization
             var serializer = new SettingsSerializerFolder();
 
             Assert.That(serializer.Format("C:\\SomePath\\MyApp"), Is.EqualTo("C:\\SomePath\\MyApp"));
+        }
+
+        #endregion
+
+        #region Secret Tests
+
+        [Test]
+        public void SecretParseFormatRoundTripTest()
+        {
+            var serializer = new SettingsSerializerSecret();
+
+            Assert.That(serializer.ValueKind, Is.EqualTo("Secret"));
+            Assert.That(serializer.ValueType, Is.EqualTo(typeof(SecretValue)));
+
+            var value = serializer.Parse("WitSweep/ApiKey|1|SzCo", "");
+            Assert.That(value.StoreKey, Is.EqualTo("WitSweep/ApiKey"));
+            Assert.That(value.IsSet, Is.True);
+            Assert.That(value.Hint, Is.EqualTo("SzCo"));
+
+            Assert.That(serializer.Format(value), Is.EqualTo("WitSweep/ApiKey|1|SzCo"));
+        }
+
+        [Test]
+        public void SecretParseIsTolerantToBareStoreKeyTest()
+        {
+            var serializer = new SettingsSerializerSecret();
+
+            var bare = serializer.Parse("WitSweep/ApiKey", "");
+            Assert.That(bare.StoreKey, Is.EqualTo("WitSweep/ApiKey"));
+            Assert.That(bare.IsSet, Is.False);
+            Assert.That(bare.Hint, Is.EqualTo(""));
+
+            var empty = serializer.Parse("", "");
+            Assert.That(empty.StoreKey, Is.EqualTo(""));
+            Assert.That(empty.IsSet, Is.False);
+
+            var notSet = serializer.Parse("WitSweep/ApiKey|0|", "");
+            Assert.That(notSet.IsSet, Is.False);
+            Assert.That(serializer.Format(notSet), Is.EqualTo("WitSweep/ApiKey|0|"));
+        }
+
+        [Test]
+        public void SecretAreEqualTest()
+        {
+            var serializer = new SettingsSerializerSecret();
+
+            var first = serializer.Parse("WitSweep/ApiKey|1|SzCo", "");
+            var same = serializer.Parse("WitSweep/ApiKey|1|SzCo", "");
+            var other = serializer.Parse("WitSweep/ApiKey|1|AbCd", "");
+
+            Assert.That(serializer.AreEqual(first, same), Is.True);
+            Assert.That(serializer.AreEqual(first, other), Is.False);
+            Assert.That(serializer.AreEqual(first, null!), Is.False);
+        }
+
+        [Test]
+        public void SecretHintIsNeverAShortSecretTest()
+        {
+            Assert.That(SecretValue.MakeHint("wit_sk_nmh8P4Cq"), Is.EqualTo("P4Cq"));
+            Assert.That(SecretValue.MakeHint("short"), Is.EqualTo(""),
+                "A hint of a short secret would be the secret itself");
+            Assert.That(SecretValue.MakeHint(""), Is.EqualTo(""));
         }
 
         #endregion

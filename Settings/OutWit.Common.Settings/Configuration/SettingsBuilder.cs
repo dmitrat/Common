@@ -328,6 +328,7 @@ namespace OutWit.Common.Settings.Configuration
                 new SettingsSerializerFolder(),
                 new SettingsSerializerLanguage(),
                 new SettingsSerializerPassword(),
+                new SettingsSerializerSecret(),
             };
         }
 
