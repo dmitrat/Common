@@ -48,6 +48,8 @@ on:
           - OutWit.Common.DependencyInjection
           - OutWit.Common.DependencyInjection.Generator
           - OutWit.Common.Email
+          - OutWit.Common.Forms
+          - OutWit.Common.Forms.MessagePack
           - OutWit.Common.Messenger
           - OutWit.Common.Logging.Query
           - OutWit.Common.Logging.NewRelic

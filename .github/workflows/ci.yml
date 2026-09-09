@@ -157,6 +157,11 @@ jobs:
               - 'DependencyInjection/OutWit.Common.DependencyInjection.Generator/**'
             OutWit.Common.Email:
               - 'Email/**'
+            OutWit.Common.Forms:
+              - 'Forms/**'
+              - 'Common/**'
+              - 'Serialization/MemoryPack/**'
+              - 'Serialization/MessagePack/**'
             OutWit.Common.Messenger:
               - 'Messenger/**'
             OutWit.Common.Logging.Query:

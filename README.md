@@ -48,6 +48,14 @@ A collection of helpers and extension methods for MessagePack-CSharp to simplify
 
 A collection of tools and helper classes to simplify serialization with protobuf-net. Provides extension methods for serialization, deserialization, and deep cloning, plus built-in support for common types like `DateTimeOffset`.
 
+# [OutWit.Common.Forms](https://github.com/dmitrat/Common/tree/main/Forms/OutWit.Common.Forms)
+
+A form described as data: groups, tabs, fields, options and the conditions that decide what is live — serialisable, transferable, and enough for anybody to draw the form and keep it consistent while somebody types. Lets a plugin contribute a screen without shipping controls, so a second front end — a browser, a remote console, a different toolkit — becomes a renderer rather than a rewrite. Structure and the "this is off while that is off" conditions travel in the schema and are evaluated locally; what the values *mean together* stays with whoever declared the form, asked through `IFormValidator`. MemoryPack on the wire, and no other serialiser's attributes.
+
+# [OutWit.Common.Forms.MessagePack](https://github.com/dmitrat/Common/tree/main/Forms/OutWit.Common.Forms.MessagePack)
+
+Carries the form model on a MessagePack wire for a product standardised on it: one call at startup, `FormsMessagePack.Register()`, scoped to the form model's assembly — so nothing else of that product's own becomes serialisable by accident.
+
 # [OutWit.Common.MVVM](https://github.com/dmitrat/Common/tree/main/OutWit.Common.MVVM)
 
 A collection of essential helpers and components for WPF and the MVVM pattern. Includes a `ViewModelBase`, `DelegateCommand`, a thread-safe `SafeObservableCollection`, `SortedCollection`, powerful binding utilities, and an AOP `[Bindable]` attribute to easily create DependencyProperties.
