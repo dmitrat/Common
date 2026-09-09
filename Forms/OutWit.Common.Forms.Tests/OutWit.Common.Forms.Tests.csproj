@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="MemoryPack" />
+
+    <!-- Only here. The library carries no serialiser's attributes but MemoryPack's, and this is
+         where that claim is checked: a second format has to cost nothing at the model's end. -->
+    <PackageReference Include="MessagePack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\NUnit\OutWit.Common.NUnit\OutWit.Common.NUnit.csproj" />
+    <ProjectReference Include="..\OutWit.Common.Forms\OutWit.Common.Forms.csproj" />
+
+    <!-- Only here. The library does not depend on it; this is where the claim that a
+         MessagePack-speaking system can carry these types is checked against that system's
+         own setup rather than against a hand-made resolver. -->
+    <ProjectReference Include="..\OutWit.Common.Forms.MessagePack\OutWit.Common.Forms.MessagePack.csproj" />
+    <ProjectReference Include="..\..\Serialization\MemoryPack\OutWit.Common.MemoryPack\OutWit.Common.MemoryPack.csproj" />
+  </ItemGroup>
+
+</Project>

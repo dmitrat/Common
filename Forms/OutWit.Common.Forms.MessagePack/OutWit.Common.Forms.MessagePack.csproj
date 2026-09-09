@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+<PropertyGroup>
+<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+<LangVersion>latest</LangVersion>
+<Nullable>enable</Nullable>
+
+<Version>1.0.0</Version>
+
+<Description>Carries OutWit.Common.Forms on a MessagePack wire: one registration, scoped to the form model alone, so a product standardised on MessagePack can send a schema without loosening how anything else of its own is serialised.</Description>
+<PackageTags>OutWit;Common;Forms;Schema;MessagePack</PackageTags>
+
+<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Forms/OutWit.Common.Forms.MessagePack</RepositoryUrl>
+</PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OutWit.Common.Forms\OutWit.Common.Forms.csproj" />
+    <ProjectReference Include="..\..\Serialization\MessagePack\OutWit.Common.MessagePack\OutWit.Common.MessagePack.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OutWit.Common.Forms.Tests" />
+  </ItemGroup>
+
+</Project>

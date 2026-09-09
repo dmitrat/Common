@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+<PropertyGroup>
+<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+<LangVersion>latest</LangVersion>
+<Nullable>enable</Nullable>
+
+<Version>1.2.0</Version>
+
+<Description>A form described as data: groups, tabs, fields, options and the conditions that decide what is live. Lets a plugin contribute a screen without shipping controls — the description crosses a process boundary and whoever is drawing draws it. MemoryPack on the wire, renderers separate.</Description>
+<PackageTags>OutWit;Common;Forms;Schema;Plugins;MemoryPack</PackageTags>
+
+<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Forms/OutWit.Common.Forms</RepositoryUrl>
+</PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
+    <ProjectReference Include="..\..\Serialization\MemoryPack\OutWit.Common.MemoryPack\OutWit.Common.MemoryPack.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OutWit.Common.Forms.Tests" />
+  </ItemGroup>
+
+</Project>
