@@ -1,6 +1,8 @@
 using OutWit.Common.Fat.Boot;
 using OutWit.Common.Fat.Devices;
+using OutWit.Common.Fat.Model;
 using OutWit.Common.Fat.Tests.Utils;
+using OutWit.Common.Fat.Utils;
 using OutWit.Common.NUnit;
 
 namespace OutWit.Common.Fat.Tests

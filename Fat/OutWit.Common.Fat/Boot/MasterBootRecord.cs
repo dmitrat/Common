@@ -2,6 +2,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Boot
 {

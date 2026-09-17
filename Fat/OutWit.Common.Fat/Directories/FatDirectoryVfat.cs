@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using OutWit.Common.Fat.Volumes;
 
 namespace OutWit.Common.Fat.Directories
 {

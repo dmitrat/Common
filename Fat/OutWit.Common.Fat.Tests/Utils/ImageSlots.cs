@@ -1,5 +1,6 @@
 using System.Text;
 using OutWit.Common.Fat.Devices;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Tests.Utils
 {

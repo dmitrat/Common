@@ -12,6 +12,11 @@ whole-disk; FAT12/16/32 and exFAT from the boot sector), reading and writing all
 directories, long names, files, attributes and the volume label — formatting them, and a
 consistency checker. How it is known to be right is told at the end, under *How it is tested*.
 
+`FatVolume`, `FatDetector`, `FatFormatter` and `FatChecker` are in `OutWit.Common.Fat`; what they take and
+give back — the layouts, entries, problems, options and enums — in `OutWit.Common.Fat.Model`; the devices
+in `OutWit.Common.Fat.Devices`; `FatException` in `OutWit.Common.Fat.Exceptions`; and the shortcuts over
+volumes and devices in `OutWit.Common.Fat.Utils`.
+
 ## Block devices
 
 ```csharp

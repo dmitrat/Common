@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using OutWit.Common.Fat.Allocation;
 using OutWit.Common.Fat.Devices;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Tests.Utils
 {

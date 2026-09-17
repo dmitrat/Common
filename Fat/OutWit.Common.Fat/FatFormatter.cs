@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using OutWit.Common.Fat.Boot;
 using OutWit.Common.Fat.Devices;
 using OutWit.Common.Fat.Formatting;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat
 {

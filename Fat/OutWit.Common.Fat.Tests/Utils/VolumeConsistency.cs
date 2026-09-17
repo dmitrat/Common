@@ -1,5 +1,6 @@
 using OutWit.Common.Fat.Allocation;
-using OutWit.Common.Fat.ExFat;
+using OutWit.Common.Fat.Model;
+using OutWit.Common.Fat.Volumes;
 
 namespace OutWit.Common.Fat.Tests.Utils
 {
@@ -33,7 +34,7 @@ namespace OutWit.Common.Fat.Tests.Utils
             long free = await volume.CountFreeClustersAsync();
             Assert.That(owners.Count + free, Is.EqualTo(volume.Info.ClusterCount), "clusters that belong to no entry");
 
-            if (core.Allocator is ExFatAllocator { Bitmap: { } used })
+            if (core.Allocator is ClusterAllocatorExFat { Bitmap: { } used })
             {
                 for (uint cluster = FatTable.FIRST_CLUSTER; cluster <= core.Table.LastCluster; cluster++)
                 {

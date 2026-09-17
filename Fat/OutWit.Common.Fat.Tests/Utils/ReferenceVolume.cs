@@ -1,3 +1,5 @@
+using OutWit.Common.Fat.Model;
+
 namespace OutWit.Common.Fat.Tests.Utils
 {
     /// <summary>

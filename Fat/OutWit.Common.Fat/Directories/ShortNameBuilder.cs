@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using OutWit.Common.Fat.Exceptions;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Directories
 {

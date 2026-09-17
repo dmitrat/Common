@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OutWit.Common.Fat.Devices;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Allocation
 {

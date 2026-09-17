@@ -6,7 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using OutWit.Common.Fat.Devices;
 using OutWit.Common.Fat.Directories;
+using OutWit.Common.Fat.Exceptions;
 using OutWit.Common.Fat.Files;
+using OutWit.Common.Fat.Model;
+using OutWit.Common.Fat.Volumes;
 
 namespace OutWit.Common.Fat
 {

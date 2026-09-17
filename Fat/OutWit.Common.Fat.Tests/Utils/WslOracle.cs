@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using OutWit.Common.Fat.Devices;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Tests.Utils
 {

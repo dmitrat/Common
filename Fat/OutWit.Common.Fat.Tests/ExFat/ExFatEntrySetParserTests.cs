@@ -1,5 +1,7 @@
 using OutWit.Common.Fat.Directories;
 using OutWit.Common.Fat.ExFat;
+using OutWit.Common.Fat.Exceptions;
+using OutWit.Common.Fat.Model;
 using OutWit.Common.Fat.Tests.Utils;
 using OutWit.Common.NUnit;
 

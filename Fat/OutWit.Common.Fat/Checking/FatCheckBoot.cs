@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Threading;
 using System.Threading.Tasks;
 using OutWit.Common.Fat.Boot;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Checking
 {

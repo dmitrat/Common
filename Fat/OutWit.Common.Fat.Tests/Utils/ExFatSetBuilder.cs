@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Tests.Utils
 {

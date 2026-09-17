@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using OutWit.Common.Fat.Directories;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Formatting
 {

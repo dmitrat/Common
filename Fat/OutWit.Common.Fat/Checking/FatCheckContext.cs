@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using OutWit.Common.Fat.Directories;
 using OutWit.Common.Fat.ExFat;
+using OutWit.Common.Fat.Model;
+using OutWit.Common.Fat.Volumes;
 
 namespace OutWit.Common.Fat.Checking
 {

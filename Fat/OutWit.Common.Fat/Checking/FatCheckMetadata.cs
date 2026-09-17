@@ -2,6 +2,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using OutWit.Common.Fat.Directories;
 using OutWit.Common.Fat.ExFat;
+using OutWit.Common.Fat.Exceptions;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Checking
 {

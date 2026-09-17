@@ -1,5 +1,6 @@
 using OutWit.Common.Fat.Devices;
 using OutWit.Common.Fat.ExFat;
+using OutWit.Common.Fat.Model;
 using OutWit.Common.Fat.Tests.Utils;
 
 namespace OutWit.Common.Fat.Tests.ExFat

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using OutWit.Common.Fat.Directories;
+using OutWit.Common.Fat.Exceptions;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Files
 {

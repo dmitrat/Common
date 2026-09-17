@@ -1,4 +1,5 @@
 using OutWit.Common.Fat.Allocation;
+using OutWit.Common.Fat.Model;
 using OutWit.Common.Fat.Tests.Utils;
 
 namespace OutWit.Common.Fat.Tests.Allocation

@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using OutWit.Common.Fat.Directories;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Checking
 {
@@ -33,7 +34,7 @@ namespace OutWit.Common.Fat.Checking
             }
 
             var walker = new FatCheckWalker(context, upcase);
-            await walker.RunAsync(new FatCheckWalker.Visit(root, FatCheckOwners.ROOT, isRootBroken), cancellationToken).ConfigureAwait(false);
+            await walker.RunAsync(new FatCheckVisit(root, FatCheckOwners.ROOT, isRootBroken), cancellationToken).ConfigureAwait(false);
         }
 
         #endregion

@@ -3,6 +3,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using OutWit.Common.Fat.Devices;
 using OutWit.Common.Fat.Directories;
+using OutWit.Common.Fat.Model;
+using OutWit.Common.Fat.Volumes;
 
 namespace OutWit.Common.Fat.Tests.Utils
 {

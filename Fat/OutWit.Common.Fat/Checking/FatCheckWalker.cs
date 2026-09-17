@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using OutWit.Common.Fat.Directories;
 using OutWit.Common.Fat.ExFat;
+using OutWit.Common.Fat.Exceptions;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Checking
 {
@@ -39,7 +41,7 @@ namespace OutWit.Common.Fat.Checking
 
         private readonly ExFatUpcaseTable? m_upcase;
 
-        private readonly Stack<Visit> m_pending = new();
+        private readonly Stack<FatCheckVisit> m_pending = new();
 
         private readonly Dictionary<uint, int> m_ancestors = new();
 
@@ -57,7 +59,7 @@ namespace OutWit.Common.Fat.Checking
 
         #region Functions
 
-        public async ValueTask RunAsync(Visit root, CancellationToken cancellationToken)
+        public async ValueTask RunAsync(FatCheckVisit root, CancellationToken cancellationToken)
         {
             m_pending.Push(root);
             while (m_pending.TryPop(out var visit))
@@ -81,7 +83,7 @@ namespace OutWit.Common.Fat.Checking
                 if (cluster != 0)
                 {
                     m_ancestors[cluster] = visit.Owner;
-                    m_pending.Push(new Visit(null, visit.Owner, false, cluster));
+                    m_pending.Push(new FatCheckVisit(null, visit.Owner, false, cluster));
                 }
 
                 await ReadAsync(directory, visit, cancellationToken).ConfigureAwait(false);
@@ -91,7 +93,7 @@ namespace OutWit.Common.Fat.Checking
         /// <summary>
         /// Checks a directory's entries a chunk at a time, and queues its subdirectories.
         /// </summary>
-        private async ValueTask ReadAsync(DirectoryItem directory, Visit visit, CancellationToken cancellationToken)
+        private async ValueTask ReadAsync(DirectoryItem directory, FatCheckVisit visit, CancellationToken cancellationToken)
         {
             var core = m_context.Core;
             string path = directory.Entry.Path;
@@ -99,7 +101,7 @@ namespace OutWit.Common.Fat.Checking
             var exFat = core.ExFat != null ? new ExFatEntrySetParser(path, opened.Cluster) : null;
             var vfat = core.ExFat == null ? new DirectoryParser(path, core.HasHighCluster, opened.Cluster) : null;
             var children = new List<DirectoryItem>();
-            var directories = new List<Visit>();
+            var directories = new List<FatCheckVisit>();
 
             try
             {
@@ -129,7 +131,7 @@ namespace OutWit.Common.Fat.Checking
                 m_pending.Push(directories[i]);
         }
 
-        private async ValueTask CheckChildAsync(DirectoryItem child, DirectoryItem directory, int parent, List<Visit> directories,
+        private async ValueTask CheckChildAsync(DirectoryItem child, DirectoryItem directory, int parent, List<FatCheckVisit> directories,
             CancellationToken cancellationToken)
         {
             var entry = child.Entry;
@@ -149,7 +151,7 @@ namespace OutWit.Common.Fat.Checking
 
             if (m_context.Core.ExFat == null)
                 await FatCheckItem.CheckDotEntriesAsync(m_context, child, directory, cancellationToken).ConfigureAwait(false);
-            directories.Add(new Visit(Relocate(child, entry.Name), owner, false));
+            directories.Add(new FatCheckVisit(Relocate(child, entry.Name), owner, false));
         }
 
         /// <returns>Whether the directory's end was reached.</returns>
@@ -217,16 +219,6 @@ namespace OutWit.Common.Fat.Checking
                 StoredName = item.StoredName
             };
         }
-
-        #endregion
-
-        #region Nested Types
-
-        /// <summary>
-        /// A directory still to be read, by its name, with its owner; or, with no directory,
-        /// the mark that the walk has left the one starting at <see cref="ExitCluster"/>.
-        /// </summary>
-        public sealed record Visit(DirectoryItem? Directory, int Owner, bool IsChainReported, uint ExitCluster = 0);
 
         #endregion
     }

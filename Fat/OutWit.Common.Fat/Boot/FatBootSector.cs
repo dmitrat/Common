@@ -1,6 +1,8 @@
 using System;
 using System.Buffers.Binary;
 using OutWit.Common.Fat.Devices;
+using OutWit.Common.Fat.Exceptions;
+using OutWit.Common.Fat.Model;
 
 namespace OutWit.Common.Fat.Boot
 {
