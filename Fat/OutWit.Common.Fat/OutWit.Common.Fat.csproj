@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+<PropertyGroup>
+<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+<LangVersion>latest</LangVersion>
+<Nullable>enable</Nullable>
+
+<Version>0.1.0</Version>
+
+<Description>FAT12, FAT16, FAT32 and exFAT over a pluggable, asynchronous block device. Built for slow and remote media: sectors are read on demand and in batches, never the whole allocation table at mount. Includes memory, file, stream, cached and partition devices and MBR volume detection.</Description>
+<PackageTags>OutWit;Common;FAT;FAT12;FAT16;FAT32;exFAT;FileSystem;BlockDevice;MBR</PackageTags>
+
+<RepositoryUrl>https://github.com/dmitrat/Common/tree/main/Fat/OutWit.Common.Fat</RepositoryUrl>
+</PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\OutWit.Common\OutWit.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OutWit.Common.Fat.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ExFat\UpcaseTable.bin" LogicalName="OutWit.Common.Fat.ExFat.UpcaseTable.bin" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NUnit3TestAdapter" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\NUnit\OutWit.Common.NUnit\OutWit.Common.NUnit.csproj" />
+    <ProjectReference Include="..\OutWit.Common.Fat\OutWit.Common.Fat.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference images made in WSL by Fixtures/make_fixtures.py; reading them needs no WSL. -->
+    <None Include="Fixtures\manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fixtures\images\*.img.gz" CopyToOutputDirectory="PreserveNewest" LinkBase="Fixtures\images" />
+    <!-- The oracle for images the tests write; run in WSL, or on Linux, by Utils/WslOracle. -->
+    <None Include="Fixtures\*.py" CopyToOutputDirectory="PreserveNewest" LinkBase="Fixtures" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+</Project>
