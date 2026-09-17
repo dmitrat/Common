@@ -44,6 +44,7 @@ on:
           - OutWit.Common.DependencyInjection
           - OutWit.Common.DependencyInjection.Generator
           - OutWit.Common.Email
+          - OutWit.Common.Fat
           - OutWit.Common.Forms
           - OutWit.Common.Forms.MessagePack
           - OutWit.Common.Messenger

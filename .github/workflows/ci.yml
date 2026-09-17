@@ -157,6 +157,9 @@ jobs:
               - 'DependencyInjection/OutWit.Common.DependencyInjection.Generator/**'
             OutWit.Common.Email:
               - 'Email/**'
+            OutWit.Common.Fat:
+              - 'Fat/**'
+              - 'Common/**'
             OutWit.Common.Forms:
               - 'Forms/**'
               - 'Common/**'

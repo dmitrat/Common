@@ -48,6 +48,10 @@ A collection of helpers and extension methods for MessagePack-CSharp to simplify
 
 A collection of tools and helper classes to simplify serialization with protobuf-net. Provides extension methods for serialization, deserialization, and deep cloning, plus built-in support for common types like `DateTimeOffset`.
 
+# [OutWit.Common.Fat](https://github.com/dmitrat/Common/tree/main/Fat/OutWit.Common.Fat)
+
+A FAT12, FAT16, FAT32 and exFAT file system over a pluggable, asynchronous block device — memory, a file, a stream, an LRU cache, one partition of a disk, or whatever a product puts behind `IBlockDevice`. Built for media that are slow or far away, such as a memory card behind a radio link: sectors are read on demand and in batches, and the allocation table is never read whole at mount. Reads and writes all four kinds with long names, formats them, and checks a volume for the damage `fsck` would find, without repairing it. Judged against the Linux tools and the kernel's own drivers.
+
 # [OutWit.Common.Forms](https://github.com/dmitrat/Common/tree/main/Forms/OutWit.Common.Forms)
 
 A form described as data: groups, tabs, fields, options and the conditions that decide what is live — serialisable, transferable, and enough for anybody to draw the form and keep it consistent while somebody types. Lets a plugin contribute a screen without shipping controls, so a second front end — a browser, a remote console, a different toolkit — becomes a renderer rather than a rewrite. Structure and the "this is off while that is off" conditions travel in the schema and are evaluated locally; what the values *mean together* stays with whoever declared the form, asked through `IFormValidator`. MemoryPack on the wire, and no other serialiser's attributes.
