@@ -5,7 +5,7 @@
 		<UseWPF>true</UseWPF>
 		<Nullable>enable</Nullable>
 
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 
 		<Description>WPF half of OutWit.Common.MVVM.Navigation: ViewLocator (a DataTemplateSelector and IViewFactory over the view registry and a naming convention), the NavigationOutlet control that keeps views alive across navigations, ViewPresenter for nested content, a modal-window dialog host, and AddWpfNavigation(). Lets a WPF application drop Prism and Unity while staying on WPF.</Description>
 		<PackageTags>OutWit;Common;MVVM;Navigation;WPF;Regions;Dialogs;ViewLocator;Prism</PackageTags>

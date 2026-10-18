@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using OutWit.Common.MVVM.Navigation.Interfaces;
@@ -23,6 +25,8 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Tests.Controls
         private const string SAMPLE = "sample";
         private const string TRANSIENT = "transient";
         private const string INJECTED = "injected";
+
+        private static readonly TimeSpan FADE = TimeSpan.FromMilliseconds(200);
 
         #endregion
 
@@ -169,6 +173,92 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Tests.Controls
             Assert.That(control.Opacity, Is.EqualTo(1));
         }
 
+        [Test]
+        public void ComingBackInsideTheFadeKeepsTheViewOnScreenTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var (window, control) = Show(provider, navigation.Outlet(), FADE);
+
+            try
+            {
+                Navigate(navigation, SAMPLE);
+                Settle();
+                var first = control.Content;
+
+                Navigate(navigation, INJECTED);
+                Assert.That(control.Content, Is.SameAs(first), "the second navigation must land while the first view is still fading out");
+
+                Navigate(navigation, SAMPLE);
+                Assert.That(control.HasAnimatedProperties, Is.False, "the fade-out must be released, or it holds the opacity at zero");
+
+                Settle();
+
+                Assert.That(control.Content, Is.SameAs(first), "the fade towards the page left must not put that page up");
+                Assert.That(((FrameworkElement)control.Content!).DataContext, Is.SameAs(navigation.Outlet().Content));
+                Assert.That(control.Opacity, Is.EqualTo(1));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        [Test]
+        public void ComingBackAfterTheFadeShowsTheViewAgainTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var (window, control) = Show(provider, navigation.Outlet(), FADE);
+
+            try
+            {
+                Navigate(navigation, SAMPLE);
+                Settle();
+                var first = control.Content;
+
+                Navigate(navigation, INJECTED);
+                Settle();
+                Assert.That(control.Content, Is.InstanceOf<InjectedView>());
+
+                Navigate(navigation, SAMPLE);
+                Settle();
+
+                Assert.That(control.Content, Is.SameAs(first));
+                Assert.That(control.Opacity, Is.EqualTo(1));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        [Test]
+        public void NavigatingOnInsideTheFadeShowsTheLastPageTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var (window, control) = Show(provider, navigation.Outlet(), FADE);
+
+            try
+            {
+                Navigate(navigation, SAMPLE);
+                Settle();
+
+                Navigate(navigation, INJECTED);
+                Navigate(navigation, TRANSIENT);
+                Settle();
+
+                Assert.That(control.Content, Is.InstanceOf<TransientSampleView>());
+                Assert.That(((FrameworkElement)control.Content!).DataContext, Is.SameAs(navigation.Outlet().Content));
+                Assert.That(control.Opacity, Is.EqualTo(1));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
         #endregion
 
         #region Tools
@@ -191,6 +281,39 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Tests.Controls
                 ViewFactory = provider.GetRequiredService<ViewLocator>(),
                 Outlet = outlet
             };
+        }
+
+        private static (Window Window, NavigationOutlet Control) Show(ServiceProvider provider, INavigationOutlet outlet, TimeSpan transition)
+        {
+            var control = Create(provider, outlet);
+            control.TransitionDuration = transition;
+
+            var window = new Window { Content = control, Width = 100, Height = 100, ShowInTaskbar = false, WindowStyle = WindowStyle.None };
+            window.Show();
+
+            return (window, control);
+        }
+
+        /// <summary>
+        /// Navigates from inside a dispatcher operation, the way a click does. The fade awaits
+        /// on the context it was started in, and outside the dispatcher there is none to return to.
+        /// </summary>
+        private static void Navigate(INavigationService navigation, string key)
+        {
+            var navigating = Dispatcher.CurrentDispatcher.Invoke(() => navigation.NavigateAsync(key));
+
+            WpfTestHost.PumpUntil(() => navigating.IsCompleted);
+            navigating.GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Lets a fade run its course: pumps the dispatcher for twice its duration.
+        /// </summary>
+        private static void Settle()
+        {
+            var watch = Stopwatch.StartNew();
+
+            WpfTestHost.PumpUntil(() => watch.Elapsed > FADE * 2);
         }
 
         #endregion

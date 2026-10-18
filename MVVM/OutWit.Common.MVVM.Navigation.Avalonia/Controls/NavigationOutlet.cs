@@ -63,7 +63,13 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Controls
             }
 
             if (Content is Control current && ReferenceEquals(current.DataContext, viewModel))
+            {
+                // the view on screen is the one wanted, but a fade towards another may still be
+                // under way: back inside the fade-out (A → B → A) A has not left yet, and the
+                // fade, left alone, would put B up
+                StopFade();
                 return;
+            }
 
             var factory = ViewFactory ?? FindFactory();
 
@@ -147,6 +153,20 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Controls
 
                 cancellation.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Calls off the fade in flight, if any, and puts the opacity back. The field is cleared
+        /// here, so the cancelled fade no longer owns the opacity and will not restore it itself.
+        /// </summary>
+        private void StopFade()
+        {
+            if (m_transition == null)
+                return;
+
+            m_transition.Cancel();
+            m_transition = null;
+            Opacity = 1;
         }
 
         private Task FadeAsync(double from, double to, TimeSpan duration, CancellationToken cancellation)

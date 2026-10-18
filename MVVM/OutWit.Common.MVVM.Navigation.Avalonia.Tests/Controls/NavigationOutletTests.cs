@@ -1,7 +1,10 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using OutWit.Common.MVVM.Navigation.Avalonia.Controls;
@@ -22,6 +25,8 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Tests.Controls
         private const string SAMPLE = "sample";
         private const string TRANSIENT = "transient";
         private const string INJECTED = "injected";
+
+        private static readonly TimeSpan FADE = TimeSpan.FromMilliseconds(200);
 
         #endregion
 
@@ -221,6 +226,75 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Tests.Controls
             Assert.That(control.Opacity, Is.EqualTo(1));
         }
 
+        [AvaloniaTest]
+        public async Task ComingBackInsideTheFadeKeepsTheViewOnScreenTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var (window, control) = Show(provider, navigation.Outlet(), FADE);
+
+            await navigation.NavigateAsync(SAMPLE);
+            await SettleAsync();
+            var first = control.Content;
+
+            await navigation.NavigateAsync(INJECTED);
+            Assert.That(control.Content, Is.SameAs(first), "the second navigation must land while the first view is still fading out");
+
+            await navigation.NavigateAsync(SAMPLE);
+            await SettleAsync();
+
+            Assert.That(control.Content, Is.SameAs(first), "the fade towards the page left must not put that page up");
+            Assert.That(((Control)control.Content!).DataContext, Is.SameAs(navigation.Outlet().Content));
+            Assert.That(control.Opacity, Is.EqualTo(1));
+
+            window.Close();
+        }
+
+        [AvaloniaTest]
+        public async Task ComingBackAfterTheFadeShowsTheViewAgainTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var (window, control) = Show(provider, navigation.Outlet(), FADE);
+
+            await navigation.NavigateAsync(SAMPLE);
+            await SettleAsync();
+            var first = control.Content;
+
+            await navigation.NavigateAsync(INJECTED);
+            await SettleAsync();
+            Assert.That(control.Content, Is.InstanceOf<InjectedView>());
+
+            await navigation.NavigateAsync(SAMPLE);
+            await SettleAsync();
+
+            Assert.That(control.Content, Is.SameAs(first));
+            Assert.That(control.Opacity, Is.EqualTo(1));
+
+            window.Close();
+        }
+
+        [AvaloniaTest]
+        public async Task NavigatingOnInsideTheFadeShowsTheLastPageTest()
+        {
+            using var provider = Build();
+            var navigation = provider.GetRequiredService<INavigationService>();
+            var (window, control) = Show(provider, navigation.Outlet(), FADE);
+
+            await navigation.NavigateAsync(SAMPLE);
+            await SettleAsync();
+
+            await navigation.NavigateAsync(INJECTED);
+            await navigation.NavigateAsync(TRANSIENT);
+            await SettleAsync();
+
+            Assert.That(control.Content, Is.InstanceOf<TransientSampleView>());
+            Assert.That(((Control)control.Content!).DataContext, Is.SameAs(navigation.Outlet().Content));
+            Assert.That(control.Opacity, Is.EqualTo(1));
+
+            window.Close();
+        }
+
         #endregion
 
         #region Lifecycle Tests
@@ -285,18 +359,36 @@ namespace OutWit.Common.MVVM.Navigation.Avalonia.Tests.Controls
             });
         }
 
-        private static (Window Window, NavigationOutlet Control) Show(ServiceProvider provider, INavigationOutlet outlet)
+        private static (Window Window, NavigationOutlet Control) Show(ServiceProvider provider, INavigationOutlet outlet, TimeSpan transition = default)
         {
             var control = new NavigationOutlet
             {
                 Outlet = outlet,
-                ViewFactory = provider.GetRequiredService<ViewLocator>()
+                ViewFactory = provider.GetRequiredService<ViewLocator>(),
+                TransitionDuration = transition
             };
 
             var window = new Window { Content = control };
             window.Show();
 
             return (window, control);
+        }
+
+        /// <summary>
+        /// Lets a fade run its course. The headless render timer only moves when it is told to,
+        /// so it is ticked for twice the duration of real time.
+        /// </summary>
+        private static async Task SettleAsync()
+        {
+            var watch = Stopwatch.StartNew();
+
+            while (watch.Elapsed < FADE * 2)
+            {
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                await Task.Delay(10);
+            }
+
+            Dispatcher.UIThread.RunJobs();
         }
 
         #endregion

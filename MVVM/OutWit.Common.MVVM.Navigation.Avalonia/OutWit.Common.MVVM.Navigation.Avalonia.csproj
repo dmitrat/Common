@@ -4,7 +4,7 @@
 		<TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 
-		<Version>1.0.0</Version>
+		<Version>1.0.1</Version>
 
 		<Description>Avalonia half of OutWit.Common.MVVM.Navigation: ViewLocator (an IDataTemplate over the view registry and a naming convention), the NavigationOutlet control that keeps views alive across navigations, window and overlay dialog hosts, application resources for modules, and AddAvaloniaNavigation().</Description>
 		<PackageTags>OutWit;Common;MVVM;Navigation;Avalonia;Regions;Dialogs;ViewLocator</PackageTags>

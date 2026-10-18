@@ -72,7 +72,13 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Controls
             }
 
             if (Content is FrameworkElement current && ReferenceEquals(current.DataContext, viewModel))
+            {
+                // the view on screen is the one wanted, but a fade towards another may still be
+                // under way: back inside the fade-out (A → B → A) A has not left yet, and the
+                // fade, left alone, would put B up
+                StopFade();
                 return;
+            }
 
             var factory = ViewFactory ?? ViewLocator.FindInApplication();
 
@@ -172,6 +178,21 @@ namespace OutWit.Common.MVVM.Navigation.WPF.Controls
 
                 await completion.Task;
             }
+        }
+
+        /// <summary>
+        /// Calls off the fade in flight, if any, and puts the opacity back. Cancelling only ends
+        /// the wait: the animation itself runs on to zero and holds there until it is released.
+        /// The field is cleared here, so the cancelled fade will not release it itself.
+        /// </summary>
+        private void StopFade()
+        {
+            if (m_transition == null)
+                return;
+
+            m_transition.Cancel();
+            m_transition = null;
+            ClearFade();
         }
 
         /// <summary>
