@@ -1195,6 +1195,15 @@ license itself is **not secret** — it is signed, not encrypted, and readable b
 design so an operator can inspect what they were granted. Only the sidecar state
 (clock high-water mark, first-run marker) is written with restrictive permissions.
 
+A machine-bound licence serves every user of the machine, so its store is
+machine scope too, and there the sidecar cannot be one user's: on Unix the next
+user could not read the first-run marker, would start a fresh state and replace
+the first user's, and switching users would restart a demo.
+`new LicenseStoreFile(directory, sharedByAllUsers: true)` writes every file
+`0666`, creates its directory `0777`, and replaces a file by renaming a fresh
+one over it (allowed to anyone who may write the directory, whoever owns the
+old file). On Windows the directory's ACL decides; the product sets it.
+
 ---
 
 ## 14. Staged plan

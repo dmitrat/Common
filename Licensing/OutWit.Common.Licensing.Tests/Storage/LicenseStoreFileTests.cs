@@ -167,5 +167,82 @@ namespace OutWit.Common.Licensing.Tests.Storage
         }
 
         #endregion
+
+        #region Sharing Tests
+
+        // Every user of the machine reads and writes a shared store's files.
+        private const UnixFileMode EVERYONE_FILE = UnixFileMode.UserRead | UnixFileMode.UserWrite
+                                                   | UnixFileMode.GroupRead | UnixFileMode.GroupWrite
+                                                   | UnixFileMode.OtherRead | UnixFileMode.OtherWrite;
+
+        private static void AssumeUnix()
+        {
+            Assume.That(OperatingSystem.IsWindows(), Is.False, "Unix file modes; on Windows the directory's ACL decides.");
+        }
+
+        [Test]
+        public void APerUserStoreKeepsItsStateToItsOwnerTest()
+        {
+            AssumeUnix();
+            var store = new LicenseStoreFile(m_directory);
+
+            store.WriteState(new LicenseStoreState { FirstRunUtc = DateTime.UtcNow });
+
+            Assert.That(File.GetUnixFileMode(Path.Combine(m_directory, "licensing.state.json")),
+                Is.EqualTo(UnixFileMode.UserRead | UnixFileMode.UserWrite));
+        }
+
+        [Test]
+        public void ASharedStoreWritesFilesEveryUserCanReadAndWriteTest()
+        {
+            AssumeUnix();
+            var store = new LicenseStoreFile(m_directory, sharedByAllUsers: true);
+            var payload = LicenseTestContext.Payload();
+
+            store.WriteState(new LicenseStoreState { FirstRunUtc = DateTime.UtcNow });
+            store.Save(m_context.Issue(payload));
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(File.GetUnixFileMode(Path.Combine(m_directory, "licensing.state.json")), Is.EqualTo(EVERYONE_FILE),
+                    "another user must read the demo anchor, or switching users restarts the demo");
+                Assert.That(File.GetUnixFileMode(Path.Combine(m_directory, payload.Id + ".lic")), Is.EqualTo(EVERYONE_FILE));
+                Assert.That(File.GetUnixFileMode(m_directory), Is.EqualTo(EVERYONE_FILE
+                    | UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute), "the directory it creates");
+            });
+        }
+
+        [Test]
+        public void ASharedStoreReplacesAFileItCannotWriteInPlaceTest()
+        {
+            // Another user's state file is not writable for this one; it is
+            // replaced through the directory, which every user may write.
+            AssumeUnix();
+            var store = new LicenseStoreFile(m_directory, sharedByAllUsers: true);
+            store.WriteState(new LicenseStoreState { FirstRunUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) });
+            var path = Path.Combine(m_directory, "licensing.state.json");
+            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+            var later = new LicenseStoreState { FirstRunUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), HighWaterMarkUtc = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc) };
+            store.WriteState(later);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(store.ReadState().Is(later), Is.True);
+                Assert.That(Directory.EnumerateFiles(m_directory, "*.tmp"), Is.Empty);
+            });
+        }
+
+        [Test]
+        public void ASharedStoreReadsWhatAPerUserStoreWroteTest()
+        {
+            var written = new LicenseStoreState { FirstRunUtc = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc) };
+            new LicenseStoreFile(m_directory).WriteState(written);
+
+            Assert.That(new LicenseStoreFile(m_directory, sharedByAllUsers: true).ReadState().Is(written), Is.True,
+                "the same files, only the permissions differ");
+        }
+
+        #endregion
     }
 }
