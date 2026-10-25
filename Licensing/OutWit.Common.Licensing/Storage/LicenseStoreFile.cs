@@ -17,6 +17,17 @@ namespace OutWit.Common.Licensing.Storage
     /// because that is the file whose contents a determined user would want to
     /// edit.
     /// </para>
+    /// <para>
+    /// A store <b>shared by all users</b> of a machine (a licence bound to the
+    /// machine serves everyone who works on it) cannot keep its sidecar to its
+    /// owner: on Unix the next user could not read the demo anchor or the clock
+    /// guard, start a fresh state of their own and replace the first user's,
+    /// and switching users would restart the demo. Shared, every file is
+    /// written readable and writable by all (<c>0666</c>), the directory it
+    /// creates is <c>0777</c>, and a file is replaced by renaming a fresh one
+    /// over it, which the directory's permission allows whoever owns the old
+    /// one. On Windows the directory's ACL decides, set by the product.
+    /// </para>
     /// </summary>
     public sealed class LicenseStoreFile : ILicenseStore
     {
@@ -24,6 +35,18 @@ namespace OutWit.Common.Licensing.Storage
 
         private const string LICENSE_EXTENSION = ".lic";
         private const string STATE_FILE = "licensing.state.json";
+        private const string TEMPORARY_EXTENSION = ".tmp";
+
+        private const UnixFileMode OWNER_ONLY = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+        private const UnixFileMode EVERYONE_FILE = OWNER_ONLY
+                                                   | UnixFileMode.GroupRead | UnixFileMode.GroupWrite
+                                                   | UnixFileMode.OtherRead | UnixFileMode.OtherWrite;
+
+        private const UnixFileMode EVERYONE_DIRECTORY = EVERYONE_FILE
+                                                        | UnixFileMode.UserExecute
+                                                        | UnixFileMode.GroupExecute
+                                                        | UnixFileMode.OtherExecute;
 
         #endregion
 
@@ -33,13 +56,31 @@ namespace OutWit.Common.Licensing.Storage
 
         private readonly string m_directory;
 
+        private readonly bool m_isShared;
+
         #endregion
 
         #region Constructors
 
+        /// <summary>
+        /// A store of one user (the sidecar is the owner's alone on Unix).
+        /// </summary>
+        /// <param name="directory">The directory that holds the files.</param>
         public LicenseStoreFile(string directory)
+            : this(directory, sharedByAllUsers: false)
+        {
+        }
+
+        /// <summary>
+        /// A store of one user, or of every user of the machine.
+        /// </summary>
+        /// <param name="directory">The directory that holds the files.</param>
+        /// <param name="sharedByAllUsers">True for a machine-scope store every
+        /// user of the machine reads and writes.</param>
+        public LicenseStoreFile(string directory, bool sharedByAllUsers)
         {
             m_directory = directory;
+            m_isShared = sharedByAllUsers;
         }
 
         #endregion
@@ -76,13 +117,13 @@ namespace OutWit.Common.Licensing.Storage
             if (parsed == null)
                 throw new ArgumentException("The value is not a licence token.", nameof(token));
 
-            Directory.CreateDirectory(m_directory);
+            EnsureDirectory();
 
             // Named by licence id, so re-installing the same document overwrites
             // itself instead of accumulating copies that all validate.
             var fileName = SanitizeFileName(parsed.Payload.Id) + LICENSE_EXTENSION;
 
-            File.WriteAllText(Path.Combine(m_directory, fileName), parsed.Raw);
+            Replace(Path.Combine(m_directory, fileName), parsed.Raw, m_isShared ? EVERYONE_FILE : null);
         }
 
         public bool Remove(string licenseId)
@@ -132,22 +173,12 @@ namespace OutWit.Common.Licensing.Storage
         {
             try
             {
-                Directory.CreateDirectory(m_directory);
-
-                var path = StatePath();
-                var temporary = path + ".tmp";
+                EnsureDirectory();
 
                 // Written through a temporary file: a process killed mid-write
                 // would otherwise leave a truncated sidecar, and the clock guard
                 // would silently lose its high-water mark.
-                File.WriteAllText(temporary, JsonSerializer.Serialize(state, JSON_OPTIONS));
-
-                if (File.Exists(path))
-                    File.Delete(path);
-
-                File.Move(temporary, path);
-
-                ProtectFile(path);
+                Replace(StatePath(), JsonSerializer.Serialize(state, JSON_OPTIONS), m_isShared ? EVERYONE_FILE : OWNER_ONLY);
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
@@ -162,6 +193,40 @@ namespace OutWit.Common.Licensing.Storage
         private string StatePath()
         {
             return Path.Combine(m_directory, STATE_FILE);
+        }
+
+        private void EnsureDirectory()
+        {
+            if (Directory.Exists(m_directory))
+                return;
+
+            Directory.CreateDirectory(m_directory);
+
+            // mkdir applies the umask, so the mode is set after the fact.
+            if (m_isShared)
+                SetMode(m_directory, EVERYONE_DIRECTORY);
+        }
+
+        // A fresh file renamed over the old one: atomic, and allowed to anyone
+        // who may write the directory - in a shared store the old file may
+        // belong to another user. The temporary name is unique, so two users
+        // writing at once never collide on it.
+        private static void Replace(string path, string content, UnixFileMode? mode)
+        {
+            var temporary = $"{path}.{Guid.NewGuid():N}{TEMPORARY_EXTENSION}";
+            try
+            {
+                File.WriteAllText(temporary, content);
+                if (mode != null)
+                    SetMode(temporary, mode.Value);
+
+                File.Move(temporary, path, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(temporary))
+                    File.Delete(temporary);
+            }
         }
 
         private static string? ReadTokenFile(string path)
@@ -185,16 +250,16 @@ namespace OutWit.Common.Licensing.Storage
             return string.IsNullOrWhiteSpace(safe) ? "license" : safe;
         }
 
-        private static void ProtectFile(string path)
+        private static void SetMode(string path, UnixFileMode mode)
         {
             try
             {
                 if (!OperatingSystem.IsWindows())
-                    File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                    File.SetUnixFileMode(path, mode);
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
             {
-                // Permission hardening is a nicety, not a precondition.
+                // Permission handling is a nicety, not a precondition.
             }
         }
 
