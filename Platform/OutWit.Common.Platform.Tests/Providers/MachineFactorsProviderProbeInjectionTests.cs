@@ -70,6 +70,38 @@ namespace OutWit.Common.Platform.Tests.Providers
         }
 
         [Test]
+        public async Task TheFactorIsTheHardwareIdentityWhereItDiffersTest()
+        {
+            // macOS: the OS identity names the kernel build, the factor binds
+            // to the firmware's platform UUID instead.
+            var provider = new MachineFactorsProvider(new FakeProbe { RawIdentity = "kernel-build", HardwareIdentity = "platform-uuid" });
+
+            var factors = await provider.CollectAsync();
+
+            Assert.That(factors.Single(factor => factor.Key == MachineFactorKeys.MACHINE_ID).Value, Is.EqualTo("platform-uuid"));
+        }
+
+        [Test]
+        public async Task OnAMacTheFactorIsNotTheKernelBuildTest()
+        {
+            Assume.That(OperatingSystem.IsMacOS(), Is.True, "the real macOS probe");
+            var kernel = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("sysctl", "-n kern.uuid")
+            {
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            })!;
+            var kernelUuid = (await kernel.StandardOutput.ReadToEndAsync()).Trim();
+
+            var factor = (await new MachineFactorsProvider().CollectAsync()).Single(item => item.Key == MachineFactorKeys.MACHINE_ID);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(Guid.TryParse(factor.Value, out _), Is.True, $"a platform UUID, read {factor.Value}");
+                Assert.That(factor.Value, Is.Not.EqualTo(kernelUuid).IgnoreCase, "kern.uuid is the kernel build's UUID");
+            });
+        }
+
+        [Test]
         public async Task ThrowingProbeDoesNotLoseOtherFactorsTest()
         {
             var provider = new MachineFactorsProvider(new FakeProbe { Throws = true });
@@ -162,6 +194,7 @@ namespace OutWit.Common.Platform.Tests.Providers
         {
             public PlatformKind Kind => PlatformKind.Unknown;
             public string? RawIdentity { get; set; }
+            public string? HardwareIdentity { get; set; }
             public bool Throws { get; set; }
 
             public string GetCpuModelName() => string.Empty;
@@ -177,6 +210,11 @@ namespace OutWit.Common.Platform.Tests.Providers
                     throw new InvalidOperationException("probe failure");
 
                 return RawIdentity;
+            }
+
+            public string? GetRawHardwareIdentity()
+            {
+                return HardwareIdentity ?? GetRawMachineIdentity();
             }
 
             public void Dispose() { }

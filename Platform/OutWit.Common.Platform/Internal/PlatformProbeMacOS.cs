@@ -149,6 +149,32 @@ namespace OutWit.Common.Platform.Internal
             return TryRunCommand("sysctl", "-n kern.uuid")?.Trim();
         }
 
+        /// <summary>
+        /// The firmware's platform UUID (System Information's "Hardware
+        /// UUID"). Not <c>kern.uuid</c>: that is the UUID of the kernel binary
+        /// macOS ships for the chip family, the same on every Mac of that
+        /// family running the same build and new with every update (measured
+        /// 2026-10-25: it equals the <c>LC_UUID</c> of
+        /// <c>/System/Library/Kernels/kernel.release.t6050</c>).
+        /// </summary>
+        public string? GetRawHardwareIdentity()
+        {
+            var output = TryRunCommand("ioreg", "-rd1 -c IOPlatformExpertDevice");
+            return output == null ? null : ParsePlatformUuid(output);
+        }
+
+        /// <summary>
+        /// The <c>IOPlatformUUID</c> value in <c>ioreg</c>'s listing of the
+        /// platform expert device, or <c>null</c> when it has none.
+        /// </summary>
+        internal static string? ParsePlatformUuid(string ioregOutput)
+        {
+            var match = Regex.Match(ioregOutput, "\"IOPlatformUUID\"\\s*=\\s*\"([^\"]+)\"");
+            return match.Success && match.Groups[1].Value.Trim().Length > 0
+                ? match.Groups[1].Value.Trim()
+                : null;
+        }
+
         #endregion
 
         #region IDisposable
