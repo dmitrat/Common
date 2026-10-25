@@ -11,9 +11,12 @@ namespace OutWit.Common.Platform.Providers
     /// Collects the machine's individual identity factors.
     /// <para>
     /// The OS-specific part — the machine identity itself — is delegated to a
-    /// per-OS <c>IPlatformProbe</c>, exactly as
-    /// <see cref="MachineIdentityProvider"/> does. The remaining factors are
-    /// read through the BCL and are therefore the same code on every platform.
+    /// per-OS <c>IPlatformProbe</c>, as <see cref="MachineIdentityProvider"/>
+    /// does, but asked for the identity of the hardware: the same value on
+    /// Windows and Linux, the firmware's platform UUID on macOS, where the OS
+    /// identity names the kernel build and changes with every update. The
+    /// remaining factors are read through the BCL and are therefore the same
+    /// code on every platform.
     /// </para>
     /// </summary>
     public sealed class MachineFactorsProvider : IMachineFactorsProvider
@@ -79,7 +82,7 @@ namespace OutWit.Common.Platform.Providers
         {
             try
             {
-                return m_probe.GetRawMachineIdentity();
+                return m_probe.GetRawHardwareIdentity();
             }
             catch
             {

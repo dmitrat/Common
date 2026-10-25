@@ -69,5 +69,17 @@ namespace OutWit.Common.Platform.Internal
         /// stable hashed device ID, or <c>null</c> if the OS does not expose one.
         /// </summary>
         string? GetRawMachineIdentity();
+
+        // --------------- MachineFactors inputs ---------------
+
+        /// <summary>
+        /// Returns the raw identity of the machine's hardware that a licence
+        /// binds to, or <c>null</c> if the OS does not expose one. Where the
+        /// OS identity is written once per installation and kept for it
+        /// (Windows' <c>MachineGuid</c>, Linux's <c>machine-id</c>) it is the
+        /// same value as <see cref="GetRawMachineIdentity"/>; a platform whose
+        /// OS identity changes with an update overrides it.
+        /// </summary>
+        string? GetRawHardwareIdentity() => GetRawMachineIdentity();
     }
 }

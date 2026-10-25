@@ -137,10 +137,19 @@ answer** — providers never throw on missing data.
 | Available RAM MB | `PerformanceCounter("Memory", "Available MBytes")` | `/proc/meminfo` `MemAvailable` | `vm_stat` (free + inactive) | `/proc/meminfo` (inherited from Linux) | 0 |
 | User active | `GetLastInputInfo` P/Invoke (5-min idle threshold) | `true` (no headless API) | `true` (no headless API) | `true` (needs Android SDK PowerManager) | `true` |
 | Machine identity | Registry `MachineGuid` | `/etc/machine-id` / `/var/lib/dbus/machine-id` | `sysctl kern.uuid` | `build.prop ro.serialno` → Linux machine-id fallback | `null` (per-app GUID file) |
-| Machine factors | `machine-id` + `primary-mac` + `machine-name` | same | same | same | `primary-mac` + `machine-name` |
+| Machine factors | `machine-id` + `primary-mac` + `machine-name` | same | same, but `machine-id` = `ioreg` `IOPlatformUUID` | same | `primary-mac` + `machine-name` |
 
 `primary-mac` and `machine-name` come from the BCL and are therefore identical on
 every platform — one copy of the rules instead of one per probe.
+
+The `machine-id` **factor** is the identity of the hardware a licence binds to.
+On Windows and Linux it is the machine identity above (written once per
+installation and kept for it). On macOS it is the firmware's platform UUID
+(System Information's "Hardware UUID"), not `kern.uuid`: that names the kernel
+binary macOS ships for the chip family, so it is shared by every Mac of that
+family on the same build and changes with every update. The machine identity
+itself keeps `kern.uuid` on macOS, so the identities already handed out stay
+as they are.
 
 The Android probe stays **pure .NET** — it works on `net10.0` without an
 `android` TFM. Bridging real Android APIs (`Build`, `PowerManager`,
